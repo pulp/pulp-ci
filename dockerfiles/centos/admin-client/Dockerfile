@@ -6,7 +6,7 @@ MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
 ADD rhel-pulp.repo /etc/yum.repos.d/rhel-pulp.repo
 
-RUN rpm -Uvh http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
+RUN rpm -Uvh http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-1.noarch.rpm
 
 # workaround: python-pulp-rpm-common not installed by groupinstall
 RUN  yum update -y && \
