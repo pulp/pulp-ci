@@ -3,7 +3,7 @@ MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
 # may not need python-pulp-rpm-common
 RUN  yum install -y \
-         qpid-cpp-server qpid-cpp-server-store python-qpid-qmf python-qpid \
+         python-qpid-qmf python-qpid \
          python-pulp-rpm-common && \
      yum clean all
 

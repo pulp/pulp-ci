@@ -1,4 +1,4 @@
-#!/usr/bin/python -Es
+#!/usr/bin/env python -Es
 
 """Docker-focused client for pulp docker registry
 """

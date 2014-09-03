@@ -5,7 +5,7 @@ This document explains how to use Pulp as a Docker registry. Its intended audien
 
 Pulp is a platform for managing repositories of content. Pulp makes it possible to locally mirror either all of or part of a repository. Pulp makes it possible to host content in new repositories, and makes it possible to manage content from multiple sources in a single place.
 
-Pulp 2.4 supports docker content and can serve as a docker registry.
+Pulp 2.5 with the pulp_docker plugin supports docker content and can serve as a docker registry.
 
 Why Pulp As a Docker Registry?
 ------------------------------
@@ -14,8 +14,10 @@ Pulp provides the following:
 * Separation of administrator interface (pulp API) and end-user interface (docker)
 * Role-based access control (RBAC) with LDAP support
 * Synchronization of content accross an organization using `nodes <https://pulp-user-guide.readthedocs.org/en/latest/nodes.html>`_.
+* Promotion of content through user-defined environments, like "dev", "test", and "prod"
 * `Well-documented API <https://pulp-dev-guide.readthedocs.org/en/latest/integration/rest-api/index.html>`_
 * `Event-based notifications <https://pulp-dev-guide.readthedocs.org/en/latest/integration/events/index.html>`_ (http/amqp/email), that enable CI workflows and viewing history
+* Read-only implementation of the docker registry API that can be deployed independently, making it very secure
 * Service-oriented architecture (SOA) that enables scaling
 
 
@@ -23,7 +25,7 @@ Components
 ----------
 
 +----------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| pulp server                      | version 2.4 or greater. Includes a web server, mongo database and messaging broker                                                                              |
+| pulp server                      | version 2.5 or greater. Includes a web server, mongo database and messaging broker                                                                              |
 +----------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Pulp admin client                | remote management client, available as a `docker container <https://hub.docker.com/u/pulp/pulp-admin/>`_                                           |
 +----------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -57,7 +59,9 @@ The above figure details the deployment of the Pulp Service architecture.
 +---------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | QPID          | The open-source messaging system that implements Apache Message Queuing Protocol (AMQP). Passes messages from Apache to CeleryBeat and the Pulp Resource Manager.                 |
 +---------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Celery Beat   | Controls the task queue. `Explanation of Celery <https://fedorahosted.org/pulp/wiki/celery>`_                                                                                     |
+| Celery Beat   | Controls the task queue. See `explanation of Celery <https://fedorahosted.org/pulp/wiki/celery>`_                                                                                 |
++---------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Celery worker | Performs tasks in the queue. Multiple workers are spawned to handle load.                                                                                                         |
 +---------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 Deployment Options
@@ -161,7 +165,7 @@ The ``registry-admin.py`` is a prototype script providing docker-focused managem
 Requirements
 ^^^^^^^^^^^^
 
-* access to Pulp server version 2.4 or greater with pulp_docker plugin enabled to support docker content type
+* access to Pulp server version 2.5 or greater with pulp_docker plugin enabled to support docker content type
 * pulp registry credentials
 * running docker service
 * Python 2.7 or greater

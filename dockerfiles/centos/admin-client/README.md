@@ -4,7 +4,7 @@ The pulp-admin client may be run as a container.
 
 ## Setup
 
-1. The `~/.pulp` directory will be mounted when the container is run. Add the pulp server hostname and any other configuration values to `~/.pulp/admin.conf`. If the pulp server  SSL certificate is not CA-signed use `verify_ssl = false`.
+1. The `~/.pulp` directory will be mounted when the container is run. Add the pulp server hostname and any other configuration values to `~/.pulp/admin.conf`. If the pulp server SSL certificate is not CA-signed use `verify_ssl = false`.
 
         [server]
         host = pulp-server.example.com
