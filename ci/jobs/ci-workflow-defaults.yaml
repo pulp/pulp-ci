@@ -1,8 +1,12 @@
 - defaults:
     name: ci-workflow-provision
+    defaults: ci-base-defaults
     description: |
         Managed by Jenkins Job Builder. Do not edit via web.
     concurrent: true
+    logrotate:
+        daysToKeep: 3
+        numToKeep: 10
     scm:
         - git:
             url: 'https://code.engineering.redhat.com/gerrit/ci-ops-central'
@@ -10,11 +14,11 @@
                 - origin/master
             basedir: ci-ops-central
         - git:
-          url: https://github.com/barnabycourt/pulp_packaging.git
-          branches:
-            - origin/barnabycourt-ci
-          basedir: pulp_packaging
-          skip-tag: true
+            url: https://github.com/barnabycourt/pulp_packaging.git
+            branches:
+              - origin/barnabycourt-ci
+            basedir: pulp_packaging
+            skip-tag: true
         - git:
             url: 'https://code.engineering.redhat.com/gerrit/job-runner'
             branches:
@@ -28,9 +32,13 @@
     description: |
         Managed by Jenkins Job Builder. Do not edit via web.
     concurrent: true
+    logrotate:
+        daysToKeep: 3
+        numToKeep: 10
     wrappers:
         - default-ci-workflow-wrappers
         - default-ci-workflow-build-timeout-wrapper
+
 
 - wrapper:
     name: default-ci-workflow-wrappers
@@ -53,7 +61,7 @@
             type: elastic
 
 - publisher:
-    name: default-ci-worflow-publishers
+    name: default-ci-workflow-publishers
     publishers:
           - email-ext:
               recipients: $DEFAULT_RECIPIENTS

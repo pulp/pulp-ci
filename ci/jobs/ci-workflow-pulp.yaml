@@ -14,7 +14,7 @@
         - shell: |
             #!/bin/bash
 
-            cp -R $QEOS_CONFIG_ZIP/config $WORKSPACE/{topology_path}
+            cp -R $QEOS_CONFIG_ZIP/config/* $WORKSPACE/{topology_path}
 
             export JSLAVENAME={jslavename}
             # Provision Jenkins Slave
@@ -62,7 +62,7 @@
             condition: 'UNSTABLE_OR_WORSE'
             property-file: $WORKSPACE/RESOURCES.txt
             fail-on-missing: true
-      - default-ci-worflow-publishers
+      - default-ci-workflow-publishers
 
 
 - job-template:
@@ -78,7 +78,7 @@
         - shell: |
             #!/bin/bash
 
-            cp -R $QEOS_CONFIG_ZIP/config $WORKSPACE/{topology_path}
+            cp -R $QEOS_CONFIG_ZIP/config/* $WORKSPACE/{topology_path}
 
             export TOPOLOGY={topology}
             {testparams}
@@ -102,7 +102,7 @@
       - trigger-parameterized-builds:
           - project: 'ci-{project}-{topology}-3-teardown'
             current-parameters: true
-      - default-ci-worflow-publishers
+      - default-ci-workflow-publishers
 
 - job-template:
     name: 'ci-{project}-{topology}-3-teardown'
@@ -112,7 +112,7 @@
         - shell: |
             #!/bin/bash
 
-            cp -R $QEOS_CONFIG_ZIP/config $WORKSPACE/{topology_path}
+            cp -R $QEOS_CONFIG_ZIP/config/* $WORKSPACE/{topology_path}
 
             export JSLAVETEARDOWN={jslaveteardown}
             # Teardown Jenkins Slave
@@ -148,19 +148,19 @@
     topology_path:
      - pulp_packaging/ci/config
     topology:
-     - integration
+     - integration-rhel6
     ssh_keyfile:
-     - pulp_packaging/ci/config/keys/ci-ops-central
+     - pulp_packaging/ci/config/keys/pulp-ci-key.pem
     testparams:
      - echo "I am a test parameter"
     jobs:
       - ci-workflow-provision-runtest-teardown
     jslavename:
-     - jslave-projex-slave
+     - jslave-integration-slave
     jslave_execs:
      - 10
     jslaveimage:
-     - ci-ops-jslave_rhel-7-0
+     - rhel-7.0-RHEL-7.0-20140127.0_jeos
     jslaveflavor:
      - m1.large
     jslaveusername:
