@@ -1,3 +1,4 @@
+# This is a private clase to configure a pulp node.
 
 class pulp::node::config {
     file { '/etc/pulp/nodes.conf':

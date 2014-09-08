@@ -3,7 +3,7 @@
 class pulp::consumer::service {
 
     service { 'goferd':
-        enable => true,
-        ensure => 'running'
+        ensure => 'running',
+        enable => true
     }
 }

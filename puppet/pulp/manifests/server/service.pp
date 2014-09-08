@@ -3,35 +3,35 @@
 class pulp::server::service {
 
     service { 'httpd':
-        enable => 'true',
-        ensure => 'running'
+        ensure => 'running',
+        enable => true
     }
     service { 'pulp_workers':
-        enable => 'true',
-        ensure => 'running'
+        ensure => 'running',
+        enable => true
     }
 
     if $pulp::server::enable_celerybeat  == true {
         service { 'pulp_celerybeat':
-            enable => 'true',
-            ensure => 'running'
+            ensure => 'running',
+            enable => true
         }
     } else {
         service { 'pulp_celerybeat':
-            enable => 'false',
-            ensure => 'stopped'
+            ensure => 'stopped',
+            enable => false
         }
     }
 
     if $pulp::server::enable_resource_manager == true {
         service { 'pulp_resource_manager':
-            enable => 'true',
-            ensure => 'running'
+            ensure => 'running',
+            enable => true
         }
     } else {
         service { 'pulp_resource_manager':
-            enable => 'false',
-            ensure => 'stopped'
+            ensure => 'stopped',
+            enable => false
         }
     }
 }

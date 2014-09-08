@@ -4,9 +4,9 @@
 class pulp::consumer::install {
     # Not elegant, but Puppet doesn't support yum groups
     exec {
-        "yum install pulp-consumer":
+        'yum install pulp-consumer':
         command => '/usr/bin/yum -y groupinstall "Pulp Consumer"',
-        unless  => '/usr/bin/yum grouplist "Pulp Consumer" | /bin/grep "^Installed groups"',                         
+        unless  => '/usr/bin/yum grouplist "Pulp Consumer" | /bin/grep "^Installed groups"',
         timeout => 600
     }
 }
