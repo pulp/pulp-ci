@@ -29,6 +29,7 @@
                 if [ "$TR_STATUS" != 0 ]; then echo "ERROR: Provisioning\nSTATUS: $TR_STATUS"; exit 1; fi
             fi
 
+            echo "PROVISIONING TEST RESOURCES"
             # Provision Test Resources
             $WORKSPACE/ci-ops-central/bootstrap/provision_resources.sh --site=$SITE --project_defaults={project_defaults} \
             --topology={topology_path}/{topology} --ssh_keyfile={ssh_keyfile} --name={project}
@@ -160,7 +161,7 @@
     jslave_execs:
      - 10
     jslaveimage:
-     - rhel-7.0-RHEL-7.0-20140127.0_jeos
+     - rhel-6.5_jeos
     jslaveflavor:
      - m1.large
     jslaveusername:
