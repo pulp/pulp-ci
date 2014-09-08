@@ -1,9 +1,18 @@
 # Place this file in your /etc/yum.repos.d/ directory
  
+# v2 latest not compatible with pulp_docker plugin
 # Version 2.x Production Releases
 [pulp-v2-stable]
 name=Pulp v2 Production Releases
 baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/stable/2/7Server/$basearch/
+enabled=0
+skip_if_unavailable=1
+gpgcheck=0
+
+# Version 2.4 Production Releases
+[pulp-v24-stable]
+name=Pulp v2 Production Releases
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/stable/2.4/7Server/$basearch/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0

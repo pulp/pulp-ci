@@ -9,20 +9,13 @@ RUN yum update -y && \
     yum groupinstall -y pulp-server && \
     yum clean all
 
-RUN yum install -y git findutils && \
-    yum clean all
+ADD pulp-docker-admin-extensions-0.1.1-1.el7sat.noarch.rpm \
+    pulp-docker-admin-extensions-0.1.1-1.el7sat.noarch.rpm
+ADD pulp-docker-plugins-0.1.1-1.el7sat.noarch.rpm \
+    pulp-docker-plugins-0.1.1-1.el7sat.noarch.rpm
+ADD python-pulp-docker-common-0.1.1-1.el7sat.noarch.rpm \
+    python-pulp-docker-common-0.1.1-1.el7sat.noarch.rpm
+RUN yum install -y python-pulp-docker-common-0.1.1-1.el7sat.noarch.rpm \
+    pulp-docker-admin-extensions-0.1.1-1.el7sat.noarch.rpm \
+    pulp-docker-plugins-0.1.1-1.el7sat.noarch.rpm
 
-# install pulp_docker plugin to manage docker image repositories
-RUN git clone --single-branch https://github.com/pulp/pulp_docker.git /opt/pulp_docker
-
-# FIXME: temporarily revert pulp_docker plugin to previous release
-WORKDIR /opt/pulp_docker
-
-RUN git checkout tags/pulp-docker-0.1.1-1
-
-RUN /opt/pulp_docker/manage_setup_pys.sh develop
-
-RUN python /opt/pulp_docker/pulp-dev.py -I
-
-# HACK: may not be needed
-#RUN touch /etc/pulp/vhosts80/blank.conf

@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# FIXME: temporarily revert plugin to previous release
-cd /opt/pulp_docker && git checkout tags/pulp-docker-0.1.1-1
-
 # create/migrate pulp_database
 runuser apache -s /bin/bash /bin/bash -c "/usr/bin/pulp-manage-db"
 
