@@ -47,8 +47,9 @@
         - workspace-cleanup
         - timestamps
         - credentials-binding:
-            credentials-id: b3e6f337-5d44-4f57-921c-1632d796caa6
-            variable: QEOS_CONFIG_ZIP
+            - zip-file:
+                credentials-id: b3e6f337-5d44-4f57-921c-1632d796caa6
+                variable: QEOS_CONFIG_ZIP
 
 - wrapper:
     name: default-ci-workflow-build-timeout-wrapper
