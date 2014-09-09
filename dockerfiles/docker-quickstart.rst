@@ -175,11 +175,11 @@ Setup
 
 1) Download the script::
 
-        $ curl -O https://raw.githubusercontent.com/pulp/pulp_packaging/master/registry_admin.py
+        $ curl -O https://raw.githubusercontent.com/pulp/pulp_packaging/master/dockerfiles/registry-admin.py
 
 2) Make it executable::
 
-        $ chmod +x registry_admin.py
+        $ chmod +x registry-admin.py
 
 3) Login::
 
@@ -370,7 +370,7 @@ Sync
 
 Repositories may be synced from a remote source. This enables caching of select public content behind a firewall.::
 
-        $ ./registry_admin.py sync rhel7 https://registry.access.redhat.com
+        $ ./registry-admin.py sync rhel7 https://registry.access.redhat.com
         Repository [rhel7] successfully created
 
 This creates a pulp repository named "rhel7" with the rhel7 images from Red Hat.
@@ -394,7 +394,7 @@ Metadata
 
 Repositories and repository groups may have notes or key:value pair metadata added. Here we add an "environment" note to a repository::
 
-        $ ./registry_admin.py  pulp "docker repo update --repo-id rhel7 --note environment=test"
+        $ ./registry-admin.py  pulp "docker repo update --repo-id rhel7 --note environment=test"
         Repository [rhel7] successfully updated
 
 
