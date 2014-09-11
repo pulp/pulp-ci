@@ -1,4 +1,4 @@
-#!/usr/bin/env python -Es
+#!/usr/bin/env python
 
 """Docker-focused client for pulp docker registry
 """
@@ -173,7 +173,7 @@ class Command(object):
         env = Environment()
         conf_dir = env.conf_dir
         uploads_dir = env.uploads_dir
-        return "sudo docker run --rm -t -v %(conf_dir)s:/.pulp -v %(uploads_dir)s:%(uploads_dir)s aweiteka/pulp-admin" % vars()
+        return "sudo docker run --rm -t -v %(conf_dir)s:/.pulp -v %(uploads_dir)s:%(uploads_dir)s pulp/pulp-admin" % vars()
 
     def run(self, stdout=None):
         """Run command"""
