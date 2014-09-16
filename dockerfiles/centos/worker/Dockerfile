@@ -1,11 +1,5 @@
-FROM pulp/centosbase:latest
-MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
-
-# may not need python-pulp-rpm-common
-RUN  yum install -y \
-         python-qpid-qmf python-qpid \
-         python-pulp-rpm-common && \
-     yum clean all
+FROM pulp/base:latest
+MAINTAINER Pulp Team <pulp-list@redhat.com>
 
 ADD run.sh /run.sh
 

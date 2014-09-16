@@ -1,9 +1,9 @@
 FROM centos:centos7
-MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
+MAINTAINER Pulp Team <pulp-list@redhat.com>
 
-RUN yum -y install http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-1.noarch.rpm
+RUN yum -y install http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm
 
-RUN  yum install -y mongodb-server && \
+RUN  yum update -y && yum install -y mongodb-server && \
      yum clean all
 
 RUN  mkdir -p /var/lib/mongodb && \

@@ -1,23 +1,20 @@
 FROM centos:centos7
-MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
+MAINTAINER Pulp Team <pulp-list@redhat.com>
 
 ADD rhel-pulp.repo /etc/yum.repos.d/rhel-pulp.repo
 
-RUN yum -y install http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-1.noarch.rpm
+RUN yum -d 10 -y install http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm
 
-RUN yum update -y && \
+RUN yum update -y && yum install -y python-qpid python-qpid-qmf pulp-docker-plugins findutils nmap-ncat && \
     yum groupinstall -y pulp-server && \
     yum clean all
 
-RUN yum install -y git findutils && \
-    yum clean all
+# A volume will be mounted here, clobbering the base structure. We keep a copy
+# so it can be copied back over top of that volume.
+RUN cp -a /var/lib/pulp /var/local/var_lib_pulp
+RUN cp -a /etc/pulp /var/local/etc_pulp
+RUN cp -a /etc/pki/pulp /var/local/etc_pki_pulp
 
-# install pulp_docker plugin to manage docker image repositories
-RUN git clone --single-branch https://github.com/pulp/pulp_docker.git /opt/pulp_docker
-
-RUN /opt/pulp_docker/manage_setup_pys.sh develop
-
-RUN python /opt/pulp_docker/pulp-dev.py -I
-
-# HACK: may not be needed
-#RUN touch /etc/pulp/vhosts80/blank.conf
+ADD setup.sh /setup.sh
+ADD server.conf /var/local/etc_pulp/server.conf
+RUN chgrp apache /var/local/etc_pulp/server.conf
