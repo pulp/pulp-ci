@@ -1,0 +1,18 @@
+id: pulpdb
+kind: Pod
+apiVersion: v1beta1
+desiredState:
+  manifest:
+     - version: v1beta1
+       id: pulp_db
+       containers:
+         - name: pulp-db,
+           image: markllama/mongod,
+           ports:
+             - containerPort: 27017,
+
+labels:
+  - name: db
+
+
+

@@ -1,0 +1,21 @@
+//
+// Describe a containerized pulp service
+//
+// registry: http://docker-registry.usersys.redhat.com:8080/
+{
+  "id": "pulp-beat",
+  "desiredState": {
+    "manifest": {
+      "version": "0.1",
+      "id": "pulp-beat",
+      "containers": [{
+        "name": "pulp-beat",
+        "image": "docker-registry.usersys.redhat.com/markllama/pulp-beat",
+      }]
+    }
+  },
+  "labels": {
+    "name": "pulp-beat"
+  }
+}
+
