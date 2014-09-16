@@ -1,0 +1,30 @@
+{
+  "id": "pulp-resource-manager",
+  "desiredState": {
+    "manifest": {
+      "version": "v1beta1",
+      "id": "pulp-resource-manager",
+      "containers": [{
+	"name": "pulp-resource-manager",
+	"image": "markllama/pulp-resource-manager",
+	"env": [{
+	  "name": "PULP_SERVER_NAME",
+	  "value": "pulp.example.com"
+	}],
+	"volumeMounts": [{
+	  "name": "devlog",
+	  "readOnly": false,
+	  "mountPath": "/dev/log"
+	}],
+      }],
+      "volumes": [{
+	"name": "devlog",
+	"source": {"hostDir": {"path": "/dev/log"}}
+      }]
+    }
+  },
+  "labels": {
+    "name": "pulp-resource-manager"
+  }
+}
+

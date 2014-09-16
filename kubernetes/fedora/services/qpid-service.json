@@ -1,0 +1,9 @@
+{
+  "id": "msg",
+  "kind": "Service",
+  "apiversion": "v1beta1",
+  "port": 5672,
+  "selector": {
+    "name": "msg"
+  }
+}
