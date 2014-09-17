@@ -1,0 +1,90 @@
+- defaults:
+    name: ci-workflow-provision
+    defaults: ci-base-defaults
+    description: |
+        Managed by Jenkins Job Builder. Do not edit via web.
+    concurrent: true
+    logrotate:
+        daysToKeep: 3
+        numToKeep: 10
+    scm:
+        - git:
+            url: 'https://code.engineering.redhat.com/gerrit/ci-ops-central'
+            branches:
+                - origin/master
+            basedir: ci-ops-central
+        - git:
+            url: https://github.com/pulp/pulp_packaging.git
+            branches:
+              - origin/master
+            basedir: pulp_packaging
+            skip-tag: true
+        - git:
+            url: 'https://code.engineering.redhat.com/gerrit/job-runner'
+            branches:
+                - origin/master
+            basedir: job-runner
+    wrappers:
+        - default-ci-workflow-wrappers
+
+- defaults:
+    name: ci-workflow-runtest
+    description: |
+        Managed by Jenkins Job Builder. Do not edit via web.
+    concurrent: true
+    logrotate:
+        daysToKeep: 3
+        numToKeep: 10
+    wrappers:
+        - default-ci-workflow-wrappers
+        - default-ci-workflow-build-timeout-wrapper
+
+
+- wrapper:
+    name: default-ci-workflow-wrappers
+    wrappers:
+        - ansicolor
+        - workspace-cleanup
+        - timestamps
+        - credentials-binding:
+            - zip-file:
+                credential-id: b3e6f337-5d44-4f57-921c-1632d796caa6
+                variable: QEOS_CONFIG_ZIP
+
+- wrapper:
+    name: default-ci-workflow-build-timeout-wrapper
+    wrappers:
+        - timeout:
+            timeout-var: 'BUILD_TIMEOUT'
+            fail: true
+            elastic-percentage: 150
+            elastic-default-timeout: 90
+            type: elastic
+
+- publisher:
+    name: default-ci-workflow-publishers
+    publishers:
+          - email-ext:
+              recipients: $DEFAULT_RECIPIENTS
+              reply-to: $DEFAULT_REPLYTO
+              content-type: default
+              subject: $DEFAULT_SUBJECT
+              body: $DEFAULT_CONTENT
+              attach-build-log: false
+              always: true
+              unstable: true
+              first-failure: true
+              not-built: true
+              aborted: true
+              regression: true
+              failure: true
+              improvement: true
+              still-failing: true
+              success: true
+              fixed: true
+              still-unstable: true
+              pre-build: true
+              matrix-trigger: only-configurations
+              send-to:
+                - requester
+                - recipients
