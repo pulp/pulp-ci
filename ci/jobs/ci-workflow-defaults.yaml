@@ -14,9 +14,9 @@
                 - origin/master
             basedir: ci-ops-central
         - git:
-            url: https://github.com/barnabycourt/pulp_packaging.git
+            url: https://github.com/pulp/pulp_packaging.git
             branches:
-              - origin/barnabycourt-ci
+              - origin/master
             basedir: pulp_packaging
             skip-tag: true
         - git:
