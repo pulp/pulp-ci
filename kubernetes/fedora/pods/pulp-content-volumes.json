@@ -1,0 +1,21 @@
+{
+  "id": "pulp-content-volumes",
+  "desiredState": {
+    "manifest": {
+      "version": "v1beta1",
+      "id": "pulp-content-volumes",
+      "containers": [{
+	"name": "pulp-content-volumes",
+	"image": "docker-registry.usersys.redhat.com/markllama/pulp-content-volumes",
+	"env": [{
+	  "name": "PULP_SERVER_NAME",
+	  "value": "pulp.example.com"
+	}],
+      }],
+    }
+  },
+  "labels": {
+    "name": "pulp-content-volumes"
+  }
+}
+

@@ -1,0 +1,14 @@
+{
+    "resources": [
+        {
+            "name": "pulp-server-rhel6",
+            "count": "1",
+            "flavor": "m1.medium",
+            "image": "rhel-6.5_jeos",
+            "metadata": {
+                "myvar": "system-type",
+                "message": "pulp-server"
+            }
+        }
+   ]
+}

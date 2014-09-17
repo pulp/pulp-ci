@@ -1,0 +1,27 @@
+{
+  "kind": "Pod",
+  "apiVersion": "v1beta1",
+  "id": "pulpdb",
+  "labels": { "name": "db" },
+  "desiredState": {
+    "manifest": {
+      "version": "v1beta1",
+      "id": "pulp_db",
+      "containers": [{
+        "name": "pulp-db",
+        "image": "markllama/mongodb",
+        "ports": [{ "containerPort": 27017 }],
+	"volumeMounts": [{
+	  "name": "devlog",
+	  "readOnly": false,
+	  "mountPath": "/dev/log"
+	}],
+      }],
+      "volumes": [{
+	"name": "devlog",
+	"source": {"hostDir": {"path": "/dev/log"}}
+      }],
+    }
+  }
+}
+

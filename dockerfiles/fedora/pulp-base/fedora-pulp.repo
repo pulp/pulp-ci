@@ -1,0 +1,8 @@
+
+[pulp-stable-2.4]
+name=Pulp v2 Production Releases
+baseurl=https://repos.fedorapeople.org/repos/pulp/pulp/stable/2.4/fedora-$releasever/$basearch/
+#baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/stable/2/fedora-$releasever/$basearch/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0

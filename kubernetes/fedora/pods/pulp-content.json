@@ -1,0 +1,36 @@
+{
+  "id": "pulp-content",
+  "desiredState": {
+    "manifest": {
+      "version": "v1beta1",
+      "id": "pulp-content",
+      "containers": [
+	{
+	  "name": "pulp-content-volumes",
+	  "image": "docker-registry.usersys.redhat.com/markllama/pulp-content-volumes",
+	  "env": [{
+	    "name": "PULP_SERVER_NAME",
+	    "value": "pulp.example.com"
+	  }],
+	},
+	{
+	  "name": "pulp-worker",
+	  "image": "docker-registry.usersys.redhat.com/markllama/pulp-worker",
+	  "env": [{
+	    "name": "PULP_SERVER_NAME",
+	    "value": "pulp.example.com"
+	  }],
+	},	
+      ],
+      "volumes": [
+	{"name": "varwww", "source": {"emptyDir": true }},
+	{"name": "varlibpulp", "source": {"emptyDir": true}}
+      ]
+    },
+      
+  },
+  "labels": {
+    "name": "pulp-content-volumes"
+  }
+}
+

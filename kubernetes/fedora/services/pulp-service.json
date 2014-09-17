@@ -1,0 +1,68 @@
+{
+  "id": "pulpservice",
+  "kind": "Pod",
+  "apiVersion": "v1beta1",
+  "desiredState": {
+    "manifest": {
+      "version": "v1beta1",
+      "id": "pulpresourcemanager",
+      "containers": [
+        {
+          "name": "pulp-resource-manager",
+          "image": "docker-registry.usersys.redhat.com/markllama/pulp",
+          "command": ["/run.sh", "resource_manager"]
+        },
+        // {
+        //   "name": "pulp-celerybeat",
+        //   "image": "docker-registry.usersys.redhat.com/markllama/pulp",
+        //   "command": ["/run.sh", "beat"]
+        // },
+        // { 
+        //   "name": "pulp-worker-1",
+        //   "image": "docker-registry.usersys.redhat.com/markllama/pulp",
+        //   "command": ["/run.sh", "worker", "1"]
+        // },
+        // { 
+        //   "name": "pulp-worker-2",
+        //   "image": "docker-registry.usersys.redhat.com/markllama/pulp",
+        //   "command": ["/run.sh", "worker", "1"]
+        // },
+        // { 
+        //   "name": "pulp-worker-2",
+        //   "image": "docker-registry.usersys.redhat.com/markllama/pulp",
+        //   "command": ["/run.sh", "worker", "1"]
+        // },
+        // { "name": "apache",
+        //   "image": "docker-registry.usersys.redhat.com/markllama/pulp-apache",
+        //   "ports": [
+        //     {
+        //       "containerPort": 80,
+        //       "hostPort": 80
+        //     },
+        //     {
+        //       "containerPort": 443,
+        //       "hostPort": 443
+        //     }
+        // },
+        // { "name": "crane",
+        // "image": "docker-registry.usersys.redhat.com/markllama/pulp-crane",
+        //    "ports": [
+        //      {
+        //        "containerPort": 80,
+        //        "hostPort": 80
+        //      },
+        //      {
+        //        "containerPort": 443,
+        //        "hostPort": 443
+        //      }
+        // },
+      ]
+    }
+  },
+  "volumes": [
+    "name": "pulpcontent"
+  ],
+  "labels": {
+    "name": "pulp-service"
+  }
+}

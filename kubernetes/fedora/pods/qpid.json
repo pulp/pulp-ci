@@ -1,0 +1,21 @@
+{
+  "id": "pulpmsg",
+  "kind": "Pod",
+  "apiVersion": "v1beta1",
+  "desiredState": {
+    "manifest": {
+      "version": "v1beta1",
+      "id": "pulp_msg",
+      "containers": [{
+        "name": "pulp-msg",
+        "image": "markllama/qpid",
+        "ports": [{
+          "containerPort": 5672,
+        }]
+      }]
+    }
+  },
+  "labels": {
+    "name": "msg"
+  }
+}
