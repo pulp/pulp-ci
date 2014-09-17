@@ -3,7 +3,7 @@
 class pulp::globals (
     $repo_name      = "${::operatingsystem}-pulp",
     $repo_descr     = 'Pulp Stable Repository',
-    $repo_baseurl   = 'http://repos.fedorapeople.org/repos/pulp/pulp/stable/2/',
+    $repo_baseurl   = 'http://repos.fedorapeople.org/repos/pulp/pulp/stable/2',
     $repo_enabled   = '1',
     $repo_gpgcheck  = '0'
     
