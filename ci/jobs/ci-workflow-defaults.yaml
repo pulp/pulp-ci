@@ -3,7 +3,7 @@
     defaults: ci-base-defaults
     description: |
         Managed by Jenkins Job Builder. Do not edit via web.
-    concurrent: true
+    concurrent: false
     logrotate:
         daysToKeep: 3
         numToKeep: 10
@@ -16,7 +16,7 @@
         - git:
             url: https://github.com/pulp/pulp_packaging.git
             branches:
-              - origin/master
+                - origin/master
             basedir: pulp_packaging
             skip-tag: true
         - git:
@@ -31,7 +31,7 @@
     name: ci-workflow-runtest
     description: |
         Managed by Jenkins Job Builder. Do not edit via web.
-    concurrent: true
+    concurrent: false
     logrotate:
         daysToKeep: 3
         numToKeep: 10
@@ -50,11 +50,23 @@
             - zip-file:
                 credential-id: b3e6f337-5d44-4f57-921c-1632d796caa6
                 variable: QEOS_CONFIG_ZIP
+            # This is a zip file with the qeos credentials and my private key.
+            # This was just a temporary thing to make testing easier, and we can
+            # change it.
+            - zip-file:
+                credential-id: 560cbeac-170a-4ebe-bad0-37706307a4c8
+                variable: OS_CONFIG
+            - zip-file:
+                credential-id: 9051da21-c8af-49bd-a0ac-c1dd94a6d216
+                variable: KOJI_CONFIG
+
 
 - wrapper:
     name: default-ci-workflow-build-timeout-wrapper
     wrappers:
         - timeout:
+            # Timeout in minutes
+            timeout: 30
             timeout-var: 'BUILD_TIMEOUT'
             fail: true
             elastic-percentage: 150
