@@ -1,13 +1,14 @@
+# This is a private class to configure Pulp node services.
 
 class pulp::node::service {
-    
+
     service { 'httpd':
-        enable => true,
-        ensure => 'running'
+        ensure => 'running',
+        enable => true
     }
 
     service { 'goferd':
-        enable => true,
-        ensure => 'running'
+        ensure => 'running',
+        enable => true
     }
 }

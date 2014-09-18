@@ -15,7 +15,7 @@ class pulp::server::params inherits pulp::globals {
     $db_replica_set         = undef
 
     # Pulp server
-    $server_name        = $fqdn
+    $server_name        = $::fqdn
     $server_key_url     = undef
     $server_ks_url      = undef
     $default_login      = undef
@@ -34,7 +34,7 @@ class pulp::server::params inherits pulp::globals {
     $user_cert_expiration       = undef
     $consumer_cert_expiration   = undef
     $serial_number_path         = undef
-    
+
     # Consumer history
     $consumer_history_lifetime = undef
 
@@ -76,8 +76,7 @@ class pulp::server::params inherits pulp::globals {
     # Apache configuration settings
     $wsgi_processes = undef
 
-    # Sort out firewall, nss
     if $::operatingsystem == 'RedHat' and $::lsbmajdistrelease == '5' {
-        fail("Pulp servers are not supported on RHEL5.")
+        fail('Pulp servers are not supported on RHEL5.')
     }
 }
