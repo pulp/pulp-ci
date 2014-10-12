@@ -118,7 +118,7 @@ The Pulp server is packaged as a multi-container environment. It is a basic "all
 
 1) Download the installer::
 
-        $ curl -O https://raw.githubusercontent.com/pulp/pulp_packaging/master/centos/install_pulp_server.sh
+        $ curl -O https://raw.githubusercontent.com/pulp/pulp_packaging/master/dockerfiles/centos/install_pulp_server.sh
 
 2) Run the installer::
 
