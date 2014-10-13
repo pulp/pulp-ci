@@ -6,7 +6,7 @@ class pulp::consumer::install {
     exec {
         'yum install pulp-consumer':
         command => '/usr/bin/yum -y groupinstall "Pulp Consumer"',
-        unless  => '/usr/bin/yum grouplist "Pulp Consumer" | /bin/grep "^Installed groups"',
+        unless  => '/usr/bin/yum grouplist "Pulp Consumer" | /bin/grep "^Installed Groups"',
         timeout => 600
     }
 }
