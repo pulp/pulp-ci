@@ -22,7 +22,7 @@ class pulp::admin (
 ) inherits pulp::globals {
     exec { 'yum install pulp-admin':
         command => '/usr/bin/yum -y groupinstall pulp-admin',
-        unless  => '/usr/bin/yum grouplist "Pulp Admin" | /bin/grep "^Installed groups"',
+        unless  => '/usr/bin/yum grouplist "Pulp Admin" | /bin/grep -i "^Installed Groups"',
         timeout => 600,
     } ->
     file { '/etc/pulp/admin/admin.conf':
