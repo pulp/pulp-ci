@@ -1,4 +1,5 @@
-# This is a private class and should be be called directly. Use pulp::consumer instead
+# This is a private class that should not be called directly.
+#Use pulp::consumer instead
 
 class pulp::consumer::config {
     # Write consumer.conf file
