@@ -323,68 +323,68 @@ This setting corresponds to the [authentication] `rsa_key` field.
 ####`consumer_rsa_pub`
 This setting corresponds to the [authentication] `rsa_pub` field.
 
-####`client_role`
+####`consumer_client_role`
 This setting corresponds to the [client] `role` field.
 
-####`extensions_dir`
+####`consumer_extensions_dir`
 This setting corresponds to the [filesystem] `extensions_dir` field.
 
-####`repo_file`
+####`consumer_repo_file`
 This setting corresponds to the [filesystem] `repo_file` field.
 
-####`mirror_list_dir`
+####`consumer_mirror_list_dir`
 This setting corresponds to the [filesystem] `mirror_list_dir` field.
 
-####`gpg_keys_dir`
+####`consumer_gpg_keys_dir`
 This setting corresponds to the [filesystem] `gpg_keys_dir` field.
 
-####`cert_dir`
+####`consumer_cert_dir`
 This setting corresponds to the [filesystem] `cert_dir` field.
 
-####`id_cert_dir`
+####`consumer_id_cert_dir`
 This setting corresponds to the [filesystem] `id_cert_dir` field.
 
-####`id_cert_filename`
+####`consumer_id_cert_filename`
 This setting corresponds to the [filesystem] `id_cert_filename` field.
 
-####`reboot`
+####`consumer_reboot`
 This setting corresponds to the [reboot] `permit` field.
 
-####`reboot_delay`
+####`consumer_reboot_delay`
 This setting corresponds to the [reboot] `delay` field.
 
-####`log_filename`
+####`consumer_log_filename`
 This setting corresponds to the [logging] `log_filename` field.
 
-####`call_log_filename`
+####`consumer_call_log_filename`
 This setting corresponds to the [logging] `call_log_filename` field.
 
-####`poll_frequency`
+####`consumer_poll_frequency`
 This setting corresponds to the [output] `poll_frequency` field.
 
-####`color_output`
+####`consumer_color_output`
 This setting corresponds to the [output] `color_output` field.
 
-####`wrap_terminal`
+####`consumer_wrap_terminal`
 This setting corresponds to the [output] `wrap_terminal` field.
 
-####`wrap_width`
+####`consumer_wrap_width`
 This setting corresponds to the [output] `wrap_width` field.
 
-####`msg_scheme`
+####`consumer_msg_scheme`
 This setting corresponds to the [messaging] `msg_scheme` field.
 
-####`msg_host`
+####`consumer_msg_host`
 This setting corresponds to the [messaging] `msg_host` field.
 
-####`msg_transport`
+####`consumer_msg_transport`
 This setting corresponds to the [messaging] `msg_transport` field.
 
-####`msg_cacert`
+####`consumer_msg_cacert`
 This setting corresponds to the [messaging] `msg_cacert` field.
 
-####`msg_clientcert`
+####`consumer_msg_clientcert`
 This setting corresponds to the [messaging] `msg_clientcert` field.
 
-####`profile_minutes`
+####`consumer_profile_minutes`
 This setting corresponds to the [profile] `profile_minutes` field.

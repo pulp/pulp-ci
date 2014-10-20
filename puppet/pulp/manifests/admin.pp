@@ -5,7 +5,7 @@ class pulp::admin (
     $pulp_port                  = 443,
     $pulp_api_prefix            = '/pulp/api',
     $pulp_rsa_pub               = '/etc/pki/pub/admin/server/rsa_pub.key',
-    $verify_ssl                 = 'true',
+    $verify_ssl                 = true,
     $ca_path                    = '/etc/pki/tls/certs/ca-bundle.crt',
     $upload_chunk_size          = '1048576',
     $client_role                = 'admin',
@@ -16,8 +16,8 @@ class pulp::admin (
     $log_filename               = '~/.pulp/admin.log',
     $call_log_filename          = undef, #Default = '~/.pulp/server_calls.log'
     $poll_frequency             = '1',
-    $color_output               = 'true',
-    $wrap_terminal              = 'false',
+    $color_output               = true,
+    $wrap_terminal              = false,
     $wrap_width                 = 80,
 ) inherits pulp::globals {
     exec { 'yum install pulp-admin':
