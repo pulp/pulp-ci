@@ -3,39 +3,55 @@
 # the README.md
 
 class pulp::consumer (
-    $pulp_server_ca_cert        = $pulp::consumer::params::pulp_server_ca_cert,
-    $pulp_server                = $pulp::consumer::params::pulp_server,
-    $pulp_port                  = $pulp::consumer::params::pulp_port,
-    $pulp_api_prefix            = $pulp::consumer::params::pulp_api_prefix,
-    $pulp_rsa_pub               = $pulp::consumer::params::pulp_rsa_pub,
-    $verify_ssl                 = $pulp::consumer::params::verify_ssl,
-    $ca_path                    = $pulp::consumer::params::ca_path,
-    $consumer_rsa_key           = $pulp::consumer::params::consumer_rsa_key,
-    $consumer_rsa_pub           = $pulp::consumer::params::consumer_rsa_pub,
-    $consumer_client_role       = $pulp::consumer::params::consumer_client_role,
-    $consumer_extensions_dir    = $pulp::consumer::params::consumer_extensions_dir,
-    $consumer_repo_file         = $pulp::consumer::params::consumer_repo_file,
-    $consumer_mirror_list_dir   = $pulp::consumer::params::consumer_mirror_list_dir,
-    $consumer_gpg_keys_dir      = $pulp::consumer::params::consumer_gpg_keys_dir,
-    $consumer_cert_dir          = $pulp::consumer::params::consumer_cert_dir,
-    $consumer_id_cert_dir       = $pulp::consumer::params::consumer_id_cert_dir,
-    $consumer_id_cert_filename  = $pulp::consumer::params::consumer_id_cert_filename,
-    $consumer_reboot            = $pulp::consumer::params::consumer_reboot,
-    $consumer_reboot_delay      = $pulp::consumer::params::consumer_reboot_delay,
-    $consumer_log_filename      = $pulp::consumer::params::consumer_log_filename,
-    $consumer_call_log_filename = $pulp::consumer::params::consumer_call_log_filename,
-    $consumer_poll_freq         = $pulp::consumer::params::consumer_poll_freq,
-    $consumer_color_output      = $pulp::consumer::params::consumer_color_output,
-    $consumer_wrap_terminal     = $pulp::consumer::params::consumer_wrap_width,
-    $consumer_wrap_width        = $pulp::consumer::params::consumer_wrap_width,
-    $consumer_msg_scheme        = $pulp::consumer::params::consumer_msg_scheme,
-    $consumer_msg_host          = $pulp::consumer::params::consumer_msg_host,
-    $consumer_msg_port          = $pulp::consumer::params::consumer_msg_port,
-    $consumer_msg_transport     = $pulp::consumer::params::consumer_msg_transport,
-    $consumer_msg_cacert        = $pulp::consumer::params::consumer_msg_cacert,
-    $consumer_msg_clientcert    = $pulp::consumer::params::consumer_msg_clientcert,
-    $consumer_profile_minutes   = $pulp::consumer::params::consumer_profile_minutes,
-) inherits pulp::consumer::params {
+    $pulp_server_ca_cert = undef,
+    $pulp_server        = $::pulp_server,
+    $pulp_port          = 443,
+    $pulp_api_prefix    = '/pulp/api',
+    $pulp_rsa_pub       = '/etc/pki/pulp/consumer/server/rsa_pub.key',
+    $verify_ssl         = 'True',
+    $ca_path            = '/etc/pki/tls/certs/',
+
+    # Authentication
+    $consumer_rsa_key = '/etc/pki/pulp/consumer/rsa.key',
+    $consumer_rsa_pub = '/etc/pki/pulp/consumer/rsa_pub.key',
+
+    # Client role
+    $client_role = 'consumer',
+
+    # Filesystem
+    $extensions_dir    = '/usr/lib/pulp/consumer/extensions',
+    $repo_file         = '/etc/yum.repos.d/pulp.repo',
+    $mirror_list_dir   = '/etc/yum.repos.d',
+    $gpg_keys_dir      = '/etc/pki/pulp-gpg-keys',
+    $cert_dir          = '/etc/pki/pulp/client/repo',
+    $id_cert_dir       = '/etc/pki/pulp/consumer/',
+    $id_cert_filename  = 'consumer-cert.pem',
+
+    # Reboot
+    $reboot       = false,
+    $reboot_delay = 3,
+
+    # Logging
+    $log_filename      = '~/.pulp/consumer.log',
+    $call_log_filename = undef,
+
+    # Output
+    $poll_frequency = 1,
+    $color_output   = true,
+    $wrap_terminal  = false,
+    $wrap_width     = 80,
+
+    # Messaging
+    $msg_scheme        = 'tcp',
+    $msg_host          = $::msg_host,
+    $msg_port          = 5672,
+    $msg_transport     = rabbitmq,
+    $msg_cacert        = undef,
+    $msg_clientcert    = undef,
+
+    # Profile
+    $profile_minutes = 240,
+) inherits pulp::globals {
     # Install, configure, and start the necessary services
     anchor { 'pulp::consumer::start': } ->
     class { 'pulp::consumer::install': } ->
