@@ -259,9 +259,15 @@ task_result_history: <%= @reap_task_result_history -%>
 #     authentication
 
 [oauth]
+<% if @oauth_enabled -%>
 enabled: <%= @oauth_enabled %>
-oauth_key: <%= @oauth_key %>
-oauth_secret: <%= @oauth_secret %>
+<% end -%>
+<% if @oauth_key -%>
+key: <%= @oauth_key %>
+<% end -%>
+<% if @oauth_secret -%>
+secret: <%= @oauth_secret %>
+<% end -%>
 
 
 # = Messaging =
