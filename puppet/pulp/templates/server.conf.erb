@@ -130,23 +130,23 @@ rsa_pub: <%= @auth_rsa_pub %>
 # consumer_cert_expiration: number of days a consumer certificate is valid
 
 [security]
-<% if @sec_cacert -%>
-cacert: <%= @sec_cacert %>
+<% if @cacert -%>
+cacert: <%= @cacert %>
 <% end -%>
-<% if @sec_cakey -%>
-cakey: <%= @sec_cakey %>
+<% if @cakey -%>
+cakey: <%= @cakey %>
 <% end -%>
-<% if @sec_ssl_ca_cert -%>
-ssl_ca_certificate: <%= @sec_ssl_ca_cert %>
+<% if @ssl_ca_cert -%>
+ssl_ca_certificate: <%= @ssl_ca_cert %>
 <% end -%>
-<% if @sec_user_cert_expiration -%>
-user_cert_expiration: <%= @sec_user_cert_expiration %>
+<% if @user_cert_expiration -%>
+user_cert_expiration: <%= @user_cert_expiration %>
 <% end -%>
-<% if @src_sec_consumer_cert_expiration -%>
-consumer_cert_expiration: <%= @src_sec_consumer_cert_expiration %>
+<% if @consumer_cert_expiration -%>
+consumer_cert_expiration: <%= @consumer_cert_expiration %>
 <% end -%>
-<% if @sec_serial_number_path -%>
-serial_number_path: <%= @sec_serial_number_path %>
+<% if @serial_number_path -%>
+serial_number_path: <%= @serial_number_path %>
 <% end -%>
 
 
