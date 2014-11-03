@@ -6,10 +6,14 @@ class pulp::consumer (
     $pulp_server_ca_cert = undef,
     $pulp_server        = $::pulp_server,
     $pulp_port          = 443,
+    $pulp_login         = undef,
+    $pulp_password      = undef,
     $pulp_api_prefix    = '/pulp/api',
     $pulp_rsa_pub       = '/etc/pki/pulp/consumer/server/rsa_pub.key',
     $verify_ssl         = 'True',
     $ca_path            = '/etc/pki/tls/certs/',
+    $id                 = $::hostname,
+    $display_name       = $::fqdn,
 
     # Authentication
     $consumer_rsa_key = '/etc/pki/pulp/consumer/rsa.key',
@@ -57,6 +61,7 @@ class pulp::consumer (
     class { 'pulp::consumer::install': } ->
     class { 'pulp::consumer::config': } ->
     class { 'pulp::consumer::service': } ->
+    class { 'pulp::consumer::register': } ->
     anchor { 'pulp::consumer::end': }
 }
 

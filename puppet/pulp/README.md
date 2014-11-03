@@ -303,6 +303,12 @@ This setting corresponds to the [server] `host` field.
 ####`pulp_port`
 This setting corresponds to the [server] `port` field.
 
+####`pulp_login`
+This setting corresponds to the login user for the pulp server
+
+####`pulp_password`
+This setting corresponds to the login password for the pulp server
+
 ####`pulp_api_prefix`
 This setting corresponds to the [server] `api_prefix` field.
 
@@ -316,6 +322,12 @@ is `True`.
 ####`ca_path`
 This setting corresponds to the [server] `ca_path` field. The default
 is `/etc/pki/tls/certs/`
+
+####`id`
+This setting corresponds to the id of the consumer. The default is its hostname.
+
+####`display_name`
+This setting corresponds to the name of the consumer. The default is its fqdn.
 
 ####`consumer_rsa_key`
 This setting corresponds to the [authentication] `rsa_key` field.
