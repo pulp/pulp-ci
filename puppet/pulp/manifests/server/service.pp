@@ -7,14 +7,18 @@ class pulp::server::service {
         enable => true
     }
     service { 'pulp_workers':
-        ensure => 'running',
-        enable => true
+        ensure      => 'running',
+        enable      => true,
+        hasrestart  => true,
+        subscribe   => File['/etc/pulp/server.conf']
     }
 
     if $pulp::server::enable_celerybeat  == true {
         service { 'pulp_celerybeat':
-            ensure => 'running',
-            enable => true
+            ensure      => 'running',
+            enable      => true,
+            hasrestart  => true,
+            subscribe   => File['/etc/pulp/server.conf']
         }
     } else {
         service { 'pulp_celerybeat':
@@ -25,8 +29,10 @@ class pulp::server::service {
 
     if $pulp::server::enable_resource_manager == true {
         service { 'pulp_resource_manager':
-            ensure => 'running',
-            enable => true
+            ensure      => 'running',
+            enable      => true,
+            hasrestart  => true,
+            subscribe   => File['/etc/pulp/server.conf']
         }
     } else {
         service { 'pulp_resource_manager':
