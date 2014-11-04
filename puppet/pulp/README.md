@@ -6,6 +6,7 @@
 2. [Module Description](#module-description)
 3. [Setup](#setup)
 4. [Usage](#usage)
+4. [Examples](#examples)
 5. [Reference](#reference)
 
 ## Overview
@@ -71,6 +72,65 @@ class {'::pulp::globals':
     repo_baseurl => 'http://repos.fedorapeople.org/repos/pulp/pulp/beta/2.4/',
 } ->
 class {'::pulp::server': }
+```
+
+## Examples
+
+Dependencies:
+
+* puppetlabs/apache
+* puppetlabs/mongodb
+* example42/yum
+* dprince/qpid
+
+This is real world working node configuration example:
+```
+  # dependency classes
+  class {'::yum':
+    defaultrepo => false
+  }
+  class { '::qpid::server':
+    config_file => '/etc/qpid/qpidd.conf'
+  }
+  class { '::mongodb::server': }
+  class { '::apache': }
+
+  # pulp classes
+  class { '::pulp::globals':
+    repo_priority => 15
+  }
+  class { '::pulp::server':
+    db_name      => 'pulp_database',
+    db_seed_list => 'localhost:27017',
+  }
+  class { '::pulp::admin':
+    verify_ssl => false
+  }
+  class { '::pulp::consumer':
+    verify_ssl => false
+  }
+
+  # dependency packages
+  package { [ 'qpid-cpp-server-store', 'python-qpid', 'python-qpid-qmf' ]:
+    ensure => 'installed',
+  }
+
+  # ordering
+  anchor { 'profile::pulp::server::start': }
+  anchor { 'profile::pulp::server::end': }
+
+  Anchor['profile::pulp::server::start']->
+  Class['::yum::repo::epel']->
+  Class['::qpid::server']->
+  Class['::mongodb::server']->
+  Class['::pulp::globals']->
+  Package['qpid-cpp-server-store'] -> Package['python-qpid'] -> Package['python-qpid-qmf'] ->
+  Class['::pulp::server']->
+  Class['::apache::service']->
+  Class['::pulp::admin']->
+  Class['::pulp::consumer']->
+  Anchor['profile::pulp::server::end']
+
 ```
 
 ## Reference
