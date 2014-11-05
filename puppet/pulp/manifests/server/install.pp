@@ -15,4 +15,6 @@ class pulp::server::install {
             ensure => 'installed'
         }
     }
+
+    Exec['yum install pulp-server'] -> Package['pulp-nodes-parent']
 }
