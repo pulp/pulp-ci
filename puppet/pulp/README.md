@@ -136,6 +136,7 @@ class pulp::repo::puppet_forge {
           'note2' => 'value 2'
     }
 } 
+```
 
 Now you can have all the repos set up on a node with
 
