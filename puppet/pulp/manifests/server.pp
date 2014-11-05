@@ -33,6 +33,9 @@ class pulp::server (
     $user_cert_expiration       = undef,
     $consumer_cert_expiration   = undef,
     $serial_number_path         = undef,
+    $oauth_enabled              = undef,
+    $oauth_key                  = undef,
+    $oauth_secret               = undef,
 
     # Consumer history
     $consumer_history_lifetime = undef,
@@ -79,7 +82,7 @@ class pulp::server (
     if $::operatingsystem == 'RedHat' and $::lsbmajdistrelease == '5' {
         fail('Pulp servers are not supported on RHEL5.')
     }
-   
+
     # Install, configure, and start the necessary services
     anchor { 'pulp::server::start': }->
     class { 'pulp::server::install': }->
