@@ -2,10 +2,6 @@
 
 class pulp::server::service {
 
-    service { 'httpd':
-        ensure => 'running',
-        enable => true
-    }
     service { 'pulp_workers':
         ensure => 'running',
         enable => true

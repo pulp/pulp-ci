@@ -29,7 +29,7 @@ and a Qpid module of your choice to set up these dependencies as necessary.
  * Pulp yum repository.
  * Pulp packages.
  * Pulp configuration files.
- * The httpd, pulp_workers, pulp_celerybeat, and pulp_resource_manager services
+ * The pulp_workers, pulp_celerybeat and pulp_resource_manager services
 
 ###Beginning with Pulp
 
