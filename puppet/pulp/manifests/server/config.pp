@@ -8,8 +8,9 @@ class pulp::server::config {
         group   => 'apache',
         mode    => '0640'
     } -> exec { 'Migrate DB':
-        command => '/usr/bin/pulp-manage-db',
-        user    => 'apache'
+        command => '/usr/bin/pulp-manage-db && touch /var/lib/pulp/.puppet-pulp-manage-db',
+        user    => 'apache',
+        creates => '/var/lib/pulp/.puppet-pulp-manage-db'
     }
 
     # Configure Apache
