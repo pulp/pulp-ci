@@ -478,7 +478,7 @@ This setting corresponds to the [messaging] `msg_clientcert` field.
 ####`profile_minutes`
 This setting corresponds to the [profile] `profile_minutes` field.
 
-####`pulp_repo`
+####pulp_repo
 These settings apply to pulp_repo types and hosted repos.
 
 ####`id`
