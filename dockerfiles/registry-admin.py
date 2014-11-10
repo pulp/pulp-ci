@@ -4,11 +4,13 @@
 """
 
 import argparse
-import os.path
-import subprocess
+import errno
 import getpass
+import os.path
 import re
+import subprocess
 import tempfile
+
 
 class Environment(object):
     """Host environment"""
@@ -26,10 +28,25 @@ class Environment(object):
         if not self.is_configured:
             print "Registry config file not found. Setting up environment."
             self.create_config()
-        self.set_context()
+        if self.selinux_enabled:
+            self.set_context()
         if not self.is_loggedin:
             print "User certificate not found."
             self.login_user()
+
+    @property
+    def selinux_enabled(self):
+        """is selinux either enforcing or permissive?"""
+        try:
+            out, err = subprocess.Popen(['getenforce'], stdout=subprocess.PIPE).communicate()
+            if out.strip().lower() == 'disabled':
+                return False
+        except OSError, e:
+            if e.errno == eerno.ENOENT:
+                # command "getenforce" was not found, so we probably don't have selinux enabled.
+                return False
+            raise
+        return True
 
     @property
     def is_configured(self):
@@ -86,6 +103,7 @@ class Environment(object):
         c = Command(cmd)
         c.run(stdout=True)
 
+
 class Pulp(object):
     """Construct pulp commands"""
     def __init__(self, args):
@@ -98,8 +116,8 @@ class Pulp(object):
             git_str = ""
             if self.args.git_url:
                 git_str = "--note git-url=%s" % self.args.git_url
-            cmd.append("docker repo create --repo-registry-id %s --repo-id %s %s" %
-                        (self.args.repo, self.repo_name(self.args.repo), git_str))
+            cmd.append("docker repo create --repo-registry-id %s --repo-id %s %s --redirect-url http://pulpapi/pulp/docker/%s/" %
+                        (self.args.repo, self.repo_name(self.args.repo), git_str), self.repo_name(self.args.repo))
         elif self.args.mode == "sync":
             cmd.append("docker repo create --repo-registry-id %s --repo-id %s --feed %s --upstream-name %s --validate True" %
                         (self.args.repo, self.repo_name(self.args.repo), self.args.sync_url, self.args.repo))
@@ -108,8 +126,8 @@ class Pulp(object):
                         self.repo_name(self.args.repo))
         elif self.args.mode == "push":
             temp_file = self.docker_save()
-            cmd.append("docker repo create --repo-registry-id %s --repo-id %s" %
-                        (self.args.repo, self.repo_name(self.args.repo)))
+            cmd.append("docker repo create --repo-registry-id %s --repo-id %s --redirect-url http://pulpapi/pulp/docker/%s/" %
+                        (self.args.repo, self.repo_name(self.args.repo), self.repo_name(self.args.repo)))
             cmd.append("docker repo uploads upload --repo-id %s --file %s" %
                         (self.repo_name(self.args.repo), temp_file))
             cmd.append("docker repo publish run --repo-id %s" %
@@ -138,7 +156,6 @@ class Pulp(object):
         print "Saving docker file as %s" % temp_file.name
         subprocess.call(cmd.split())
         return temp_file.name
-
 
     def execute(self):
         """Send parsed command to command class"""
@@ -173,7 +190,7 @@ class Command(object):
         env = Environment()
         conf_dir = env.conf_dir
         uploads_dir = env.uploads_dir
-        return "sudo docker run --rm -t -v %(conf_dir)s:/.pulp -v %(uploads_dir)s:%(uploads_dir)s pulp/pulp-admin" % vars()
+        return "sudo docker run --rm --link pulpapi:pulpapi -t -v %(conf_dir)s:/root/.pulp -v %(uploads_dir)s:%(uploads_dir)s pulp/admin-client pulp-admin" % vars()
 
     def run(self, stdout=None):
         """Run command"""
@@ -238,6 +255,7 @@ def parse_args():
                        metavar='"PULP COMMAND FOO BAR"',
                        help='pulp-admin command string')
     return parser.parse_args()
+
 
 def main():
     """Entrypoint for script"""

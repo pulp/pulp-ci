@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 case $1 in
   worker)
@@ -20,7 +20,7 @@ case $1 in
     fi
     ;;
   beat)
-    exec runuser apache -s /bin/bash -c "/usr/bin/celery beat --workdir=/var/lib/pulp/celery --scheduler=pulp.server.async.scheduler.Scheduler -f /var/log/pulp/celerybeat.log -l INFO"
+    exec runuser apache -s /bin/bash -c "/usr/bin/celery beat --workdir /var/lib/pulp/celery/ -A pulp.server.async.app -f /var/log/pulp/celerybeat.log -l INFO"
     ;;
   resource_manager)
     exec runuser apache \
@@ -38,5 +38,4 @@ case $1 in
     exit 1
     ;;
 esac
-
 

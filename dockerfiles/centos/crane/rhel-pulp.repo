@@ -11,16 +11,16 @@ gpgcheck=0
 # Version 2.x Beta Builds
 [pulp-v2-beta]
 name=Pulp v2 Beta Builds
-baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/beta/2.4/7Server/$basearch/
-enabled=0
-skip_if_unavailable=1
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/beta/2.5/7Server/$basearch/
+enabled=1
+skip_if_unavailable=0
 gpgcheck=0
 
 # Weekly Testing Builds
 [pulp-v2-testing]
 name=Pulp v2 Testing Builds
 baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/testing/2.5/7Server/$basearch/
-enabled=1
+enabled=0
 skip_if_unavailable=1
 gpgcheck=0
 

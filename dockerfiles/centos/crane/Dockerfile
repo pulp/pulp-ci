@@ -8,7 +8,7 @@ MAINTAINER Pulp Team <pulp-list@redhat.com>
 
 ADD rhel-pulp.repo /etc/yum.repos.d/rhel-pulp.repo
 
-RUN yum -y install http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-1.noarch.rpm
+RUN yum -y install http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm
 
 RUN yum update -y && yum install -y python-crane httpd mod_wsgi && yum clean all
 

@@ -116,43 +116,45 @@ Installation
 
 The Pulp server is packaged as a multi-container environment. It is a basic "all-in-one" deployment that requires the containers to run on the same VM or bare metal host.
 
-1) Download the installer::
+#. Download the start script::
 
-        $ curl -O https://raw.githubusercontent.com/pulp/pulp_packaging/master/centos/install_pulp_server.sh
+        $ curl -O https://raw.githubusercontent.com/pulp/pulp_packaging/master/centos/start.sh
 
-2) Run the installer::
+#. Run the start script. As the only argument, provide a full path to a
+   directory where pulp can store its files. This will include config files and
+   all of pulp's data.
 
-        $ sudo bash install_pulp_server.sh
+        $ sudo ./start.sh /path/to/lots/of/storage/
 
-3) View the images::
+#. Make any configuration changes within the path specified in the previous step,
+   then stop and re-start the containers. See below for directions on stopping
+   the containers.
 
-        $ sudo docker images
+#. View the images::
 
-        REPOSITORY            TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
-        pulp/qpid             latest              d75a98181734        26 hours ago        405.3 MB
-        pulp/worker           latest              98faa0164705        26 hours ago        680.8 MB
-        pulp/mongodb          latest              e9531cd0f08b        27 hours ago        293.1 MB
-        pulp/data             latest              2c439bcd2872        27 hours ago        604.8 MB
-        pulp/apache           latest              367c5f169f1d        28 hours ago        683 MB
-        pulp/centosbase       latest              e2889f4dca42        4 days ago          604.8 MB
-        pulp/crane-allinone   latest              b81c502f6703        11 days ago         442.7 MB
+    $ sudo docker images| grep pulp
+    pulp/crane-allinone       latest              4044c4e2fe2c        24 hours ago        309.7 MB
+    pulp/crane                latest              e449467fa7c4        24 hours ago        309.7 MB
+    pulp/worker               latest              d71d7f259d7f        24 hours ago        389.2 MB
+    pulp/qpid                 latest              2902c9f82b14        24 hours ago        384.9 MB
+    pulp/mongodb              latest              59e52ff43e67        24 hours ago        276.3 MB
+    pulp/admin-client         latest              f3ae924b300c        24 hours ago        256.8 MB
+    pulp/apache               latest              91480aecb981        24 hours ago        389.2 MB
+    pulp/base                 latest              4f6a02d14c0d        24 hours ago        389.2 MB
+    pulp/autotest             latest              718cf6ba577c        24 hours ago        671.7 MB
 
-4) View all running and stopped containers::
+#. View all running containers::
 
-        $ sudo docker ps -a
-
-        CONTAINER ID        IMAGE                        COMMAND                CREATED             STATUS         PORTS                           NAMES
-        38feb71f7691        pulp/crane-allinone:latest   /usr/sbin/httpd -D F   34 seconds ago      Up 33 seconds  0.0.0.0:80->80/tcp              pulp-crane              
-        9b025d72ee94        pulp/worker:latest           /run.sh resource_man   34 seconds ago      Up 34 seconds                                  pulp-resource_manager   
-        b7c3f923a0f7        pulp/worker:latest           /run.sh beat           35 seconds ago      Up 34 seconds                                  pulp-beat               
-        298ade639edc        pulp/worker:latest           /run.sh worker 2       35 seconds ago      Up 35 seconds                                  pulp-worker2            
-        ccab34aa1d61        pulp/worker:latest           /run.sh worker 1       36 seconds ago      Up 35 seconds                                  pulp-worker1            
-        b89ae83e1cbe        pulp/apache:latest           /run.sh                38 seconds ago      Up 36 seconds  0.0.0.0:443->443/tcp, 0.0.0.0:8080->80/tcp   pulp-apache             
-        77fcc121b0a5        pulp/qpid:latest             qpidd -t --auth=no     39 seconds ago      Up 38 seconds  0.0.0.0:5672->5672/tcp          pulp-qpid               
-        80d80664abfd        pulp/mongodb:latest          /usr/bin/mongod --qu   39 seconds ago      Up 39 seconds  0.0.0.0:27017->27017/tcp        pulp-mongodb            
-        137fbd04c73a        pulp/data:latest             /run.sh                40 seconds ago      Exited (0) 39 seconds ago                      pulp-data       
-
-.. note:: The pulp-data container exits immediately. It is a dependent volume container referenced by ``--volumes-from``. It persists as a shared volume and cannot be removed while dependent containers are running.
+    $ sudo docker ps
+    CONTAINER ID        IMAGE                        COMMAND                CREATED             STATUS              PORTS                                      NAMES
+    57ac643d8991        pulp/crane-allinone:latest   "/usr/sbin/httpd -D    6 minutes ago       Up 6 minutes        0.0.0.0:5000->80/tcp                       crane                                                                         
+    6eef7dbaddaa        pulp/apache:latest           "/run.sh"              6 minutes ago       Up 6 minutes        0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp   pulpapi                                                                       
+    4a44dd49b1ec        pulp/worker:latest           "/run.sh worker 2"     6 minutes ago       Up 6 minutes                                                   worker2                                                                       
+    3ccd9a72dbfb        pulp/worker:latest           "/run.sh worker 1"     6 minutes ago       Up 6 minutes                                                   worker1                                                                       
+    7c6e5fb0e89e        pulp/worker:latest           "/run.sh resource_ma   6 minutes ago       Up 6 minutes                                                   resource_manager                                                              
+    984546f26868        pulp/worker:latest           "/run.sh beat"         6 minutes ago       Up 6 minutes                                                   beat                                                                          
+    9b60e58824d2        pulp/qpid:latest             "qpidd -t --auth=no"   6 minutes ago       Up 6 minutes        0.0.0.0:5672->5672/tcp                     beat/qpid,pulpapi/qpid,qpid,resource_manager/qpid,worker1/qpid,worker2/qpid   
+    f2bc5e4b59d7        pulp/mongodb:latest          "/usr/bin/mongod --q   7 minutes ago       Up 6 minutes        0.0.0.0:27017->27017/tcp                   beat/db,db,pulpapi/db,resource_manager/db,worker1/db,worker2/db
 
 
 Remote Client
@@ -423,10 +425,13 @@ Apache and the Pulp Celery workers log to journald. From the container host use 
 
         $ sudo journalctl SYSLOG_IDENTIFIER=pulp + SYSLOG_IDENTIFIER=celery + SYSLOG_IDENTIFIER=httpd
 
-Uninstall
-^^^^^^^^^
+Stop
+^^^^
 
-The pulp server containers may be stopped and removed using the install script. This will not remove the images.::
+#. Download the stop script::
 
-        $ sudo bash install_pulp_server.sh uninstall
+        $ curl -O https://raw.githubusercontent.com/pulp/pulp_packaging/master/centos/stop.sh
+
+#. Run the stop script, which will stop and remove all pulp containers. It will
+   not stop or remove the db or qpid containers.
 
