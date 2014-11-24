@@ -118,7 +118,7 @@ The Pulp server is packaged as a multi-container environment. It is a basic "all
 
 #. Download the start script::
 
-        $ curl -O https://raw.githubusercontent.com/pulp/pulp_packaging/master/centos/start.sh
+        $ curl -O https://raw.githubusercontent.com/pulp/pulp_packaging/master/dockerfiles/centos/start.sh
 
 #. Run the start script. As the only argument, provide a full path to a
    directory where pulp can store its files. This will include config files and
@@ -430,7 +430,7 @@ Stop
 
 #. Download the stop script::
 
-        $ curl -O https://raw.githubusercontent.com/pulp/pulp_packaging/master/centos/stop.sh
+        $ curl -O https://raw.githubusercontent.com/pulp/pulp_packaging/master/dockerfiles/centos/stop.sh
 
 #. Run the stop script, which will stop and remove all pulp containers. It will
    not stop or remove the db or qpid containers.
