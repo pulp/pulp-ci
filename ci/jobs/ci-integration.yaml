@@ -17,7 +17,10 @@
           type: label-expression
           name: node-type
           values:
-            - f20-unittest
+            - fc20-np
+    # enable nodepool monitoring
+    properties:
+      - zeromq-event
     parameters:
         - string:
             name: REPO
@@ -31,9 +34,6 @@
                 The git branch to use in the integration test suite, e.g. 'master', 'pulp-2.4', etc
         - matrix-combinations:
             name: MATRIX_AXIS
-#    wrappers:
-#      - jclouds:
-#          single-use: True
     builders:
       - shell: |
             #!/bin/bash
@@ -55,9 +55,7 @@
 
             cd $WORKSPACE
             git clone https://github.com/pulp/pulp_packaging.git
-            cd pulp_packaging
-            git checkout master
-            cd ci/deploy
+            cd pulp_packaging/ci/deploy
 
             # Run the tests against the specified platform
 
@@ -77,3 +75,6 @@
             python cleanup-environment.py --config test.json
 
             cp -r test $WORKSPACE/test
+    publishers:
+      # Take the node offline so that another build doesn't pile on
+      - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"

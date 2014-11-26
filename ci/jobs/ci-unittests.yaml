@@ -54,39 +54,25 @@
             # sed -i 's|Defaults[ ]*requiretty|#Defaults    requiretty|g' /etc/sudoers
             set -x
 
-            sudo yum -y install python-ctypes python-argparse
-            if [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION" == "5" ]; then
-              sudo pip install mock
-              sudo yum -y install python-nose
-              sudo pip install coverage==3.7
-              sudo pip install nosexcover==1.0.8
-            else
-              sudo yum -y install  tito rpm-build python-mock  python-paste  python-lxml
-              sudo pip install coverage nose nosexcover flake8 --upgrade
-            fi
-
-            # TODO Enable testing/beta
             if [ "$OS_NAME" == "RedHatEnterpriseServer" ]; then
                 sudo curl -o /etc/yum.repos.d/rhel-pulp.repo https://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo
+                sudo yum-config-manager --enable pulp-2.6-testing
             else
                 sudo curl -o /etc/yum.repos.d/fedora-pulp.repo https://repos.fedorapeople.org/repos/pulp/pulp/fedora-pulp.repo
+                sudo yum-config-manager --enable pulp-2.6-testing
+            fi
+            # only do this until we have a full deps build
+            if [ "$OS_VERSION" != "5" ]; then
+              sudo yum -y install python-mongoengine
             fi
 
             sudo yum -y install @pulp-server @pulp-admin @pulp-consumer
             sudo yum -y remove pulp-\* python-pulp\* gofer python-gofer
 
-            service mongod restart
-            service qpidd restart
-
             rm -rf $WORKSPACE/test
             mkdir -p $WORKSPACE/test
             rm -rf $WORKSPACE/coverage
             mkdir -p $WORKSPACE/coverage
-
-            # sudo useradd pulp
-            # sudo chown -R pulp:pulp $WORKSPACE
-
-            # bash $WORKSPACE/pulp/playpen/ci/setup.sh
 
             OS_NAME=$(lsb_release -si)
             OS_VERSION=$(lsb_release -sr | cut -f1 -d.)
@@ -126,11 +112,14 @@
           type: label-expression
           name: node-type
           values:
-            - f19-unittest
-            - f20-unittest
-            - rhel5-unittest
-            - rhel6-unittest
-            - rhel7-unittest
+            - f19-np
+            - f20-np
+            - rhel5-np
+            - rhel6-np
+            - rhel7-np
+    # enable nodepool monitoring
+    properties:
+      - zeromq-event
     parameters:
         - pulp-unittest-parameters
     scm:
@@ -152,9 +141,7 @@
                 - origin/$PULP_GIT_GOFER_BRANCH
             basedir: gofer
             skip-tag: True
-    wrappers:
-      - jclouds:
-          single-use: True
+
     builders:
         - setup-pulp
         - shell: |
@@ -184,7 +171,8 @@
       - archive:
           artifacts: 'test/**'
           allow-empty: 'true'
-
+      # Take the node offline so that another build doesn't pile on
+      - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
 
 - job-template:
     name: 'unittest-{pulp_plugin}'
@@ -223,9 +211,6 @@
                 - origin/$PULP_GIT_GOFER_BRANCH
             basedir: gofer
             skip-tag: True
-    wrappers:
-      - jclouds:
-          single-use: True
     builders:
         - setup-pulp
         - shell: |
@@ -278,32 +263,32 @@
      - pulp_rpm:
         min_coverage: 87.0
         unittest_platforms:
-        - f19-unittest
-        - f20-unittest
-        - rhel5-unittest
-        - rhel6-unittest
-        - rhel7-unittest
+        - f19-np
+        - f20-np
+        - rhel5-np
+        - rhel6-np
+        - rhel7-np
      - pulp_puppet:
         min_coverage: 80.0
         unittest_platforms:
-        - f19-unittest
-        - f20-unittest
-        - rhel5-unittest
-        - rhel6-unittest
-        - rhel7-unittest
+        - f19-np
+        - f20-np
+        - rhel5-np
+        - rhel6-np
+        - rhel7-np
      - pulp_docker:
         min_coverage: 100.0
         unittest_platforms:
-        - f19-unittest
-        - f20-unittest
-        - rhel6-unittest
-        - rhel7-unittest
+        - f19-np
+        - f20-np
+        - rhel6-np
+        - rhel7-np
      - pulp_ostree:
         min_coverage: 100.0
         unittest_platforms:
-        - f19-unittest
-        - f20-unittest
-        - rhel6-unittest
-        - rhel7-unittest
+        - f19-np
+        - f20-np
+        - rhel6-np
+        - rhel7-np
 #     - pulp_deb:
 #        min_coverage: 100.0
