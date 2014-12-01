@@ -1,0 +1,14 @@
+{
+    "resources": [
+        {
+            "name": "pulp-server-rhel7",
+            "count": "1",
+            "flavor": "m1.medium",
+            "image": "rhel-x86_64-7.0-20140915-jenkins",
+            "metadata": {
+                "myvar": "system-type",
+                "message": "pulp-server"
+            }
+        }
+   ]
+}

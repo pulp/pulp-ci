@@ -1,0 +1,14 @@
+{
+    "resources": [
+        {
+            "name": "unittest-rhel6",
+            "count": "1",
+            "flavor": "m1.small",
+            "image": "RHEL-x86_64-6.5-20140307-SNAP",
+            "metadata": {
+                "myvar": "system-type",
+                "message": "pulp-server"
+            }
+        }
+   ]
+}

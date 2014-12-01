@@ -1,0 +1,14 @@
+{
+    "resources": [
+        {
+            "name": "unittest-fc20",
+            "count": "1",
+            "flavor": "m1.small",
+            "image": "Fedora-x86_64-20-20140407-SNAP",
+            "metadata": {
+                "myvar": "system-type",
+                "message": "pulp-server"
+            }
+        }
+   ]
+}
