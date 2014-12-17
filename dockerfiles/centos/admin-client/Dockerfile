@@ -3,7 +3,7 @@ MAINTAINER Pulp Team <pulp-list@redhat.com>
 
 ADD rhel-pulp.repo /etc/yum.repos.d/rhel-pulp.repo
 
-RUN yum -d 10 -y install http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm
+RUN yum install -y epel-release && yum clean all
 
 RUN  yum update -y && \
      yum groupinstall -y \
