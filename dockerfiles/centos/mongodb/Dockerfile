@@ -1,7 +1,7 @@
 FROM centos:centos7
 MAINTAINER Pulp Team <pulp-list@redhat.com>
 
-RUN yum -y install http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm
+RUN yum install -y epel-release && yum clean all
 
 RUN  yum update -y && yum install -y mongodb-server && \
      yum clean all
