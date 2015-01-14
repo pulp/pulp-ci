@@ -32,4 +32,4 @@ pulp_tester:
     os_name: Fedora
     os_version: 20
     tests_destination: test/fc20.xml
-    test_suite_branch: pulp-2.4
+    test_suite_branch: pulp-2.5
