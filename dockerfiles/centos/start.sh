@@ -35,8 +35,6 @@ ensure_dir /var/log/httpd-crane
 ensure_dir /etc/pulp
 ensure_dir /etc/pki/pulp
 ensure_dir /var/lib/pulp
-# the apache user needs write access to this directory
-chown apache $DROOT/var/lib/pulp
 
 LINKS="--link qpid:qpid --link db:db"
 MOUNTS="-v $DROOT/etc/pulp:/etc/pulp -v $DROOT/etc/pki/pulp:/etc/pki/pulp -v $DROOT/var/lib/pulp:/var/lib/pulp -v /dev/log:/dev/log"
