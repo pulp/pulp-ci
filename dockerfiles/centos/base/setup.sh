@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# the apache user needs write access to this directory
+chown apache $DROOT/var/lib/pulp
+
 # copy the basic directory structure if it isn't already present.
 if [ ! -e /var/lib/pulp/content ]
 then
