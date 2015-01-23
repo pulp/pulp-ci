@@ -15,6 +15,10 @@ class jenkins_node_setup(){
     key => 'AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==',
     target => '/home/jenkins/.ssh/known_hosts',
     type => 'ssh-rsa'
+  } ->
+  file { '/home/jenkins/.ssh/known_hosts':
+    owner => jenkins,
+    group => jenkins,
   }
 
   exec { 'configure_sudo_tty_access':
@@ -30,6 +34,7 @@ class jenkins_node_setup(){
     priority => 10,
     content  => "%jenkins ALL=(ALL) NOPASSWD: ALL"
   }
+
 }
 
 include jenkins_node_setup

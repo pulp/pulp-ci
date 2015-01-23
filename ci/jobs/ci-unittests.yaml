@@ -63,7 +63,13 @@
             fi
             # only do this until we have a full deps build
             if [ "$OS_VERSION" != "5" ]; then
-              sudo yum -y install python-mongoengine
+              sudo yum -y install python-mongoengine qpid-tools
+              # If rhel6
+              if [ "$OS_VERSION" == "6" ]; then
+                sudo yum -y install Django14
+              else
+                sudo yum -y install python-django
+              fi
             fi
 
             sudo yum -y install @pulp-server @pulp-admin @pulp-consumer
@@ -105,6 +111,7 @@
 
 - job:
     name: 'unittest-pulp'
+    defaults: ci-workflow-runtest
     project-type: matrix
     node: 'master'
     axes:
@@ -112,8 +119,8 @@
           type: label-expression
           name: node-type
           values:
-            - f19-np
             - f20-np
+            - f21-np
             - rhel5-np
             - rhel6-np
             - rhel7-np
@@ -176,6 +183,7 @@
 
 - job-template:
     name: 'unittest-{pulp_plugin}'
+    defaults: ci-workflow-runtest
     project-type: matrix
     node: 'master'
     axes:
@@ -263,31 +271,31 @@
      - pulp_rpm:
         min_coverage: 87.0
         unittest_platforms:
-        - f19-np
         - f20-np
+        - f21-np
         - rhel5-np
         - rhel6-np
         - rhel7-np
      - pulp_puppet:
         min_coverage: 80.0
         unittest_platforms:
-        - f19-np
         - f20-np
+        - f21-np
         - rhel5-np
         - rhel6-np
         - rhel7-np
      - pulp_docker:
         min_coverage: 100.0
         unittest_platforms:
-        - f19-np
         - f20-np
+        - f21-np
         - rhel6-np
         - rhel7-np
      - pulp_ostree:
         min_coverage: 100.0
         unittest_platforms:
-        - f19-np
         - f20-np
+        - f21-np
         - rhel6-np
         - rhel7-np
 #     - pulp_deb:

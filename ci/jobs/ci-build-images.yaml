@@ -3,7 +3,7 @@
 - job:
     name: 'build-images'
     defaults: ci-workflow-runtest
-    node: 'rhel7-unittest'
+    node: 'rhel7-np'
     parameters:
         - string:
             name: PULP_GIT_PULP_BRANCH

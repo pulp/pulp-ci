@@ -5,7 +5,6 @@ class pulp_unittest {
 
     $base_packages = [
         'redhat-lsb',
-        'java-1.7.0-openjdk-devel',
         'wget'
     ]
     package { $base_packages:
@@ -21,7 +20,6 @@ class pulp_unittest {
             'ruby-devel',
             'rubygems',
             'puppet',
-            'pymongo',
             'python-qpid',
             'python-setuptools',
             'python-nose',

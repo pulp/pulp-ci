@@ -1,150 +1,40 @@
-# This set of Jenkins jobs creates an OpenStack instance, installs all the
+# This set of Jenkins jobs creates an installs all the
 # necessary tools to build a repository with the help of Koji, then publishes
 # the results.
 
 - job-template:
-    name: 'build-repo-1-provision'
-    defaults: ci-workflow-provision
-    node: master
-    parameters:
-        - choice:
-            name: SITE
-            choices:
-              - qeos
-              - os1
-            description: |
-              Site where to provision resources
-        - choice:
-            name: KOJI_BUILD_STREAM
-            choices:
-              - testing
-              - beta
-              - stable
-            description: |
-              Build stream to use for the builder.py script
-        - choice:
-            name: KOJI_BUILD_VERSION
-            choices:
-              - '2.5'
-              - '2.4'
-            description: |
-              Build version to use in the builder.py script
-        - string:
-            name: PULP_GIT_PULP_BRANCH
-            default: master
-            description: |
-                The branch of the Pulp platform to run the unit tests against.
-        - string:
-            name: PULP_GIT_PULP_RPM_BRANCH
-            default: master
-            description: |
-                The branch of the Pulp RPM plugin to run the unit tests against.
-        - string:
-            name: PULP_GIT_PULP_PUPPET_BRANCH
-            default: master
-            description: |
-                The branch of the Pulp Puppet plugin to run the unit tests against.
-        - string:
-            name: PULP_GIT_NECTAR_BRANCH
-            default: master
-            description: |
-                The branch of nectar to run the unit tests against.
-        - string:
-            name: PULP_GIT_GOFER_BRANCH
-            default: master
-            description: |
-                The branch of gofer to run the unit tests against.
-
-    builders:
-        - shell: |
-            #!/bin/bash
-            cp -v -R $QEOS_CONFIG_ZIP/config/* $WORKSPACE/{jslavename_path}
-            export JSLAVENAME={jslavename}
-
-            # Provision Jenkins Slave
-            if [ "$JSLAVENAME" != "master" ]
-            then
-                $WORKSPACE/ci-ops-central/bootstrap/provision_jslave.sh --project_defaults={project_defaults} \
-                --ssh_keyfile={ssh_keyfile} --jslavename={jslavename} --site=$SITE --jslave_execs={jslave_execs} \
-                --jslavecreate --resources_file={jslavename}.json --topology={topology_path}/{topology}
-
-                TR_STATUS=$?
-                if [ "$TR_STATUS" != 0 ]; then echo "ERROR: Provisioning\nSTATUS: $TR_STATUS"; exit 1; fi
-            fi
-
-            files=$(ls $WORKSPACE/*.slave 2>/dev/null)
-            if [ -e "$files" ]
-            then
-                cat $WORKSPACE/*.slave >> $WORKSPACE/RESOURCES.txt
-            fi
-
-        - inject:
-            properties-file: $WORKSPACE/RESOURCES.txt
-
-    publishers:
-      - archive:
-          artifacts: '*.txt, *.json'
-          allow-empty: 'true'
-      - trigger-parameterized-builds:
-          - project: 'build-repo-2-run'
-            current-parameters: true
-            condition: 'SUCCESS'
-            property-file: $WORKSPACE/RESOURCES.txt
-            fail-on-missing: true
-          - project: 'build-repo-3-teardown'
-            current-parameters: true
-            condition: 'UNSTABLE_OR_WORSE'
-            property-file: $WORKSPACE/RESOURCES.txt
-            fail-on-missing: true
-      - default-ci-workflow-publishers
-
-
-- job-template:
-    name: 'build-repo-2-run'
+    name: 'build-automation-repo-{release_config}'
     defaults: ci-workflow-runtest
-    node: '{jslavename}'
+    node: 'rhel7-np'
     scm:
         - git:
-            url: 'https://github.com/pulp/pulp.git'
+            url: 'https://github.com/pulp/pulp_packaging.git'
             branches:
-                - origin/$PULP_GIT_PULP_BRANCH
-            basedir: pulp
-        - git:
-            url: 'https://github.com/pulp/pulp_rpm.git'
-            branches:
-                - origin/$PULP_GIT_PULP_RPM_BRANCH
-            basedir: pulp_rpm
-        - git:
-            url: 'https://github.com/pulp/pulp_puppet.git'
-            branches:
-                - origin/$PULP_GIT_PULP_PUPPET_BRANCH
-            basedir: pulp_puppet
-        - git:
-            url: 'https://github.com/pulp/nectar.git'
-            branches:
-                - origin/$PULP_GIT_NECTAR_BRANCH
-            basedir: nectar
-        - git:
-            url: 'https://github.com/jortel/gofer.git'
-            branches:
-                - origin/$PULP_GIT_GOFER_BRANCH
-            basedir: gofer
+                - origin/master
+            basedir: pulp_packaging
+            skip-tag: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: "@midnight"
+    parameters:
+      - bool:
+          name: RELEASE_BUILD
+          default: false
+          description: "Perform a release build, defaults to 'false'."
+
     wrappers:
+        - ssh-agent-credentials:
+            user: '044c0620-d67e-4172-9814-dc49e443e7b6'
+        - credentials-binding:
+            - zip-file:
+                credential-id: 9051da21-c8af-49bd-a0ac-c1dd94a6d216
+                variable: KOJI_CONFIG
         - timeout:
             # Timeout in minutes
-            timeout: 60
+            timeout: 240
             timeout-var: 'BUILD_TIMEOUT'
             fail: true
-            elastic-percentage: 200
-            elastic-default-timeout: 90
-            type: elastic
-
     builders:
-        - copyartifact:
-            project: 'build-repo-1-provision'
-            filter: '*.txt, *.json'
-            target: $WORKSPACE
-
         - shell: |
             #!/bin/bash
             set -x
@@ -152,11 +42,8 @@
             cd $WORKSPACE
 
             # Consider adding this as an option
-            export REPO_HOST="pulp-infra@satellite6.lab.eng.rdu2.redhat.com"
-            export REPO_LOCATION="/var/www/html/pulp/$KOJI_BUILD_STREAM/$KOJI_BUILD_VERSION/"
-            export BUILD_HISTORY=30
 
-            yum -y install rpm-build redhat-rpm-config koji mock rpmdevtools rpmlint tito createrepo
+            sudo yum -y install rpm-build redhat-rpm-config koji mock rpmdevtools rpmlint tito createrepo
 
             # Confirm koji is accessible
             cp -v -R $KOJI_CONFIG/.koji ~/
@@ -164,90 +51,22 @@
             cp -v $KOJI_CONFIG/.katello-ca.cert ~/
             cp -v $KOJI_CONFIG/satellite6_rsa .
             koji moshimoshi
+            cd pulp_packaging/ci
+            export PYTHONUNBUFFERED=1
 
-            EXIT=0
-            python pulp/rel-eng/builder.py $KOJI_BUILD_VERSION $KOJI_BUILD_STREAM --scratch || EXIT=$?
-
-            mv mash $BUILD_ID
-            ssh -i satellite6_rsa $REPO_HOST mkdir -p $REPO_LOCATION
-            scp -i satellite6_rsa -r $BUILD_ID $REPO_HOST:$REPO_LOCATION || EXIT=$?
-
-            # Run a script to link the new build and remove old builds
-            ssh -i satellite6_rsa $REPO_HOST << ENDSSH
-            cd $REPO_LOCATION
-
-            # Link the latest build
-            rm latest
-            ln -s $BUILD_ID latest
-
-            # Remove all but the last BUILD_HISTORY builds
-            if [ "$(ls -l | wc -l)" -ge "$BUILD_HISTORY" ] ; then
-                     (ls -t | head -n $BUILD_HISTORY ; ls) | sort | uniq -u | xargs rm -r
-            fi
-            ENDSSH
-
-            exit $EXIT
-
-    publishers:
-      # Tear down all the instances that were provisioned
-      - trigger-parameterized-builds:
-          - project: 'build-repo-3-teardown'
-            current-parameters: true
-#      - default-ci-workflow-publishers
-
-- job-template:
-    name: 'build-repo-3-teardown'
-    defaults: ci-workflow-provision
-    node: master
-    builders:
-        - shell: |
-            #!/bin/bash
-            export JSLAVETEARDOWN={jslaveteardown}
-
-            # Give it some time for the previous jenkins job to clean up so the teardown will complete properly
-            sleep 15
-
-            cp -v -R $QEOS_CONFIG_ZIP/config/* $WORKSPACE/{jslavename_path}
-
-            if [ "$JSLAVETEARDOWN" == "True" ]
-            then
-              $WORKSPACE/ci-ops-central/bootstrap/teardown_jslave.sh --site=$SITE --project_defaults={project_defaults} \
-              --jslavename=ci-ops-central/project/config/aio_jslave --jslavename=$JSLAVENAME \
-              --jslaveusername={jslaveusername} --ssh_keyfile={ssh_keyfile} --jslaveip=$JSLAVEIP --jslaveteardown \
-              --topology={topology_path}/{topology}
-
-              TR_STATUS=$?
-              if [ "$TR_STATUS" != 0 ]; then echo "ERROR: Teardown\nSTATUS: $TR_STATUS"; exit 1; fi
+            if [ $RELEASE_BUILD == true ] ; then
+              ./build-all.py {release_config} --release
+            else
+              ./build-all.py {release_config}
             fi
 
-- job-group:
-    name: 'build-repo-jobs'
-    jobs:
-      - 'build-repo-1-provision'
-      - 'build-repo-2-run'
-      - 'build-repo-3-teardown'
 
 - project:
-    name: build-repo
-    project:
-     - workflow
-    project_defaults:
-     - pulp_packaging/ci/config/project_defaults
-    jslavename_path:
-     - pulp_packaging/ci/config
-    ssh_keyfile:
-     - pulp_packaging/ci/config/keys/pulp-ci-key.pem
+    name: automation-repos
     jobs:
-     - 'build-repo-jobs'
-    topology_path:
-     - pulp_packaging/ci/config
-    topology:
-        - unittest-rhel6
-    jslavename:
-     - 'build-repo-slave'
-    jslave_execs:
-     - 2
-    jslaveusername:
-     - root
-    jslaveteardown:
-     - True
+     - 'build-automation-repo-{release_config}'
+    release_config:
+     - 2.6-dev
+     - 2.6-testing
+# wait to get the koji target set up before building master
+#     - master

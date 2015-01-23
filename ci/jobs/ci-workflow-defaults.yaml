@@ -1,40 +1,11 @@
 - defaults:
-    name: ci-workflow-provision
-    defaults: ci-base-defaults
-    description: |
-        Managed by Jenkins Job Builder. Do not edit via web.
-    concurrent: false
-    logrotate:
-        daysToKeep: 3
-        numToKeep: 10
-    scm:
-        - git:
-            url: 'https://code.engineering.redhat.com/gerrit/ci-ops-central'
-            branches:
-                - origin/master
-            basedir: ci-ops-central
-        - git:
-            url: https://github.com/pulp/pulp_packaging.git
-            branches:
-                - origin/master
-            basedir: pulp_packaging
-            skip-tag: true
-        - git:
-            url: 'https://code.engineering.redhat.com/gerrit/job-runner'
-            branches:
-                - origin/master
-            basedir: job-runner
-    wrappers:
-        - default-ci-workflow-wrappers
-
-- defaults:
     name: ci-workflow-runtest
     description: |
         Managed by Jenkins Job Builder. Do not edit via web.
     concurrent: false
     logrotate:
-        daysToKeep: 3
-        numToKeep: 10
+        daysToKeep: 10
+        numToKeep: 30
     wrappers:
         - default-ci-workflow-wrappers
         - default-ci-workflow-build-timeout-wrapper
@@ -44,7 +15,6 @@
     name: default-ci-workflow-wrappers
     wrappers:
         - ansicolor
-        - workspace-cleanup
         - timestamps
         - credentials-binding:
             - zip-file:
@@ -69,9 +39,6 @@
             timeout: 30
             timeout-var: 'BUILD_TIMEOUT'
             fail: true
-            elastic-percentage: 150
-            elastic-default-timeout: 90
-            type: elastic
 
 - publisher:
     name: default-ci-workflow-publishers
