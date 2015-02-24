@@ -59,6 +59,9 @@
             else
               ./build-all.py {release_config}
             fi
+    publishers:
+      # Take the node offline so that another build doesn't pile on
+      - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
 
 
 - project:
