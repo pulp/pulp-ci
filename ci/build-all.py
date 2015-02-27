@@ -21,6 +21,8 @@ parser.add_argument("--disable-push", action="store_true", default=False,
 parser.add_argument("--rpmsig", help="The rpm signature hash to use when downloading RPMs. "
                                      "Using this flag will cause a failure if any component "
                                      "has not been built already.")
+parser.add_argument("--show-versions", action="store_true", default=False,
+                    help="Exit after printing out the required versions of each package.")
 
 opts = parser.parse_args()
 release_build = opts.release
@@ -88,13 +90,17 @@ for component in get_components(configuration):
 for spec in builder.find_all_spec_files(working_dir):
     spec_nvr = builder.get_package_nvr_from_spec(spec)
     package_dists = builder.get_dists_for_spec(spec)
+    print "%s %s" % (spec_nvr, package_dists)
     for package_nevra in builder.get_package_nevra(spec_nvr, package_dists):
-        print package_nevra
         info = builder.mysession.getBuild(package_nevra)
         if info:
             download_list.extend(builder.get_urls_for_build(builder.mysession, package_nevra))
         else:
             build_list.append((spec, builder.get_dist_from_koji_build_name(package_nevra)))
+
+# If we are doing a version check, exit here
+if opts.show_versions:
+    sys.exit(0)
 
 # Sort the list by platform so it is easier to spot missing things in the output
 download_list = sorted(download_list, key=lambda download: download[1])

@@ -11,6 +11,8 @@ import sys
 import argparse
 from lib import builder
 
+VERSION_REGEX = "(\s*)(version)(\s*)(=)(\s*)(['\"])(.*)(['\"])(.*)"
+RELEASE_REGEX = "(\s*)(release)(\s*)(=)(\s*)(['\"])(.*)(['\"])(.*)"
 
 def parse_version(version):
     version_components = version.split('.')
@@ -61,7 +63,7 @@ def set_spec_version(spec_file, version, release):
     print "updated %s to %s-%s" % (spec_file, version, release)
 
 
-def replace_version(line, new_version):
+def replace_version(line, new_version, regex):
     """
     COPIED FROM TITO
 
@@ -73,8 +75,7 @@ def replace_version(line, new_version):
     whitespace, and optional use of single/double quotes.
     """
     # Mmmmm pretty regex!
-    ver_regex = re.compile("(\s*)(version)(\s*)(=)(\s*)(['\"])(.*)(['\"])(.*)",
-            re.IGNORECASE)
+    ver_regex = re.compile(regex, re.IGNORECASE)
     m = ver_regex.match(line)
     if m:
         result_tuple = list(m.group(1, 2, 3, 4, 5, 6))
@@ -86,31 +87,20 @@ def replace_version(line, new_version):
         return line
 
 
-def set_setup_py_version(root_directory, new_version):
-    for setup_file in builder.find_all_setup_py_files(root_directory):
-        print "updated %s: to %s" % (setup_file, new_version)
-        f = open(setup_file, 'r')
-        buf = StringIO()
-        for line in f.readlines():
-            buf.write(replace_version(line, new_version))
-        f.close()
-
-        # Write out the new setup.py file contents:
-        f = open(setup_file, 'w')
-        f.write(buf.getvalue())
-        f.close()
-        buf.close()
-
+def find_replace_in_files(root_directory, file_mask, new_version, version_regex):
     # We also have to check the __init__.py files since that is the more pythonic place to put it
-    for init_py in builder.find_files_matching_pattern(root_directory, '__init__.py'):
-        f = open(init_py, 'r')
+    for file_name in builder.find_files_matching_pattern(root_directory, file_mask):
+        f = open(file_name, 'r')
         buf = StringIO()
         for line in f.readlines():
-            buf.write(replace_version(line, new_version))
+            new_line = replace_version(line, new_version, version_regex)
+            if new_line != line:
+                print "updated %s: to %s" % (file_name, new_version)
+            buf.write(new_line)
         f.close()
 
         # Write out the new setup.py file contents:
-        f = open(init_py, 'w')
+        f = open(file_name, 'w')
         f.write(buf.getvalue())
         f.close()
         buf.close()
@@ -223,12 +213,13 @@ elif stage == 'rc':
 if minor_release is not None:
     python_version += '%s' % minor_release
 
-# print "%s-%s" % (calculated_version, calculated_release)
-
-# print python_version
-
-
-# Update the spec file
+# Update the all the files
 set_spec_version(spec_file, calculated_version, calculated_release)
-# find all the setup.py files and update them as well
-set_setup_py_version(os.path.dirname(spec_file), python_version)
+find_replace_in_files(os.path.dirname(spec_file), 'setup.py', python_version, VERSION_REGEX)
+find_replace_in_files(os.path.dirname(spec_file), '__init__.py', python_version, VERSION_REGEX)
+
+conf_version = "%s.%s" % (major_version, minor_version)
+find_replace_in_files(os.path.dirname(spec_file), 'conf.py', conf_version, VERSION_REGEX)
+find_replace_in_files(os.path.dirname(spec_file), 'conf.py', python_version, RELEASE_REGEX)
+
+
