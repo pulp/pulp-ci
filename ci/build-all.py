@@ -38,7 +38,7 @@ def load_config(config_name):
     config_file = os.path.join(os.path.dirname(__file__),
                                'config', 'releases', '%s.yaml' % config_name)
     if not os.path.exists(config_file):
-        print "Error: %s not found. "
+        print "Error: %s not found. " % config_file
         sys.exit(1)
     with open(config_file, 'r') as config_handle:
         config = yaml.safe_load(config_handle)

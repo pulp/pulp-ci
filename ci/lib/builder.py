@@ -280,7 +280,8 @@ def get_urls_for_build(koji_session, build_name, rpmsig=None):
             'release': rpm_listing['release']
         }
         koji_dir = "/packages/%(name)s/%(version)s/%(release)s/" % package_info
-        if rpmsig:
+        # We don't honor rpmsig for el5 since the signature can't be parsed by el5 systems
+        if rpmsig and rpm_listing['release'].find('.el5') != -1:
             koji_dir = koji_dir + "data/signed/%s/" % rpmsig
 
         fname = koji.pathinfo.rpm(rpm_listing)
