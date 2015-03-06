@@ -7,7 +7,8 @@ class pulp_server {
 
     $qpid_packages = [
         'python-qpid-qmf',
-        'qpid-cpp-server-store'
+        'qpid-cpp-server-store',
+        'python-gofer-qpid'
     ]
 
     # The Pulp repo provides qpid for RHEL6, so we have to install it now

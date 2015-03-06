@@ -21,7 +21,8 @@ parser.add_argument('--no-teardown', action='store_true', help='do not clean up 
 args = parser.parse_args()
 
 print 'Parsing and validating the configuration file(s)...'
-config = config_utils.parse_and_validate_config_files(args.config, args.repo, args.test_branch)
+config = config_utils.parse_and_validate_config_files(args.config, args.repo,
+                                                      override_test_branch=args.test_branch)
 os1_auth = config.get(config_utils.CONFIG_OS1_CREDENTIALS, {})
 print 'Done. \n\nAuthenticating with OS1...'
 os1 = os1_utils.OS1Manager(**os1_auth)
@@ -37,13 +38,13 @@ try:
     print 'Deploying instances...'
     os1.build_instances(config, instance_metadata)
 
-    print 'Applying role-specific configurations...'
-    setup_utils.configure_instances(config)
-
-    # Save the configuration for later cleanup
+    # Save the configuration for cleanup immediately since the configuration can fail
     if args.deployed_config is None:
         args.deployed_config = args.config[0] + '.json'
     config_utils.save_config(config, args.deployed_config)
+
+    print 'Applying role-specific configurations...'
+    setup_utils.configure_instances(config)
 
     # Print out machine information and configuration
     print '\nThe following instances have been built:'

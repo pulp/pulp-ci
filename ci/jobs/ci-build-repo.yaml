@@ -15,7 +15,7 @@
             skip-tag: true
             wipe-workspace: false
     triggers:
-        - pollscm: "@midnight"
+        - timed: "@midnight"
     parameters:
       - bool:
           name: RELEASE_BUILD
