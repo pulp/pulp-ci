@@ -227,10 +227,10 @@ def get_built_dependencies(dependency_dir):
     deps_file = os.path.join(dependency_dir, 'external_deps.json')
     if os.path.exists(deps_file):
         with open(deps_file) as file_handle:
-            deps_dict = json.load(file_handle)
-            for (dep, data) in deps_dict.iteritems():
-                for dist in data[u'platform']:
-                    package_nevra = "%s-%s.%s" % (dep, data[u'version'], dist)
+            deps_list = json.load(file_handle)
+            for dep_info in deps_list:
+                for dist in dep_info[u'platform']:
+                    package_nevra = "%s-%s.%s" % (dep_info['name'], dep_info[u'version'], dist)
                     yield package_nevra
 
 
