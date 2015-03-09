@@ -1,13 +1,14 @@
 # ==============
-# Default Values
+# Default Values 
 # ==============
 repository: https://repos.fedorapeople.org/repos/pulp/pulp/stable/2/
 keypair_name: pulp-ci-key
 private_key: id_rsa
-distribution: el6.6
-flavor: m1.small
+distribution: rhel6-np
+flavor: m1.medium
 security_group: pulp
 cloud_config: cloud-init/cloud-config.txt
+username: jenkins
 
 
 # ==================
@@ -26,10 +27,9 @@ structure:
 # Integration Test Instance
 # =========================
 pulp_tester:
-    distribution: fc20
+    distribution: f20-np
     instance_name: jenkins-el6-pulp-tester
     role: tester
     os_name: Fedora
     os_version: 20
     tests_destination: test/el6.xml
-    test_suite_branch: pulp-2.4

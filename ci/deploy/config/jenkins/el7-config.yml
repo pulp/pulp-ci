@@ -4,10 +4,11 @@
 repository: https://repos.fedorapeople.org/repos/pulp/pulp/stable/2/
 keypair_name: pulp-ci-key
 private_key: id_rsa
-distribution: el7
-flavor: m1.small
+distribution: rhel7-np
+flavor: m1.medium
 security_group: pulp
 cloud_config: cloud-init/cloud-config.txt
+username: jenkins
 
 
 # ==================
@@ -26,10 +27,9 @@ structure:
 # Integration Test Instance
 # =========================
 pulp_tester:
-    distribution: fc20
-    instance_name: jenkins-el7-pulp-tester
+    distribution: f20-np
+    instance_name: jenkins-f20-pulp-tester
     role: tester
     os_name: Fedora
     os_version: 20
     tests_destination: test/el7.xml
-    test_suite_branch: pulp-2.5

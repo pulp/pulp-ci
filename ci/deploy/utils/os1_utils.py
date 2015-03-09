@@ -22,6 +22,7 @@ META_OS_VERSION_KEYWOR = 'os_version'
 META_IMAGE_STATUS_KEYWORD = 'image_status'
 META_IMAGE_STATUS_VANILLA = 'vanilla'
 META_IMAGE_STATUS_PREPPED = 'pulpy'
+META_OWNER_ID = 'owner_id'
 
 
 class OS1Manager:
@@ -79,33 +80,21 @@ class OS1Manager:
         glance_url = self.keystone.service_catalog.get_endpoints()['image'][0]['adminURL']
         self.glance = glance_client.Client('1', endpoint=glance_url, token=self.keystone.auth_token)
 
-    def get_pulp_images(self, image_status=META_IMAGE_STATUS_PREPPED, distributions=None):
+    def get_pulp_images(self):
         """
-        Return all images containing the META_DISTRIBUTION_KEYWORD and that
-        have the META_IMAGE_STATUS_KEYWORD set to the given value. By default
-        this returns all images that have pulp's dependencies installed.
+        Return all active images owned by the current tenant.
 
-        :param image_status:    The type of image to retrieve (options are vanilla and pulpy)
-        :type  image_status:    str
-        :param distributions:   A list of platforms to retrieve. By default all images with the
-                                META_DISTRIBUTION_KEYWORD in their metadata are returned.
-        :type  distributions:   list of str
-
-        :return: a list of of novaclient.images.Image
-        :rtype:  list
+        :return: a list of novaclient.images.Image
+        :rtype:  list of novaclient.images.Image
         """
         self._authenticate()
         image_list = self.nova.images.list()
         pulp_images = []
         for image in image_list:
             meta = image.metadata
-            # Add any image to the list if it matches the given image status
-            if META_IMAGE_STATUS_KEYWORD in meta and meta[META_IMAGE_STATUS_KEYWORD] == image_status:
+            if META_OWNER_ID in meta and meta[META_OWNER_ID] == self.tenant_id and \
+                    image.status == 'ACTIVE':
                 pulp_images.append(image)
-
-        # Filter out unwanted platforms
-        if distributions:
-            pulp_images = [img for img in pulp_images if img.metadata[META_DISTRIBUTION_KEYWORD] in distributions]
 
         return pulp_images
 
@@ -213,7 +202,7 @@ class OS1Manager:
 
             server = self.create_instance(image.id, instance_name, security_group, flavor, os1_key,
                                           metadata, cloud_config)
-            instance[config_utils.SYSTEM_USER] = image.metadata[config_utils.SYSTEM_USER].encode('ascii')
+            instance[config_utils.SYSTEM_USER] = image.metadata.get(config_utils.SYSTEM_USER, 'cloud-user').encode('ascii')
             instance[config_utils.NOVA_SERVER] = server.id
 
         # Wait until all the instances are active, then set necessary configs
@@ -223,7 +212,8 @@ class OS1Manager:
 
         for instance_config in config_utils.config_generator(global_config):
             instance_ip = self.get_instance_floating_ip(instance_config[config_utils.NOVA_SERVER])
-            instance_config[config_utils.HOST_STRING] = instance_config[config_utils.SYSTEM_USER] + '@' + instance_ip
+            user = global_config.get('username', instance_config[config_utils.SYSTEM_USER])
+            instance_config[config_utils.HOST_STRING] = user + '@' + instance_ip
 
     def create_image(self, image_location, image_metadata=None):
         """
@@ -413,12 +403,11 @@ class OS1Manager:
         # Find the image to build
         pulp_image = None
         for image in self.get_pulp_images():
-            if image.metadata[META_DISTRIBUTION_KEYWORD] == distribution:
+            if image.name.startswith(distribution):
                 pulp_image = image
                 break
         if not pulp_image:
             raise ValueError('Distribution [%s] does not exist' % distribution)
-
         return pulp_image
 
     def get_free_floating_ips(self):

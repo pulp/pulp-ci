@@ -38,6 +38,10 @@ security_group: pulp
 # Path the the cloud config to use when building instances. The default should normally be fine.
 cloud_config: cloud-init/cloud-config.txt
 
+# Optional parameter, if provided this overrides the host username provided by openstack
+# with a fixed username for all of the systems.
+username: pulpuser
+
 
 # ==================
 # Instance Structure
