@@ -17,14 +17,20 @@ import requests
 
 
 home_directory = os.path.expanduser('~')
-opts = {
-    'cert': os.path.join(home_directory, '.katello.cert'),
-    'ca': os.path.join(home_directory, '.katello-ca.cert'),
-    'serverca': os.path.join(home_directory, '.katello-ca.cert')
-}
+mysession = None
 
-mysession = koji.ClientSession("http://koji.katello.org/kojihub", opts)
-mysession.ssl_login(opts['cert'], opts['ca'], opts['serverca'])
+
+def init_koji():
+    global mysession
+    opts = {
+        'cert': os.path.join(home_directory, '.katello.cert'),
+        'ca': os.path.join(home_directory, '.katello-ca.cert'),
+        'serverca': os.path.join(home_directory, '.katello-ca.cert')
+    }
+
+    mysession = koji.ClientSession("http://koji.katello.org/kojihub", opts)
+    mysession.ssl_login(opts['cert'], opts['ca'], opts['serverca'])
+    return mysession
 
 ARCH = 'arch'
 REPO_NAME = 'repo_name'
@@ -226,12 +232,7 @@ def get_built_dependencies(dependency_dir):
     # Process the external deps listing
     deps_file = os.path.join(dependency_dir, 'external_deps.json')
     if os.path.exists(deps_file):
-        with open(deps_file) as file_handle:
-            deps_list = json.load(file_handle)
-            for dep_info in deps_list:
-                for dist in dep_info[u'platform']:
-                    package_nevra = "%s-%s.%s" % (dep_info['name'], dep_info[u'version'], dist)
-                    yield package_nevra
+        get_build_names_from_external_deps_file(deps_file)
 
 
 def get_dists_for_spec(spec_file):
@@ -643,8 +644,8 @@ def get_build_names_from_external_deps_file(external_deps):
     :rtype: str
     """
     with open(external_deps) as file_handle:
-        deps_dict = json.load(file_handle)
-        for (dep, data) in deps_dict.iteritems():
-            for dist_key in data[u'platform']:
-                package_nevra = "%s-%s.%s" % (dep, data[u'version'], dist_key)
-                yield package_nevra
+            deps_list = json.load(file_handle)
+            for dep_info in deps_list:
+                for dist in dep_info[u'platform']:
+                    package_nevra = "%s-%s.%s" % (dep_info['name'], dep_info[u'version'], dist)
+                    yield package_nevra

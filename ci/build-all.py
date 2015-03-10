@@ -50,6 +50,8 @@ def get_components(configuration):
     for component in repos:
         yield component
 
+builder.init_koji()
+
 # Build our working_dir
 working_dir = WORKING_DIR
 print working_dir
