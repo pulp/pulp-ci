@@ -16,4 +16,4 @@ repositories:
     git_branch: 1.0-testing
   - name: crane
     git_url: git@github.com:pulp/crane.git
-    git_branch: 1.0-testing
+    git_branch: 1.0-release

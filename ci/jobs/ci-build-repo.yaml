@@ -37,6 +37,8 @@
     builders:
         - shell: |
             #!/bin/bash
+            git config --global user.email "pulp-infra@redhat.com"
+            git config --global user.name "pulpbot"
             set -x
             env
             cd $WORKSPACE
