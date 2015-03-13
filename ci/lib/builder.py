@@ -282,7 +282,7 @@ def get_urls_for_build(koji_session, build_name, rpmsig=None):
         }
         koji_dir = "/packages/%(name)s/%(version)s/%(release)s/" % package_info
         # We don't honor rpmsig for el5 since the signature can't be parsed by el5 systems
-        if rpmsig and rpm_listing['release'].find('.el5') != -1:
+        if rpmsig and rpm_listing['release'].find('.el5') == -1:
             koji_dir = koji_dir + "data/signed/%s/" % rpmsig
 
         fname = koji.pathinfo.rpm(rpm_listing)
@@ -335,7 +335,7 @@ def download_builds(target_dir, url_generator):
     :type url_generator: get_urls_for_build generator
     """
     for url_to_download, target in url_generator:
-        print "Downloading %s" % target
+        print "Downloading %s from %s" % (target, url_to_download)
         local_file_name = os.path.join(target_dir, os.path.basename(target))
 
         base_dir = os.path.dirname(local_file_name)

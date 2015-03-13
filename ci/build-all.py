@@ -83,7 +83,7 @@ for component in get_components(configuration):
         for package_nevra in builder.get_build_names_from_external_deps_file(external_deps_file):
             info = builder.mysession.getBuild(package_nevra)
             if info:
-                download_list.extend(builder.get_urls_for_build(builder.mysession, package_nevra))
+                download_list.extend(builder.get_urls_for_build(builder.mysession, package_nevra, rpmsig=rpm_signature))
             else:
                 print "External deps requires %s but it could not be found in koji" % package_nevra
                 sys.exit(1)
@@ -96,7 +96,7 @@ for spec in builder.find_all_spec_files(working_dir):
     for package_nevra in builder.get_package_nevra(spec_nvr, package_dists):
         info = builder.mysession.getBuild(package_nevra)
         if info:
-            download_list.extend(builder.get_urls_for_build(builder.mysession, package_nevra))
+            download_list.extend(builder.get_urls_for_build(builder.mysession, package_nevra, rpmsig=rpm_signature))
         else:
             build_list.append((spec, builder.get_dist_from_koji_build_name(package_nevra)))
 
