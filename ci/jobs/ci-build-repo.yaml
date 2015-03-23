@@ -39,6 +39,7 @@
             #!/bin/bash
             git config --global user.email "pulp-infra@redhat.com"
             git config --global user.name "pulpbot"
+            git config --global push.default simple
             set -x
             env
             cd $WORKSPACE
