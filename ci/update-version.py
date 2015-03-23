@@ -193,6 +193,8 @@ elif update_type == 'stage':
     elif stage == 'rc':
         stage = None
         minor_release = None
+        major_release += 1
+
 
 calculated_version = "%s.%s.%s" % (major_version, minor_version, patch_version)
 
