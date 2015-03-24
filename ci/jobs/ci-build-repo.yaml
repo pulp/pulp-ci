@@ -74,5 +74,6 @@
     release_config:
      - 2.6-dev
      - 2.6-testing
+     - 2.6-release
 # wait to get the koji target set up before building master
 #     - master
