@@ -157,7 +157,7 @@ if build_list:
             subprocess.check_call(command, cwd=spec_dir)
 
             # Merge merge the commit forward, pushing along the way
-            promote.merge_forward(spec_dir)
+            promote.merge_forward(spec_dir, push=True)
 
 print "Downloading rpms"
 # Download all the files

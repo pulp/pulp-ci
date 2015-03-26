@@ -17,7 +17,8 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin'):
     :type git_directory: str
     :param git_branch: The git branch to start with
     :type git_branch: str
-    :param upstream_name: The name of the upstream repo, defaults to 'origin'
+    :param upstream_name: The name of the upstream repo, defaults to 'origin', will be
+                          overridden by the upstream name if specified in the branch
     :param upstream_name: str
     :return: list of branches that the specified branch promotes to
     :rtype: list of str
@@ -27,6 +28,7 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin'):
         return ['master']
 
     if git_branch.find('/') != -1:
+        upstream_name = git_branch[:git_branch.find('/')]
         git_branch = git_branch[git_branch.find('/')+1:]
 
     git_branch = git_branch.strip()
@@ -120,7 +122,7 @@ def get_current_git_upstream_branch(git_directory):
     """
     command = 'git rev-parse --abbrev-ref --symbolic-full-name @{u}'
     command = command.split(' ')
-    return subprocess.check_output(command, cwd=git_directory)
+    return subprocess.check_output(command, cwd=git_directory).strip()
 
 
 def get_current_git_branch(git_directory):
@@ -134,13 +136,15 @@ def get_current_git_branch(git_directory):
     """
     command = 'git rev-parse --abbrev-ref HEAD'
     command = command.split(' ')
-    return subprocess.check_output(command, cwd=git_directory)
+    return subprocess.check_output(command, cwd=git_directory).strip()
 
 
 def get_local_git_branches(git_directory):
-    command = "git for-each-ref --format='%(refname:short)' refs/heads/"
+    command = "git for-each-ref --format %(refname:short) refs/heads/"
     command = command.split(' ')
-    return set(subprocess.check_output(command, cwd=git_directory).splitlines())
+    lines = subprocess.check_output(command, cwd=git_directory)
+    results = [item.strip() for item in lines.splitlines()]
+    return set(results)
 
 
 def checkout_branch(git_directory, branch_name, remote_name='origin'):
@@ -162,6 +166,8 @@ def checkout_branch(git_directory, branch_name, remote_name='origin'):
         remote_name = branch_name[:branch_name.find('/')]
     else:
         local_branch = branch_name
+
+    local_branch = local_branch.strip()
 
     full_name = '%s/%s' % (remote_name, local_branch)
 
@@ -198,8 +204,9 @@ def merge_forward(git_directory, push=False):
         checkout_branch(git_directory, source_branch)
         checkout_branch(git_directory, target_branch)
         local_source_branch = source_branch[source_branch.find('/')+1:]
-        print "Merging %s into %s" % (source_branch, target_branch)
-        subprocess.check_call(['merge' '-s', 'ours', local_source_branch, '--no-edit'])
+        print "Merging %s into %s" % (local_source_branch, target_branch)
+        subprocess.check_call(['git', 'merge', '-s', 'ours', local_source_branch, '--no-edit'],
+                              cwd=git_directory)
         if push:
             subprocess.call(['git', 'push'], cwd=git_directory)
 
