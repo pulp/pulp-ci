@@ -29,6 +29,8 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin'):
     if git_branch.find('/') != -1:
         git_branch = git_branch[git_branch.find('/')+1:]
 
+    git_branch = git_branch.strip()
+
     # parse the git_branch: x.y-(dev|testing|release)
     branch_regex = "(\d+.\d+)-(dev|testing|release)"
     match = re.search(branch_regex, git_branch)
