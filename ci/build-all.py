@@ -7,6 +7,7 @@ import subprocess
 import sys
 
 from lib import builder
+from lib import promote
 from lib.builder import WORKSPACE, TITO_DIR, MASH_DIR, WORKING_DIR
 
 
@@ -135,6 +136,11 @@ if build_list:
             spec_dir = os.path.dirname(spec)
             if spec_dir not in spec_dir_set:
                 spec_dir_set.add(spec_dir)
+                # make sure we are clean to merge forward before tagging
+                print "validating merge forward for %s" % spec_dir
+                git_branch = promote.get_current_git_upstream_branch(spec_dir)
+                promotion_chain = promote.get_promotion_chain(spec_dir, git_branch)
+                promote.check_merge_forward(spec_dir, promotion_chain)
                 # Tito tag the new releases
                 command = ['tito', 'tag', '--keep-version', '--no-auto-changelog']
                 subprocess.check_call(command, cwd=spec_dir)
@@ -149,6 +155,9 @@ if build_list:
             subprocess.check_call(command, cwd=spec_dir)
             command = ['git', 'push', '--tag']
             subprocess.check_call(command, cwd=spec_dir)
+
+            # Merge merge the commit forward, pushing along the way
+            promote.merge_forward(spec_dir)
 
 print "Downloading rpms"
 # Download all the files

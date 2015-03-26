@@ -2,7 +2,6 @@
 
 import fnmatch
 import glob
-import itertools
 import json
 import os
 import rpm
@@ -79,6 +78,24 @@ WORKSPACE = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..',
 WORKING_DIR = os.path.join(WORKSPACE, 'working')
 MASH_DIR = os.path.join(WORKSPACE, 'mash')
 TITO_DIR = os.path.join(WORKSPACE, 'tito')
+
+
+def get_nvr_from_spec_file_in_directory(directory_path):
+    """
+    Find the first spec file in a directory and return the pacakge NVR from it
+
+    :param directory_path:
+    :type directory_path:
+    :return:
+    :rtype:
+    """
+    spec_files = glob.glob(os.path.join(directory_path, '*.spec'))
+    if not spec_files:
+        print "Error, unable to find spec file in %s " % directory_path
+        sys.exit(1)
+
+    spec_file = spec_files[0]
+    return get_package_nvr_from_spec(spec_file)
 
 
 def find_all_spec_files(root_directory):
