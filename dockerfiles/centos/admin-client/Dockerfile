@@ -15,4 +15,7 @@ RUN  yum update -y && \
 # config and uploads dir
 VOLUME ["/.pulp /run/pulp_uploads"]
 
+# make sure this gets the correct permission
+RUN mkdir /root/.pulp && chmod 700 /root/.pulp
+
 ADD admin.conf /root/.pulp/admin.conf
