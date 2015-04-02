@@ -1,25 +1,27 @@
 # Place this file in your /etc/yum.repos.d/ directory
  
-# Version 2.5 Production Releases
+# Version 2.6 Production Releases
 [pulp-v2-stable]
 name=Pulp v2 Production Releases
-baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/stable/2.5/7Server/$basearch/
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/stable/2.6/7Server/$basearch/
 enabled=1
 skip_if_unavailable=0
-gpgcheck=0
+gpgcheck=1
+gpgkey=https://repos.fedorapeople.org/repos/pulp/pulp/GPG-RPM-KEY-pulp-2
 
-# Version 2.5 Beta Builds
+# Version 2.6 Beta Builds
 [pulp-v2-beta]
 name=Pulp v2 Beta Builds
-baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/beta/2.5/7Server/$basearch/
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/beta/2.6/7Server/$basearch/
 enabled=0
-skip_if_unavailable=1
-gpgcheck=0
+skip_if_unavailable=0
+gpgcheck=1
+gpgkey=https://repos.fedorapeople.org/repos/pulp/pulp/GPG-RPM-KEY-pulp-2
 
 # Weekly Testing Builds
 [pulp-v2-testing]
 name=Pulp v2 Testing Builds
-baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/testing/2.5/7Server/$basearch/
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/testing/2.6/7Server/$basearch/
 enabled=0
 skip_if_unavailable=1
 gpgcheck=0
