@@ -23,15 +23,15 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin'):
     :return: list of branches that the specified branch promotes to
     :rtype: list of str
     """
-    # parse the branch into its component parts
-    if git_branch == 'master':
-        return ['master']
-
     if git_branch.find('/') != -1:
         upstream_name = git_branch[:git_branch.find('/')]
         git_branch = git_branch[git_branch.find('/')+1:]
 
     git_branch = git_branch.strip()
+
+    # parse the branch into its component parts
+    if git_branch == 'master':
+        return ['master']
 
     # parse the git_branch: x.y-(dev|testing|release)
     branch_regex = "(\d+.\d+)-(dev|testing|release)"
