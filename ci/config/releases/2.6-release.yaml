@@ -19,4 +19,4 @@ repositories:
     git_branch: 1.0-release
   - name: pulp_python
     git_url: git@github.com:pulp/pulp_python.git
-    git_branch: 1.0-testing
+    git_branch: 1.0-release
