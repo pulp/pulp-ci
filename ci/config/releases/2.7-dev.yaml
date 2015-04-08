@@ -4,13 +4,13 @@ repositories:
   - name: pulp
     external_deps: deps/external_deps.json
     git_url: git@github.com:pulp/pulp.git
-    git_branch: master
+    git_branch: 2.7-dev
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
-    git_branch: master
+    git_branch: 2.7-dev
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
-    git_branch: master
+    git_branch: 2.7-dev
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
     git_branch: master
