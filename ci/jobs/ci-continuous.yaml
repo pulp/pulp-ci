@@ -50,6 +50,10 @@
             - master
             - 2.6-dev
             - 2.6-testing
+            - 2.6-release
+            - 2.7-dev
+            - 2.7-testing
+            - 2.7-release
     builders:
         - shell: |
             #!/bin/bash
