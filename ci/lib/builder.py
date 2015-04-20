@@ -36,6 +36,7 @@ REPO_NAME = 'repo_name'
 DIST_KOJI_NAME = 'koji_name'
 PULP_PACKAGES = 'pulp_packages'
 REPO_CHECKSUM_TYPE = 'checksum'
+REPO_ALIAS = 'repo_alias'
 
 # Using 'sha' instead of 'sha1' for EL5 because createrepo documentation
 # indicates that 'sha1' may not be compatible with older versions of yum.
@@ -44,18 +45,21 @@ DISTRIBUTION_INFO = {
     'el5': {
         ARCH: ['i386', 'x86_64'],
         REPO_NAME: '5Server',
+        REPO_ALIAS: ['5'],
         DIST_KOJI_NAME: 'rhel5',
         REPO_CHECKSUM_TYPE: 'sha'
     },
     'el6': {
         ARCH: ['i686', 'x86_64'],
         REPO_NAME: '6Server',
+        REPO_ALIAS: ['6'],
         DIST_KOJI_NAME: 'rhel6',
         REPO_CHECKSUM_TYPE: 'sha256'
     },
     'el7': {
         ARCH: ['x86_64'],
         REPO_NAME: '7Server',
+        REPO_ALIAS: ['7'],
         DIST_KOJI_NAME: 'rhel7',
         REPO_CHECKSUM_TYPE: 'sha256'
     },
@@ -412,6 +416,13 @@ def build_repositories(target_dir, comps_file=None):
             else:
                 command = "createrepo -s %s  %s" % (checksum_type, arch_dir)
             subprocess.check_call(command, shell=True)
+
+        # create other symlinks
+        if REPO_ALIAS in distvalue:
+            for alias_value in distvalue[REPO_ALIAS]:
+                command = 'ln -rs %s %s' % (os.path.join(target_dir, repo_dir),
+                                            os.path.join(target_dir, alias_value))
+                subprocess.check_call(command, shell=True)
 
 
 def ensure_dir(target_dir, clean=True):
