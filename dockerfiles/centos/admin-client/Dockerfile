@@ -9,7 +9,7 @@ RUN  yum update -y && \
      yum groupinstall -y \
          pulp-admin && \
      yum install -y \
-         pulp-docker-admin-extensions && \
+         pulp-docker-admin-extensions pulp-python-admin-extensions && \
      yum clean all
 
 # config and uploads dir
