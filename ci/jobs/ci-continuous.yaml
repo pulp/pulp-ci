@@ -95,8 +95,7 @@
               fi
             fi
 
-
-            sudo yum -y install --skip-broken --nogpgcheck @pulp-server @pulp-admin @pulp-consumer
+            sudo yum -y install --skip-broken --nogpgcheck @pulp-server @pulp-admin @pulp-consumer python-pulp-devel
             sudo yum -y remove pulp-\* python-pulp\*
 
             rm -rf $WORKSPACE/test
@@ -135,45 +134,6 @@
       # Take the node offline so that another build doesn't pile on
       - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
 
-
-#- job:
-#    name: 'test-pulp-version'
-#    defaults: ci-workflow-runtest
-#    project-type: matrix
-#    node: 'master'
-#    axes:
-#      - axis:
-#          type: label-expression
-#          name: node-type
-#          values:
-#            - f20-np
-#            - f21-np
-#            - rhel5-np
-#            - rhel6-np
-#            - rhel7-np
-#    # enable nodepool monitoring
-#    properties:
-#      - github:
-#          url: https://github.com/pulp/pulp_puppet/
-#      - zeromq-event
-#    scm:
-#        - git:
-#            url: 'https://github.com/barnabycourt/pulp_rpm.git'
-#            branches:
-#              - "plugin-requires"
-#            skip-tag: True
-#    builders:
-#        - shell: |
-#            #!/bin/bash
-#            server_name=$(find . -name requirements.txt -exec grep pulp-server {} \; )
-#            pulp_version=$(echo $server_name | sed -r 's/pulp-server(>=|==)([0-9]+\.[0-9+]).*/\2/')
-#            echo ${pulp_version}
-#
-#
-#    publishers:
-#      # Take the node offline so that another build doesn't pile on
-#      - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
-
 - job-template:
     name: 'unittest-{pulp_plugin}-pr'
     defaults: ci-workflow-runtest
@@ -183,42 +143,70 @@
       - axis:
           type: label-expression
           name: node-type
-          values:
-            - f20-np
-            - f21-np
-            - rhel5-np
-            - rhel6-np
-            - rhel7-np
+          values: '{obj:unittest_platforms}'
+    parameters:
+        - string:
+            name: sha1
+            default: ''
+            description: |
+                The hash or refname of the branch to build: for example: origin/pr/9/head
+        - matrix-combinations:
+            name: MATRIX_AXIS
     properties:
+      - github:
+          url: https://github.com/pulp/{pulp_plugin}/
       - zeromq-event
     scm:
         - git:
-            url: 'https://github.com/barnabycourt/{pulp_plugin}.git'
-            basedir: "{pulp_plugin}"
+            url: 'https://github.com/pulp/{pulp_plugin}.git'
+            refspec: '+refs/pull/*:refs/remotes/origin/pr/*'
+            branches:
+              - "${{sha1}}"
             skip-tag: True
+            basedir: plugin
+            wipe-workspace: false
+    triggers:
+      - github-pull-request:
+          admin-list:
+            - pulpbot
+          org-list:
+            - pulp
+          # Poll once per minute since our jenkins isn't public and web hooks aren't an option
+          cron: '* * * * *'
+          trigger-phrase: 'ok test'
+          allow-whitelist-orgs-as-admins: true
+          # only-trigger-phrase: true
+          white-list-target-branches: '{obj:unittest_branches}'
     builders:
         - shell: |
             #!/bin/bash
             # Set up and install the base pulp
             # double up the {{}} to deal with string format of the shell script
+
+
+            sudo mv pulp-deps.repo /etc/yum.repos.d/
             set -x
-            cd {pulp_plugin}
-            git checkout plugin-requires
-
-            server_name=$(find . -name requirements.txt -exec grep pulp-server {{}} \; )
-            echo $server_name
-            pulp_version=$(echo $server_name | sed -r 's/pulp-server(>=|==)([0-9]+\.[0-9+]).*/\2/')
-            echo $pulp_version
-
             OS_NAME=$(lsb_release -si)
             OS_VERSION=$(lsb_release -sr | cut -f1 -d.)
-            # setenforce 0
-            cd $WORKSPACE
-            set -x
-            if [ "$OS_NAME" == "RedHatEnterpriseServer" ]; then
-                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/${{pulp_version}}/\$releasever/\$basearch/"
+
+            # Get the required pulp server
+            pushd plugin
+            if [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION"  \< "7" ]; then
+              # unfortunately rpmspec doesn't work on rhel 5 & 6 so we have to use the older rpmquery
+              server_requires=$(rpmquery --requires --specfile *.spec | grep pulp-server)
+              requires_minus_spaces=$(echo $server_requires | sed 's/[[:space:]]//g')
+              PULP_VERSION=$(echo $requires_minus_spaces | sed -r 's/pulp-server(>=|==|=)([0-9]+\.[0-9+]).*/\2/')
             else
-                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/${{pulp_version}}/fedora-\$releasever/\$basearch/"
+              server_requires=$(rpmspec -P *.spec | grep pulp-server)
+              requires_minus_spaces=$(echo $server_requires | sed 's/[[:space:]]//g')
+              PULP_VERSION=$(echo $requires_minus_spaces | sed -r 's/Requires:pulp-server(>=|==|=)([0-9]+\.[0-9+]).*/\2/')
+            fi
+            popd
+            echo $PULP_VERSION
+            if [ "$OS_NAME" == "RedHatEnterpriseServer" ]; then
+                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/$PULP_VERSION/dev/\$releasever/\$basearch/"
+            else
+                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/$PULP_VERSION/dev/fedora-\$releasever/\$basearch/"
             fi
             cat > pulp-deps.repo<< EndOfMessage
             [pulp-deps]
@@ -229,32 +217,14 @@
             EndOfMessage
             sudo mv pulp-deps.repo /etc/yum.repos.d/
 
-            # only do this until we have a full deps build
-            if [ "$OS_VERSION" != "5" ]; then
-              sudo yum -y install python-mongoengine qpid-tools  --nogpgcheck
-              # If rhel6
-              if [ "$OS_VERSION" == "6" ]; then
-                sudo yum -y install Django14  --nogpgcheck
-              else
-                sudo yum -y install python-django  --nogpgcheck
-              fi
-            fi
+            sudo yum -y install --skip-broken --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel
+            sudo yum -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\*
 
-            sudo yum -y install --skip-broken --nogpgcheck tito python-pulp-devel @pulp-server @pulp-admin @pulp-consumer
+            mkdir -p $WORKSPACE/test
+            mkdir -p $WORKSPACE/coverage
 
-            # This is evil until we can fix our tests
-            sudo chown -R jenkins:jenkins /etc/pulp
-
-
-            echo "Build the plugin"
-            cd $WORKSPACE/{pulp_plugin}
-
-            tito build --test --offline --rpm
             echo "Setting up the plugin"
-            cd /tmp/tito/noarch
-            sudo yum -y localinstall $(ls)
-
-            cd $WORKSPACE/{pulp_plugin}
+            cd $WORKSPACE/plugin
             for setup in `find . -name setup.py`; do
                 pushd `dirname $setup`;
                 sudo python setup.py develop;
@@ -262,12 +232,12 @@
             done;
             sudo python ./pulp-dev.py -I
 
-            echo "Build the plugin"
-            cd $WORKSPACE/{pulp_plugin}
+            cd $WORKSPACE/plugin
             export PYTHONUNBUFFERED=1
-            set -x
-            mkdir -p $WORKSPACE/test
-            mkdir -p $WORKSPACE/coverage
+
+            # This is heinous but necessary as the unit tests require access to /etc/pulp
+            sudo chown -R jenkins:jenkins /etc/pulp
+
             python ./run-tests.py --enable-coverage --with-xunit --xunit-file ../test/pulp_test.xml --with-xcoverage --xcoverage-file ../coverage/pulp_coverage.xml
 
     publishers:
@@ -284,10 +254,6 @@
           results: 'test/*.xml'
           keep-long-stdio: true
           test-stability: true
-#      # Archive the test results
-#      - archive:
-#          artifacts: 'test/**'
-#          allow-empty: 'true'
       # Take the node offline so that another build doesn't pile on
       - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
 
@@ -301,8 +267,53 @@
     jobs:
      - 'unittest-pr-job'
     pulp_plugin:
+      - pulp_docker:
+          min_coverage: 100
+          unittest_branches:
+            - master
+          unittest_platforms:
+            - f20-np
+            - f21-np
+            - rhel6-np
+            - rhel7-np
+      - pulp_ostree:
+          min_coverage: 100
+          unittest_branches:
+            - master
+          unittest_platforms:
+            - f21-np
+            - rhel7-np
+      - pulp_puppet:
+          min_coverage: 95.0
+          unittest_branches:
+            - 2.6-dev
+            - 2.6-testing
+            - 2.7-dev
+            - 2.7-testing
+            - master
+          unittest_platforms:
+            - f20-np
+            - f21-np
+            - rhel5-np
+            - rhel6-np
+            - rhel7-np
+      - pulp_python:
+          min_coverage: 100
+          unittest_branches:
+            - master
+          unittest_platforms:
+            - f20-np
+            - f21-np
+            - rhel6-np
+            - rhel7-np
       - pulp_rpm:
           min_coverage: 87.0
+          unittest_branches:
+            - 2.6-dev
+            - 2.6-testing
+            - 2.7-dev
+            - 2.7-testing
+            - master
           unittest_platforms:
             - f20-np
             - f21-np
