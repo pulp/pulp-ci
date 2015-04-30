@@ -168,10 +168,12 @@ def main():
                     links_back = False
                     for custom_field in issue.custom_fields.resources:
                         if custom_field['name'] == 'Bugzilla':
-                            if custom_field['value'] == '':
+                            try:
+                                if int(custom_field['value']) == bug.id:
+                                    links_back = True
+                            except KeyError:
+                                # If value isn't present this field is not linking back so continue
                                 continue
-                            if int(custom_field['value']) == bug.id:
-                                links_back = True
                     if not links_back:
                         links_issues_record += 'Bugzilla #%s -> Redmine %s, but Redmine %s does ' \
                                                'not link back\n' % (bug.id, issue.id, issue.id)
