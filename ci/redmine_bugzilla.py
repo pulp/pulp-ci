@@ -1,5 +1,5 @@
 """
-This module does a few things:
+This module does a few things (not necessarily in this order):
 
 0) Verify that all Bugzilla bugs which point to a Redmine issues also have
 Redmine issues pointing back to Bugzilla bugs. This script print a report of
@@ -10,6 +10,11 @@ detected, a RuntimeError is raised so the caller will know an issue occurred.
 Bugzilla external tracker description, status, and priority all mirror the
 Redmine issue state. Also put a comment on the Bugzilla bug when changes are
 made.
+
+2) For each Bugzilla bug that corresponds with an upstream Pulp bug, ensure
+that all e-mail addresses in the REQUIRED_CC are present on the cc list for
+the Bugzilla bug. If they are not present add them. REQUIRED_CC is a list
+of Bugzilla user emails stored as a constant in this module.
 
 Requirements:
 The Redmine and Bugzilla credentials are expected from to be read from a
@@ -42,6 +47,8 @@ urllib3.contrib.pyopenssl.inject_into_urllib3()
 BUGZILLA_URL = 'https://bugzilla.redhat.com'
 REDMINE_URL = 'https://pulp.plan.io'
 
+REQUIRED_CC = ['mhrivnak@redhat.com', 'bbouters@redhat.com']
+
 
 def get_bugzilla_connection(user, password):
     """
@@ -67,6 +74,18 @@ def get_redmine_connection(key):
     :return: An instantiated Redmine connection object.
     """
     return Redmine(REDMINE_URL, key=key)
+
+
+def add_cc_list_to_bugzilla_bug(bug):
+    """
+    Ensure that all users in REQUIRED_CC are in the cc list of the bug.
+
+    :param bug: The Bugzilla bug to have its cc list members ensured.
+    :type bug: bugzilla.bug
+    """
+    for pulp_cc_username in REQUIRED_CC:
+        if pulp_cc_username not in bug.cc:
+            bug.addcc(pulp_cc_username)
 
 
 def main():
@@ -103,6 +122,7 @@ def main():
                 for external_bug in bug.external_bugs:
                     if external_bug['type']['description'] == 'Pulp Redmine' and \
                                     external_bug['ext_bz_bug_id'] == str(issue.id):
+                        add_cc_list_to_bugzilla_bug(bug)
                         ext_params = {}
                         if external_bug['ext_description'] != issue.subject:
                             ext_params['ext_description'] = issue.subject
@@ -142,15 +162,18 @@ def main():
     for bug in bugzilla_bugs:
         for external_bug in bug.external_bugs:
                 if external_bug['type']['description'] == 'Pulp Redmine':
+                    add_cc_list_to_bugzilla_bug(bug)
                     issue_id = external_bug['ext_bz_bug_id']
                     issue = redmine.issue.get(issue_id)
                     links_back = False
                     for custom_field in issue.custom_fields.resources:
                         if custom_field['name'] == 'Bugzilla':
-                            if custom_field['value'] == '':
+                            try:
+                                if int(custom_field['value']) == bug.id:
+                                    links_back = True
+                            except KeyError:
+                                # If value isn't present this field is not linking back so continue
                                 continue
-                            if int(custom_field['value']) == bug.id:
-                                links_back = True
                     if not links_back:
                         links_issues_record += 'Bugzilla #%s -> Redmine %s, but Redmine %s does ' \
                                                'not link back\n' % (bug.id, issue.id, issue.id)
