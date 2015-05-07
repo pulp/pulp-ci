@@ -14,6 +14,9 @@ repositories:
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
     git_branch: master
+  - name: pulp_deb
+    git_url: git@github.com:pulp/pulp_deb.git
+    git_branch: master
   - name: crane
     git_url: git@github.com:pulp/crane.git
     git_branch: master

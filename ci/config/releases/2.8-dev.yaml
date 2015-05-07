@@ -5,6 +5,9 @@ repositories:
     external_deps: deps/external_deps.json
     git_url: git@github.com:pulp/pulp.git
     git_branch: master
+  - name: pulp_deb
+    git_url: git@github.com:pulp/pulp_deb.git
+    git_branch: master
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
     git_branch: master
