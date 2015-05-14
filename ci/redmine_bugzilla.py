@@ -174,6 +174,9 @@ def main():
                             except KeyError:
                                 # If value isn't present this field is not linking back so continue
                                 continue
+                            except ValueError:
+                                # If value is present but empty this field is not linking back
+                                continue
                     if not links_back:
                         links_issues_record += 'Bugzilla #%s -> Redmine %s, but Redmine %s does ' \
                                                'not link back\n' % (bug.id, issue.id, issue.id)
