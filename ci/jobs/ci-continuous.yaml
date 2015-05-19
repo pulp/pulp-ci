@@ -196,12 +196,12 @@
               server_requires=$(rpmquery --requires --specfile *.spec | grep pulp-server)
               requires_minus_spaces=$(echo $server_requires | sed 's/[[:space:]]//g')
               PULP_VERSION=$(echo $requires_minus_spaces | sed -r 's/pulp-server(>=|==|=)([0-9]+\.[0-9+]).*/\2/')
-              PLUGIN_PACKAGE_LIST=$(rpmquery --provides *.spec | sed 's/\s.*$//' |  tr "\n" " ")
+              PLUGIN_PACKAGE_LIST=$(rpmquery --specfile *.spec --queryformat '%{NAME} ')
             else
               server_requires=$(rpmspec -P *.spec | grep pulp-server)
               requires_minus_spaces=$(echo $server_requires | sed 's/[[:space:]]//g')
               PULP_VERSION=$(echo $requires_minus_spaces | sed -r 's/Requires:pulp-server(>=|==|=)([0-9]+\.[0-9+]).*/\2/')
-              PLUGIN_PACKAGE_LIST=$(rpmspec -q --provides *.spec | sed 's/\s.*$//' |  tr "\n" " ")
+              PLUGIN_PACKAGE_LIST=$(rpmspec -q --provides *.spec --queryformat '%{NAME} ')
             fi
             popd
             echo $PULP_VERSION
@@ -220,8 +220,7 @@
             sudo mv pulp-deps.repo /etc/yum.repos.d/
 
             sudo yum -y install --skip-broken --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel $PLUGIN_PACKAGE_LIST
-            sudo yum -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\*
-            sudo yum -y remove $PLUGIN_PACKAGE_LIST
+            sudo yum -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\* $PLUGIN_PACKAGE_LIST
 
             mkdir -p $WORKSPACE/test
             mkdir -p $WORKSPACE/coverage
