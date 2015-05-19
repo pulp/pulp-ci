@@ -75,6 +75,7 @@
             else
                 REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/${PULP_VERSION}/dev/fedora-\$releasever/\$basearch/"
             fi
+
             cat > pulp-deps.repo<< EndOfMessage
             [pulp-deps]
             name=pulp-deps
@@ -82,11 +83,24 @@
             enabled=1
             gpgcheck=0
             EndOfMessage
+
             sudo mv pulp-deps.repo /etc/yum.repos.d/
 
             # only do this until we have a full deps build
             if [ "$OS_VERSION" != "5" ]; then
               sudo yum -y install python-mongoengine qpid-tools  python-rhsm --nogpgcheck
+
+              echo "Setting up virtualenv-wrapper"
+              sudo yum install -y python-virtualenvwrapper
+              export WORKON_HOME=$HOME/.virtualenvs
+              export PIP_VIRTUALENV_BASE=$WORKON_HOME
+              export VIRTUALENV_USE_DISTRIBUTE=true
+              export PIP_RESPECT_VIRTUALENV=true
+              source /usr/bin/virtualenvwrapper.sh
+              # Build a virtualenv to hold the test requirements
+              mkvirtualenv test
+              pip install -r $WORKSPACE/pulp/test_requirements.txt
+
               # If rhel6
               if [ "$OS_VERSION" == "6" ]; then
                 sudo yum -y install Django14  --nogpgcheck
@@ -210,6 +224,7 @@
             else
                 REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/$PULP_VERSION/dev/fedora-\$releasever/\$basearch/"
             fi
+
             cat > pulp-deps.repo<< EndOfMessage
             [pulp-deps]
             name=pulp-deps
@@ -217,10 +232,24 @@
             enabled=1
             gpgcheck=0
             EndOfMessage
+
             sudo mv pulp-deps.repo /etc/yum.repos.d/
 
             sudo yum -y install --skip-broken --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel $PLUGIN_PACKAGE_LIST
             sudo yum -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\* $PLUGIN_PACKAGE_LIST
+
+            if [ "$OS_VERSION" != "5" ]; then
+              echo "Setting up virtualenv-wrapper"
+              sudo yum install -y python-virtualenvwrapper
+              export WORKON_HOME=$HOME/.virtualenvs
+              export PIP_VIRTUALENV_BASE=$WORKON_HOME
+              export VIRTUALENV_USE_DISTRIBUTE=true
+              export PIP_RESPECT_VIRTUALENV=true
+              source /usr/bin/virtualenvwrapper.sh
+              # Build a virtualenv to hold the test requirements
+              mkvirtualenv test
+              pip install -r $WORKSPACE/plugin/test_requirements.txt
+            fi
 
             mkdir -p $WORKSPACE/test
             mkdir -p $WORKSPACE/coverage
