@@ -98,7 +98,7 @@
               export PIP_RESPECT_VIRTUALENV=true
               source /usr/bin/virtualenvwrapper.sh
               # Build a virtualenv to hold the test requirements
-              mkvirtualenv test
+              mkvirtualenv --system-site-packages test
               pip install -r $WORKSPACE/pulp/test_requirements.txt
 
               # If rhel6
@@ -247,7 +247,7 @@
               export PIP_RESPECT_VIRTUALENV=true
               source /usr/bin/virtualenvwrapper.sh
               # Build a virtualenv to hold the test requirements
-              mkvirtualenv test
+              mkvirtualenv --system-site-packages test
               pip install -r $WORKSPACE/plugin/test_requirements.txt
             fi
 
