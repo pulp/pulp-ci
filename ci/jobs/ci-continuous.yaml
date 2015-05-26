@@ -91,7 +91,6 @@
               sudo yum -y install python-mongoengine qpid-tools  python-rhsm --nogpgcheck
 
               echo "Setting up virtualenv-wrapper"
-              sudo yum install -y python-virtualenvwrapper
               export WORKON_HOME=$HOME/.virtualenvs
               export PIP_VIRTUALENV_BASE=$WORKON_HOME
               export VIRTUALENV_USE_DISTRIBUTE=true
@@ -99,7 +98,7 @@
               source /usr/bin/virtualenvwrapper.sh
               # Build a virtualenv to hold the test requirements
               mkvirtualenv --system-site-packages test
-              pip install -U --force-reinstall -r $WORKSPACE/pulp/test_requirements.txt
+              pip install -r $WORKSPACE/pulp/test_requirements.txt
 
               # If rhel6
               if [ "$OS_VERSION" == "6" ]; then
@@ -240,7 +239,6 @@
 
             if [ "$OS_VERSION" != "5" ]; then
               echo "Setting up virtualenv-wrapper"
-              sudo yum install -y python-virtualenvwrapper
               export WORKON_HOME=$HOME/.virtualenvs
               export PIP_VIRTUALENV_BASE=$WORKON_HOME
               export VIRTUALENV_USE_DISTRIBUTE=true
@@ -248,7 +246,7 @@
               source /usr/bin/virtualenvwrapper.sh
               # Build a virtualenv to hold the test requirements
               mkvirtualenv --system-site-packages test
-              pip install -U --force-reinstall -r $WORKSPACE/plugin/test_requirements.txt
+              pip install -r $WORKSPACE/plugin/test_requirements.txt
             fi
 
             mkdir -p $WORKSPACE/test
