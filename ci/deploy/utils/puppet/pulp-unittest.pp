@@ -51,17 +51,14 @@ class pulp_unittest {
             'puppet',
             'python-pip',
             'python-argparse',
-            'python-unittest2',
-            'tito', 'rpm-build', 'python-mock',  'python-paste',  'python-lxml'
+            'python-virtualenvwrapper',
+            'tito', 'rpm-build', 'python-paste',  'python-lxml'
         ]
 
         package { $el6_packages:
             ensure => 'installed'
         } -> exec { 'gem install json':
             command => '/usr/bin/gem install json'
-        } -> exec { 'install pip deps rhel6':
-            command => 'sudo pip install coverage nose nosexcover flake8 --upgrade',
-            path => "/usr/local/bin/:/bin/:/usr/bin/"
         }
 
         # RHEL 6.6 apparently doesn't create the mongodb user
@@ -81,18 +78,15 @@ class pulp_unittest {
             'python-qpid',
             'python-qpid-qmf',
             'qpid-cpp-server-store',
+            'python-virtualenvwrapper',
             # Other non-qpid packages
-            'tito', 'rpm-build', 'python-mock',  'python-paste',  'python-lxml'
+            'tito', 'rpm-build', 'python-paste',  'python-lxml'
         ]
 
         package { $packages_qpid:
             ensure => 'installed'
-        } -> exec { 'install pip deps other':
-            # These are not qpid specific deps but are needed for all unittest runners
-            command => 'sudo pip install coverage nose nosexcover flake8 --upgrade',
-            path => "/usr/local/bin/:/bin/:/usr/bin/"
-
         }
+
         if ($::operatingsystem == 'RedHat' or $::operatingsystem == 'CentOS')
           and $::lsbmajdistrelease == 7 {
             class {'::mongodb::server':
