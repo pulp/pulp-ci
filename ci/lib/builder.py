@@ -75,6 +75,12 @@ DISTRIBUTION_INFO = {
         DIST_KOJI_NAME: 'fedora21',
         REPO_CHECKSUM_TYPE: 'sha256'
     },
+    'fc22': {
+        ARCH: ['i686', 'x86_64'],
+        REPO_NAME: 'fedora-22',
+        DIST_KOJI_NAME: 'fedora22',
+        REPO_CHECKSUM_TYPE: 'sha256'
+    },
 }
 
 DIST_LIST = DISTRIBUTION_INFO.keys()
