@@ -6,7 +6,7 @@ ADD rhel-pulp.repo /etc/yum.repos.d/rhel-pulp.repo
 RUN yum install -y epel-release && yum clean all
 
 RUN yum update -y && yum install -y python-qpid python-qpid-qmf pulp-docker-plugins \
-    pulp-python-plugins findutils nmap-ncat && \
+    pulp-python-plugins findutils nmap-ncat qpid-tools && \
     yum groupinstall -y pulp-server-qpid && \
     yum clean all
 
