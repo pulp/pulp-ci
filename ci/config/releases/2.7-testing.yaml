@@ -17,3 +17,12 @@ repositories:
   - name: pulp_deb
     git_url: git@github.com:pulp/pulp_deb.git
     git_branch: 1.0-testing
+  - name: pulp_ostree
+    git_url: git@github.com:pulp/pulp_ostree.git
+    git_branch: master
+  - name: pulp_python
+    git_url: git@github.com:pulp/pulp_python.git
+    git_branch: 1.0-testing
+  - name: pulp_docker
+    git_url: git@github.com:pulp/pulp_docker.git
+    git_branch: 1.0-dev
