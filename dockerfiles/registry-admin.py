@@ -117,7 +117,7 @@ class Pulp(object):
             if self.args.git_url:
                 git_str = "--note git-url=%s" % self.args.git_url
             cmd.append("docker repo create --repo-registry-id %s --repo-id %s %s --redirect-url http://pulpapi/pulp/docker/%s/" %
-                        (self.args.repo, self.repo_name(self.args.repo), git_str), self.repo_name(self.args.repo))
+                        (self.args.repo, self.repo_name(self.args.repo), git_str, self.repo_name(self.args.repo)))
         elif self.args.mode == "sync":
             cmd.append("docker repo create --repo-registry-id %s --repo-id %s --feed %s --upstream-name %s --validate True" %
                         (self.args.repo, self.repo_name(self.args.repo), self.args.sync_url, self.args.repo))
