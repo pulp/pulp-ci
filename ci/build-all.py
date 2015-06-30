@@ -135,15 +135,19 @@ if build_list:
         for spec, dist in build_list:
             spec_dir = os.path.dirname(spec)
             if spec_dir not in spec_dir_set:
-                spec_dir_set.add(spec_dir)
-                # make sure we are clean to merge forward before tagging
-                print "validating merge forward for %s" % spec_dir
-                git_branch = promote.get_current_git_upstream_branch(spec_dir)
-                promotion_chain = promote.get_promotion_chain(spec_dir, git_branch)
-                promote.check_merge_forward(spec_dir, promotion_chain)
-                # Tito tag the new releases
-                command = ['tito', 'tag', '--keep-version', '--no-auto-changelog']
-                subprocess.check_call(command, cwd=spec_dir)
+                tag_name = builder.get_package_nvr_from_spec(spec)
+                # Don't tag this again if the tag already exists
+                if not builder.does_git_tag_exist(
+                        builder.get_package_nvr_from_spec(spec), spec_dir):
+                    spec_dir_set.add(spec_dir)
+                    # make sure we are clean to merge forward before tagging
+                    print "validating merge forward for %s" % spec_dir
+                    git_branch = promote.get_current_git_upstream_branch(spec_dir)
+                    promotion_chain = promote.get_promotion_chain(spec_dir, git_branch)
+                    promote.check_merge_forward(spec_dir, promotion_chain)
+                    # Tito tag the new releases
+                    command = ['tito', 'tag', '--keep-version', '--no-auto-changelog']
+                    subprocess.check_call(command, cwd=spec_dir)
             builder.build_srpm_from_spec(spec_dir, TITO_DIR, testing=False, dist=dist)
 
         build_ids = builder.build_with_koji(build_tag_prefix=koji_prefix,
