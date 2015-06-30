@@ -25,4 +25,4 @@ repositories:
     git_branch: 1.0-testing
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
-    git_branch: 1.0-dev
+    git_branch: 1.0-testing
