@@ -8,7 +8,6 @@
           type: label-expression
           name: node-type
           values:
-            - f20-np
             - f21-np
             - rhel5-np
             - rhel6-np
@@ -301,7 +300,6 @@
           unittest_branches:
             - master
           unittest_platforms:
-            - f20-np
             - f21-np
             - rhel6-np
             - rhel7-np
@@ -310,7 +308,6 @@
           unittest_branches:
             - master
           unittest_platforms:
-            - f20-np
             - f21-np
             - rhel6-np
             - rhel7-np
@@ -330,7 +327,6 @@
             - 2.7-testing
             - master
           unittest_platforms:
-            - f20-np
             - f21-np
             - rhel5-np
             - rhel6-np
@@ -340,7 +336,6 @@
           unittest_branches:
             - master
           unittest_platforms:
-            - f20-np
             - f21-np
             - rhel6-np
             - rhel7-np
@@ -353,7 +348,6 @@
             - 2.7-testing
             - master
           unittest_platforms:
-            - f20-np
             - f21-np
             - rhel5-np
             - rhel6-np
