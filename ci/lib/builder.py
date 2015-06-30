@@ -683,3 +683,22 @@ def get_build_names_from_external_deps_file(external_deps):
                 for dist in dep_info[u'platform']:
                     package_nevra = "%s-%s.%s" % (dep_info['name'], dep_info[u'version'], dist)
                     yield package_nevra
+
+
+def does_git_tag_exist(tag, directory):
+    """
+    Check if the specified tag exists in the git repo in the specified directory
+
+    :param tag: The tag to search for in the git repository
+    :type tag: str
+    :param directory: The directory containing a git repo
+    :type directory: str
+
+    :return: Whether or not the specified tag exists in the repository
+    :rtype: bool
+    """
+    command = "git tag -l {tag}".format(tag=tag)
+    output = subprocess.check_output(command, shell=True, cwd=directory)
+    if output:
+        return True
+    return False
