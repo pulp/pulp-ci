@@ -511,7 +511,7 @@ def build_with_koji(build_tag_prefix, srpm_dir, scratch=False):
     dist_list = os.listdir(srpm_dir)
 
     for dist in dist_list:
-        dist_srpm_dir = os.path.join(TITO_DIR, dist)
+        dist_srpm_dir = os.path.join(srpm_dir, dist)
         build_target = "%s-%s" % (build_tag_prefix,
                                   (DISTRIBUTION_INFO.get(dist)).get(DIST_KOJI_NAME))
         # Get all the source RPMs that were built
