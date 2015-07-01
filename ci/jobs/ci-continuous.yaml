@@ -97,6 +97,7 @@
               source /usr/bin/virtualenvwrapper.sh
               # Build a virtualenv to hold the test requirements
               mkvirtualenv --system-site-packages test
+              pip install --upgrade six
               pip install -r $WORKSPACE/pulp/test_requirements.txt
 
               # If rhel6
@@ -245,6 +246,7 @@
               source /usr/bin/virtualenvwrapper.sh
               # Build a virtualenv to hold the test requirements
               mkvirtualenv --system-site-packages test
+              pip install --upgrade six
               pip install -r $WORKSPACE/plugin/test_requirements.txt
             fi
 
