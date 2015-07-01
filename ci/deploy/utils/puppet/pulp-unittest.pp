@@ -34,7 +34,7 @@ class pulp_unittest {
             command => '/usr/bin/curl -O https://pypi.python.org/packages/source/p/pip/pip-1.1.tar.gz && /bin/tar xfz pip-1.1.tar.gz && pushd pip-1.1 && /usr/bin/python setup.py install && popd && rm -rf pip-*'
         } -> exec { 'install pip deps rhel5':
             # This depends on the el5_packages because python-setuptools must be installed before this step
-            command => 'sudo pip install mock>=1.0.1, coverage==3.7, nosexcover==1.0.8, unittest2',
+            command => 'sudo pip install mock>=1.0.1, coverage==3.7, nosexcover==1.0.8',
             path => "/usr/local/bin/:/bin/:/usr/bin/"
 
         }
