@@ -145,7 +145,8 @@
           keep-long-stdio: true
           test-stability: true
       # Take the node offline so that another build doesn't pile on
-      - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
+      - groovy-postbuild:
+          script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
 
 - job-template:
     name: 'unittest-{pulp_plugin}-pr'
@@ -285,7 +286,8 @@
           keep-long-stdio: true
           test-stability: true
       # Take the node offline so that another build doesn't pile on
-      - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
+      - groovy-postbuild:
+          script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
 
 - job-group:
     name: 'unittest-pr-job'
