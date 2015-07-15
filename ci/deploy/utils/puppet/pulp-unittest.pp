@@ -75,8 +75,6 @@ class pulp_unittest {
             'git',
             'python-devel',
             'python-pip',
-            'python-qpid',
-            'python-qpid-qmf',
             'qpid-cpp-server-store',
             'python-virtualenvwrapper',
             # Other non-qpid packages
@@ -98,9 +96,9 @@ class pulp_unittest {
         }
         class {'::mongodb::client':}
 
-        class {'::qpid::server':
+        class {'qpid':
             config_file => '/etc/qpid/qpidd.conf',
-            auth => 'no'
+            auth => false,
         }
     }
 }

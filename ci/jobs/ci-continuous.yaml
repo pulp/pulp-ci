@@ -9,6 +9,7 @@
           name: node-type
           values:
             - f21-np
+            - f22-np
             - rhel5-np
             - rhel6-np
             - rhel7-np
@@ -108,8 +109,14 @@
               fi
             fi
 
-            sudo yum -y install --skip-broken --nogpgcheck @pulp-server @pulp-admin @pulp-consumer python-pulp-devel
-            sudo yum -y remove pulp-\* python-pulp\*
+            if [ "$OS_VERSION" == "22" ]; then
+              sudo sed -i.bak s/clean_requirements_on_remove=true/clean_requirements_on_remove=false/g /etc/dnf/dnf.conf
+              sudo dnf -y install --nogpgcheck @pulp-server @pulp-admin @pulp-consumer python-pulp-devel
+              sudo dnf -y remove pulp-\* python-pulp\*
+            else
+              sudo yum -y install --skip-broken --nogpgcheck @pulp-server @pulp-admin @pulp-consumer python-pulp-devel
+              sudo yum -y remove pulp-\* python-pulp\*
+            fi
 
             rm -rf $WORKSPACE/test
             mkdir -p $WORKSPACE/test
@@ -305,6 +312,7 @@
             - master
           unittest_platforms:
             - f21-np
+            - f22-np
             - rhel6-np
             - rhel7-np
       - pulp_docker:
@@ -313,6 +321,7 @@
             - master
           unittest_platforms:
             - f21-np
+            - f22-np
             - rhel6-np
             - rhel7-np
       - pulp_ostree:
@@ -321,6 +330,7 @@
             - master
           unittest_platforms:
             - f21-np
+            - f22-np
             - rhel7-np
       - pulp_puppet:
           min_coverage: 95.0
@@ -332,6 +342,7 @@
             - master
           unittest_platforms:
             - f21-np
+            - f22-np
             - rhel5-np
             - rhel6-np
             - rhel7-np
@@ -341,6 +352,7 @@
             - master
           unittest_platforms:
             - f21-np
+            - f22-np
             - rhel6-np
             - rhel7-np
       - pulp_rpm:
@@ -353,6 +365,7 @@
             - master
           unittest_platforms:
             - f21-np
+            - f22-np
             - rhel5-np
             - rhel6-np
             - rhel7-np
