@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
+
 echo "Disable selinux"
-# This will fail on el5 as selinux isn't installed on the base image
 sudo setenforce 0
 
 # Fail immediately on error
@@ -31,7 +31,7 @@ gpgcheck=0
 EndOfMessage
     sudo mv mrg.repo /etc/yum.repos.d/
 elif  [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION" == "6" ]; then
-    sudo rpm -ivh http://download-i2.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+    sudo rpm -ivh http://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
     sudo rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-6.noarch.rpm
 elif  [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION" == "7" ]; then
     sudo rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
@@ -49,7 +49,7 @@ echo "Installing required puppet modules"
 sudo puppet module install --verbose --force puppetlabs-stdlib
 sudo puppet module install --verbose --force puppetlabs-mongodb
 sudo puppet module install --verbose --force ripienaar-module_data
-sudo puppet module install --verbose --force dprince-qpid
+sudo puppet module install --verbose --force katello-qpid
 sudo puppet module install --verbose --force saz-sudo
 
 echo "Disable ttysudo requirement"
