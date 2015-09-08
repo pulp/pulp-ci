@@ -38,6 +38,8 @@ elif  [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION" == "7" ]; th
 elif  [ "$OS_NAME" == "Fedora" ] && [ "$OS_VERSION" == "19" ]; then
     sudo rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-fedora-19.noarch.rpm
     sudo yum install -y hiera
+elif  [ "$OS_NAME" == "Fedora" ] && [ "$OS_VERSION" == "22" ]; then
+    sudo sed -i 's/clean_requirements_on_remove=true/clean_requirements_on_remove=false/g' /etc/dnf/dnf.conf
 fi
 
 sudo yum install -y puppet
