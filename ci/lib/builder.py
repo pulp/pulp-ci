@@ -412,12 +412,12 @@ def build_repositories(target_dir, comps_file=None):
         distvalue = DISTRIBUTION_INFO[distkey]
         repo_dir = distvalue[REPO_NAME]
         checksum_type = distvalue[REPO_CHECKSUM_TYPE]
-        for arch_name in ['i386', 'x86_64']:
+        for arch_name in ['i386', 'x86_64', 'src']:
             arch_dir = os.path.join(target_dir, repo_dir, arch_name)
             if not os.path.exists(arch_dir):
                 continue
             # create the repo
-            if comps_file:
+            if comps_file and arch_name is not 'src':
                 command = "createrepo -s %s -g %s %s" % (checksum_type, comps_file, arch_dir)
             else:
                 command = "createrepo -s %s  %s" % (checksum_type, arch_dir)
