@@ -116,7 +116,8 @@ if build_list:
                 # make sure we are clean to merge forward before tagging
                 print "validating merge forward for %s" % spec_dir
                 git_branch = promote.get_current_git_upstream_branch(spec_dir)
-                promotion_chain = promote.get_promotion_chain(spec_dir, git_branch)
+                parent_branch = component.get('parent_branch', None)
+                promotion_chain = promote.get_promotion_chain(spec_dir, git_branch, parent_branch=parent_branch)
                 promote.check_merge_forward(spec_dir, promotion_chain)
                 # Tito tag the new releases
                 command = ['tito', 'tag', '--keep-version', '--no-auto-changelog']

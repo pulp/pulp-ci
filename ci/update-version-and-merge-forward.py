@@ -19,7 +19,6 @@ parser.add_argument("--push", action="store_true", default=False,
 
 opts = parser.parse_args()
 push_to_github = opts.push
-
 builder.ensure_dir(WORKING_DIR, clean=True)
 
 def load_config(config_name):
@@ -48,11 +47,12 @@ print "Getting git repos"
 for component in get_components(configuration):
     print "Cloning from github: %s" % component.get('git_url')
     branch_name = component['git_branch']
+    parent_branch = component.get('parent_branch', None)
     command = ['git', 'clone', component.get('git_url'), '--branch', branch_name]
     subprocess.call(command, cwd=working_dir)
     project_dir = os.path.join(working_dir, component['name'])
     git_branch = promote.get_current_git_upstream_branch(project_dir)
-    promotion_chain = promote.get_promotion_chain(project_dir, git_branch)
+    promotion_chain = promote.get_promotion_chain(project_dir, git_branch, parent_branch=parent_branch)
     promote.check_merge_forward(project_dir, promotion_chain)
     update_version = os.path.join(CI_DIR, 'update-version.py')
     # Update the version to the one specified in the config
@@ -60,4 +60,4 @@ for component in get_components(configuration):
     subprocess.call(command, cwd=CI_DIR)
     command = ['git', 'commit', '-a', '-m', 'Bumping version to %s' % component['version']]
     subprocess.call(command, cwd=project_dir)
-    promote.merge_forward(project_dir, push=push_to_github) 
+    promote.merge_forward(project_dir, push=push_to_github, parent_branch=parent_branch) 

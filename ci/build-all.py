@@ -63,13 +63,16 @@ koji_prefix = configuration['koji-target-prefix']
 
 # Source extract all the components
 
+parent_branches = {}
+
 print "Getting git repos"
 for component in get_components(configuration):
     print "Cloning from github: %s" % component.get('git_url')
     branch_name = component['git_branch']
     command = ['git', 'clone', component.get('git_url'), '--branch', branch_name]
     subprocess.call(command, cwd=working_dir)
-
+    parent_branch = component.get('parent_branch', None)
+    parent_branches['origin/%s' % branch_name] = parent_branch
 
 print "Building list of downloads & builds"
 
@@ -143,7 +146,7 @@ if build_list:
                     # make sure we are clean to merge forward before tagging
                     print "validating merge forward for %s" % spec_dir
                     git_branch = promote.get_current_git_upstream_branch(spec_dir)
-                    promotion_chain = promote.get_promotion_chain(spec_dir, git_branch)
+                    promotion_chain = promote.get_promotion_chain(spec_dir, git_branch, parent_branch=parent_branches[git_branch])
                     promote.check_merge_forward(spec_dir, promotion_chain)
                     # Tito tag the new releases
                     command = ['tito', 'tag', '--keep-version', '--no-auto-changelog']
@@ -161,7 +164,8 @@ if build_list:
             subprocess.check_call(command, cwd=spec_dir)
 
             # Merge merge the commit forward, pushing along the way
-            promote.merge_forward(spec_dir, push=True)
+            git_branch = promote.get_current_git_upstream_branch(spec_dir)
+            promote.merge_forward(spec_dir, push=True, parent_branch=parent_branches[git_branch])
 
 print "Downloading rpms"
 # Download all the files

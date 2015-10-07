@@ -3,7 +3,7 @@ import subprocess
 import sys
 
 
-def get_promotion_chain(git_directory, git_branch, upstream_name='origin'):
+def get_promotion_chain(git_directory, git_branch, upstream_name='origin', parent_branch=None):
     """
     For a given git repository & branch, determine the promotion chain
 
@@ -12,6 +12,9 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin'):
 
     For example if given 2.5-release for pulp the promotion path
     would be 2.5-release -> 2.5-testing -> 2.5-dev -> 2.6-dev -> master
+
+    If parent_branch is not None, the branch will be prepended to the promotion chain of the value
+    of parent_branch.
 
     :param git_directory: The directory containing the git repo
     :type git_directory: str
@@ -23,6 +26,11 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin'):
     :return: list of branches that the specified branch promotes to
     :rtype: list of str
     """
+    if parent_branch:
+        actual_branch = git_branch
+        if actual_branch.find('/') != -1:
+            actual_branch = actual_branch[actual_branch.find('/')+1:]
+        git_branch = parent_branch
     if git_branch.find('/') != -1:
         upstream_name = git_branch[:git_branch.find('/')]
         git_branch = git_branch[git_branch.find('/')+1:]
@@ -74,6 +82,8 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin'):
         sys.exit(1)
 
     result_list.append('master')
+    if parent_branch:
+        result_list.insert(0, actual_branch)
     result_list = ["%s/%s" % (upstream_name, item) for item in result_list]
     return result_list
 
@@ -187,7 +197,7 @@ def checkout_branch(git_directory, branch_name, remote_name='origin'):
     subprocess.check_call(['git', 'pull'], cwd=git_directory)
 
 
-def merge_forward(git_directory, push=False):
+def merge_forward(git_directory, push=False, parent_branch=None):
     """
     From whatever the current checkout is, merge it forward
 
@@ -198,7 +208,7 @@ def merge_forward(git_directory, push=False):
     """
     starting_branch = get_current_git_branch(git_directory)
     branch = get_current_git_upstream_branch(git_directory)
-    chain = get_promotion_chain(git_directory, branch)
+    chain = get_promotion_chain(git_directory, branch, parent_branch=parent_branch)
 
     for source_branch, target_branch in generate_promotion_pairs(chain):
         checkout_branch(git_directory, source_branch)
