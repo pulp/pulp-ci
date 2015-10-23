@@ -11,7 +11,7 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
     path to master is from wherever we are.
 
     For example if given 2.5-release for pulp the promotion path
-    would be 2.5-release -> 2.5-testing -> 2.5-dev -> 2.6-dev -> master
+    would be 2.5-release -> 2.5-dev -> 2.6-dev -> master
 
     If parent_branch is not None, the branch will be prepended to the promotion chain of the value
     of parent_branch.
@@ -23,6 +23,9 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
     :param upstream_name: The name of the upstream repo, defaults to 'origin', will be
                           overridden by the upstream name if specified in the branch
     :param upstream_name: str
+    :param parent_branch: Name of branch that should be used to calculate the promotion chain. This
+                          is used for building from hotfix branch.
+    :type parent_branch: str
     :return: list of branches that the specified branch promotes to
     :rtype: list of str
     """
@@ -66,9 +69,6 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
                 target_branch_versions.add(branch_version)
     result_list = [git_branch]
     if source_branch_stream == 'release':
-        result_list.append("%s-testing" % source_branch_version)
-        result_list.append("%s-dev" % source_branch_version)
-    if source_branch_stream == 'testing':
         result_list.append("%s-dev" % source_branch_version)
 
     result_list.extend(["%s-dev" % branch_version
