@@ -8,7 +8,7 @@ import sys
 
 from lib import builder
 from lib import promote
-from lib.builder import WORKSPACE, TITO_DIR, MASH_DIR, WORKING_DIR
+from lib.builder import WORKSPACE, TITO_DIR, MASH_DIR, WORKING_DIR, CI_DIR
 
 
 # Parse the args and run the program
@@ -45,31 +45,65 @@ def load_config(config_name):
         config = yaml.safe_load(config_handle)
     return config
 
-
 def get_components(configuration):
     repos = configuration['repositories']
     for component in repos:
         yield component
+
+def project_name_from_spec_dir(spec_dir):
+    remainder = spec_dir
+    while True:
+        remainder, dir_name = os.path.split(remainder)
+        for project in component_list:
+            if project == dir_name:
+                return project
+        if remainder == '/':
+            return None
 
 builder.init_koji()
 
 # Build our working_dir
 working_dir = WORKING_DIR
 print working_dir
-
-# load the config
+# Load the config file
 configuration = load_config(opts.config)
 koji_prefix = configuration['koji-target-prefix']
 
 # Source extract all the components
 
+parent_branches = {}
+merge_forward = {}
+component_list = []
+spec_project_map = {}
+
 print "Getting git repos"
 for component in get_components(configuration):
     print "Cloning from github: %s" % component.get('git_url')
     branch_name = component['git_branch']
+    parent_branch = component.get('parent_branch', None)
     command = ['git', 'clone', component.get('git_url'), '--branch', branch_name]
     subprocess.call(command, cwd=working_dir)
+    parent_branch = component.get('parent_branch', None)
+    parent_branches['origin/%s' % branch_name] = parent_branch
+    project_dir = os.path.join(working_dir, component['name'])
 
+    # Check if this is a branch or a tag
+    tag_exists = builder.does_git_tag_exist(branch_name, project_dir)
+    component_list.append(component['name'])
+    merge_forward[component['name']] = False
+    if not tag_exists:
+        merge_forward[component['name']] = True
+        # Check if everything is merged forward
+        print "Checking that everything is merged forward."
+        git_branch = promote.get_current_git_upstream_branch(project_dir)
+        promotion_chain = promote.get_promotion_chain(project_dir, git_branch, parent_branch=parent_branch)
+        promote.check_merge_forward(project_dir, promotion_chain)
+
+    # Update the version to the one specified in the config
+    command = ['./update-version.py', '--version', component['version'], project_dir]
+    subprocess.call(command, cwd=CI_DIR)
+    command = ['git', 'commit', '-a', '-m', 'Bumping version to %s' % component['version']]
+    subprocess.call(command, cwd=project_dir)
 
 print "Building list of downloads & builds"
 
@@ -105,6 +139,9 @@ for spec in builder.find_all_spec_files(working_dir):
 if opts.show_versions:
     sys.exit(0)
 
+# Match spec files to project
+
+
 # Sort the list by platform so it is easier to spot missing things in the output
 download_list = sorted(download_list, key=lambda download: download[1])
 
@@ -112,6 +149,7 @@ download_list = sorted(download_list, key=lambda download: download[1])
 build_ids = []
 
 if build_list:
+    #import pdb;pdb.set_trace()
     if rpm_signature:
         print "ERROR: rpm signature specificed but the following releases have not been built."
         for spec, dist in build_list:
@@ -140,11 +178,6 @@ if build_list:
                 if not builder.does_git_tag_exist(
                         builder.get_package_nvr_from_spec(spec), spec_dir):
                     spec_dir_set.add(spec_dir)
-                    # make sure we are clean to merge forward before tagging
-                    print "validating merge forward for %s" % spec_dir
-                    git_branch = promote.get_current_git_upstream_branch(spec_dir)
-                    promotion_chain = promote.get_promotion_chain(spec_dir, git_branch)
-                    promote.check_merge_forward(spec_dir, promotion_chain)
                     # Tito tag the new releases
                     command = ['tito', 'tag', '--keep-version', '--no-auto-changelog']
                     subprocess.check_call(command, cwd=spec_dir)
@@ -160,8 +193,13 @@ if build_list:
             command = ['git', 'push', '--tag']
             subprocess.check_call(command, cwd=spec_dir)
 
-            # Merge merge the commit forward, pushing along the way
-            promote.merge_forward(spec_dir, push=True)
+            project_name = None
+            project_name = project_name_from_spec_dir(spec_dir)
+
+            if merge_forward[project_name]:
+                # Merge merge the commit forward, pushing along the way
+                git_branch = promote.get_current_git_upstream_branch(spec_dir)
+                promote.merge_forward(spec_dir, push=True, parent_branch=parent_branches[git_branch])
 
 print "Downloading rpms"
 # Download all the files

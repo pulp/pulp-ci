@@ -88,7 +88,7 @@ WORKSPACE = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..',
 WORKING_DIR = os.path.join(WORKSPACE, 'working')
 MASH_DIR = os.path.join(WORKSPACE, 'mash')
 TITO_DIR = os.path.join(WORKSPACE, 'tito')
-
+CI_DIR = os.path.join(WORKSPACE, 'pulp_packaging', 'ci')
 
 def get_nvr_from_spec_file_in_directory(directory_path):
     """
