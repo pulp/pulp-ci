@@ -325,7 +325,7 @@
             - rhel6-np
             - rhel7-np
       - pulp_docker:
-          min_coverage: 100
+          min_coverage: 96
           unittest_branches:
             - master
           unittest_platforms:
