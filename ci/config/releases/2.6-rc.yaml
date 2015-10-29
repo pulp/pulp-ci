@@ -1,0 +1,28 @@
+koji-target-prefix: pulp-2.6-testing
+rsync-target-dir: 2.6/dev
+repositories:
+  - name: pulp
+    external_deps: deps/external_deps.json
+    git_url: git@github.com:pulp/pulp.git
+    git_branch: pulp-2.6.5-0.1.beta
+    version: 2.6.5-0.2.rc
+  - name: pulp_puppet
+    git_url: git@github.com:pulp/pulp_puppet.git
+    git_branch: pulp-puppet-2.6.5-0.1.beta
+    version: 2.6.5-0.2.rc
+  - name: pulp_rpm
+    git_url: git@github.com:pulp/pulp_rpm.git
+    git_branch: pulp-rpm-2.6.5-0.1.beta
+    version: 2.6.5-0.2.rc
+  - name: pulp_docker
+    git_url: git@github.com:pulp/pulp_docker.git
+    git_branch: 1.0-release
+    version: 1.0.2-1
+  - name: crane
+    git_url: git@github.com:pulp/crane.git
+    git_branch: 1.1-release
+    version: 1.1.0-1
+  - name: pulp_python
+    git_url: git@github.com:pulp/pulp_python.git
+    git_branch: 1.0-release
+    version: 1.0.1-1
