@@ -99,11 +99,12 @@ for component in get_components(configuration):
         promotion_chain = promote.get_promotion_chain(project_dir, git_branch, parent_branch=parent_branch)
         promote.check_merge_forward(project_dir, promotion_chain)
 
-    # Update the version to the one specified in the config
-    command = ['./update-version.py', '--version', component['version'], project_dir]
-    subprocess.call(command, cwd=CI_DIR)
-    command = ['git', 'commit', '-a', '-m', 'Bumping version to %s' % component['version']]
-    subprocess.call(command, cwd=project_dir)
+    # Update the version if one is specified in the config
+    if 'version' in componenet:
+        command = ['./update-version.py', '--version', component['version'], project_dir]
+        subprocess.call(command, cwd=CI_DIR)
+        command = ['git', 'commit', '-a', '-m', 'Bumping version to %s' % component['version']]
+        subprocess.call(command, cwd=project_dir)
 
 print "Building list of downloads & builds"
 
