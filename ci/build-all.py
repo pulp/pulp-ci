@@ -100,7 +100,7 @@ for component in get_components(configuration):
         promote.check_merge_forward(project_dir, promotion_chain)
 
     # Update the version if one is specified in the config
-    if 'version' in componenet:
+    if 'version' in component:
         command = ['./update-version.py', '--version', component['version'], project_dir]
         subprocess.call(command, cwd=CI_DIR)
         command = ['git', 'commit', '-a', '-m', 'Bumping version to %s' % component['version']]
