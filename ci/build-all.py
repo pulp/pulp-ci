@@ -188,17 +188,18 @@ if build_list:
                                             srpm_dir=TITO_DIR, scratch=False)
         builder.wait_for_completion(build_ids)
         for spec_dir in spec_dir_set:
-            # Push the tags
-            command = ['git', 'push']
-            subprocess.check_call(command, cwd=spec_dir)
-            command = ['git', 'push', '--tag']
-            subprocess.check_call(command, cwd=spec_dir)
-
             project_name = None
             project_name = project_name_from_spec_dir(spec_dir)
 
+            # Push the tags
             if merge_forward[project_name]:
-                # Merge merge the commit forward, pushing along the way
+                command = ['git', 'push']
+                subprocess.check_call(command, cwd=spec_dir)
+            command = ['git', 'push', '--tag']
+            subprocess.check_call(command, cwd=spec_dir)
+
+            if merge_forward[project_name]:
+                # Merge the commit forward, pushing along the way
                 git_branch = promote.get_current_git_upstream_branch(spec_dir)
                 promote.merge_forward(spec_dir, push=True, parent_branch=parent_branches[git_branch])
 
