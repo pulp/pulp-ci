@@ -180,7 +180,7 @@ if build_list:
                         builder.get_package_nvr_from_spec(spec), spec_dir):
                     spec_dir_set.add(spec_dir)
                     # Tito tag the new releases
-                    command = ['tito', 'tag', '--keep-version', '--no-auto-changelog']
+                    command = ['tito', 'tag', '--keep-version', '--accept-auto-changelog']
                     subprocess.check_call(command, cwd=spec_dir)
             builder.build_srpm_from_spec(spec_dir, TITO_DIR, testing=False, dist=dist)
 
