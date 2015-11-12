@@ -118,9 +118,9 @@
             cd $WORKSPACE/pulp
 
             if [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION"  \< "7" ]; then
-              PLATFORM_REQS=$(rpmquery --specfile pulp.spec --queryformat '[%{REQUIRENAME}\n]' | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq)
+              PLATFORM_REQS=$(rpmquery --specfile pulp.spec --queryformat '[%{REQUIRENEVRS}\n]' | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq)
             else
-              PLATFORM_REQS=$(rpmspec -q --queryformat '[%{REQUIRENAME}\n]' pulp.spec | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq)
+              PLATFORM_REQS=$(rpmspec -q --queryformat '[%{REQUIRENEVRS}\n]' pulp.spec | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq)
             fi
 
             if [ "$OS_VERSION" == "22" ]; then
