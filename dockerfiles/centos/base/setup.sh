@@ -2,6 +2,7 @@
 
 # the apache user needs write access to this directory
 chown apache /var/lib/pulp
+chown apache /var/lib/pulp/celery
 
 # copy the basic directory structure if it isn't already present.
 if [ ! -e /var/lib/pulp/content ]
