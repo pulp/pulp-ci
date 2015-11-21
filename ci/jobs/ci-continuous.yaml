@@ -8,8 +8,8 @@
           type: label-expression
           name: node-type
           values:
-            - f21-np
             - f22-np
+            - f23-np
             - rhel5-np
             - rhel6-np
             - rhel7-np
@@ -320,8 +320,8 @@
           unittest_branches:
             - master
           unittest_platforms:
-            - f21-np
             - f22-np
+            - f23-np
             - rhel6-np
             - rhel7-np
       - pulp_docker:
@@ -329,8 +329,8 @@
           unittest_branches:
             - master
           unittest_platforms:
-            - f21-np
             - f22-np
+            - f23-np
             - rhel6-np
             - rhel7-np
       - pulp_ostree:
@@ -338,8 +338,8 @@
           unittest_branches:
             - master
           unittest_platforms:
-            - f21-np
             - f22-np
+            - f23-np
             - rhel7-np
       - pulp_puppet:
           min_coverage: 95.0
@@ -350,8 +350,8 @@
             - 2.7-testing
             - master
           unittest_platforms:
-            - f21-np
             - f22-np
+            - f23-np
             - rhel5-np
             - rhel6-np
             - rhel7-np
@@ -360,8 +360,8 @@
           unittest_branches:
             - master
           unittest_platforms:
-            - f21-np
             - f22-np
+            - f23-np
             - rhel6-np
             - rhel7-np
       - pulp_rpm:
@@ -373,8 +373,8 @@
             - 2.7-testing
             - master
           unittest_platforms:
-            - f21-np
             - f22-np
+            - f23-np
             - rhel5-np
             - rhel6-np
             - rhel7-np
