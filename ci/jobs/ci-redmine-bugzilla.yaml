@@ -4,7 +4,7 @@
 - job-template:
     name: 'redmine-bugzilla-automation'
     defaults: ci-workflow-runtest
-    node: 'f21-np'
+    node: 'f23-np'
     scm:
         - git:
             url: 'https://github.com/pulp/pulp_packaging.git'
@@ -37,6 +37,7 @@
 
             sudo pip install --upgrade python-bugzilla
             sudo pip install python-redmine
+            sudo pip install certifi
 
             # Here due to InsecurePlatformWarning
             # https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning
