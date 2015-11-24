@@ -1,0 +1,11 @@
+# Pulp Server base URL
+pulp_smash_baseurl: "https://localhost"
+
+# Pulp Server username
+pulp_smash_username: "admin"
+
+# Pulp Server password
+pulp_smash_password: "admin"
+
+# If SSL certificate should be verified
+pulp_smash_verify: "false"
