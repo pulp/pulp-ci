@@ -1,0 +1,8 @@
+---
+
+- hosts: all
+  roles:
+    - role: pulp
+      pulp_install_server: true
+    - pulp-smash
+  sudo: true

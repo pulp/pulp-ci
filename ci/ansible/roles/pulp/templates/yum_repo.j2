@@ -1,0 +1,4 @@
+[{{ item.key }}]
+{% for key, value in item.value.iteritems() | sort -%}
+  {{ key }}={{ value }}
+{% endfor %}

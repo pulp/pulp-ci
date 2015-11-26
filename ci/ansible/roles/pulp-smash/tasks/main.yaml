@@ -1,0 +1,30 @@
+---
+
+- name: Remove previous Pulp Smash repository
+  shell: rm -rf pulp-smash
+
+- name: Clone Pulp Smash repository
+  git: repo=https://github.com/PulpQE/pulp-smash.git depth=1 dest=pulp-smash
+
+- name: Install required OS packages
+  action: "{{ ansible_pkg_mgr }} name={{ item }} state=present"
+  with_items:
+    - python
+    - python-pip
+    - python-virtualenv
+
+- name: Create Pulp Smash virtual environment
+  shell: virtualenv venv chdir=pulp-smash
+
+# mock Pulp Smash requirement requires an updated setuptools
+- name: Update setuptools
+  shell: venv/bin/pip install -U setuptools chdir=pulp-smash
+
+- name: Install Pulp Smash requirements
+  shell: venv/bin/pip install -r requirements.txt pytest chdir=pulp-smash
+
+- name: Configure Pulp Smash
+  template: src=settings.j2 dest=pulp-smash/pulp_smash/settings.json
+
+- name: Run Pulp Smash
+  shell: XDG_CONFIG_DIRS=. venv/bin/py.test --junit-xml=report.xml pulp_smash/tests chdir=pulp-smash
