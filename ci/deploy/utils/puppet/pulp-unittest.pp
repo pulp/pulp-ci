@@ -75,7 +75,7 @@ class pulp_unittest {
             'git',
             'python-devel',
             'python-pip',
-            'qpid-cpp-server-store',
+            'qpid-cpp-server-linearstore',
             'python-virtualenvwrapper',
             # Other non-qpid packages
             'tito', 'rpm-build', 'python-paste',  'python-lxml'

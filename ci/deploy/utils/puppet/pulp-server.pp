@@ -7,7 +7,7 @@ class pulp_server {
 
     $qpid_packages = [
         'python-qpid-qmf',
-        'qpid-cpp-server-store',
+        'qpid-cpp-server-linearstore',
         'python-gofer-qpid'
     ]
 

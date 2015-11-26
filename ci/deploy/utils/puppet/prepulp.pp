@@ -65,7 +65,7 @@ class prepulp {
             'python-pip',
             'python-qpid',
             'python-qpid-qmf',
-            'qpid-cpp-server-store',
+            'qpid-cpp-server-linearstore',
         ]
 
         package { $packages_qpid:
