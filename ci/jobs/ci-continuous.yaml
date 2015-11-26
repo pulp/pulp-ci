@@ -117,12 +117,6 @@
             echo "Setting up pulp-server"
             cd $WORKSPACE/pulp
 
-            if [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION"  \< "7" ]; then
-              PLATFORM_REQS=$(rpmquery --specfile pulp.spec --queryformat '[%{REQUIRENEVRS}\n]' | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq)
-            else
-              PLATFORM_REQS=$(rpmspec -q --queryformat '[%{REQUIRENEVRS}\n]' pulp.spec | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq)
-            fi
-
             if [ "$OS_NAME" == "Fedora" ]; then
               rpmspec -q --queryformat '[%{REQUIRENEVRS}\n]' *.spec | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq | xargs -d "\n" sudo dnf -y install --nogpgcheck python-pulp-devel
             fi
