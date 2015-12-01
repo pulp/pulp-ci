@@ -14,13 +14,11 @@
   service:
     name: pulp_celerybeat
     state: restarted
-  when: pulp_run_celerybeat
 
 - name: Restart Pulp resource manager service
   service:
     name: pulp_resource_manager
     state: restarted
-  when: pulp_run_resource_manager
 
 - name: Restart goferd service
   service:
