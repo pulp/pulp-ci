@@ -13,10 +13,8 @@
 - name: Install qpid-cpp server
   action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
   with_items:
-    - python-qpid-qmf
     - qpid-cpp-server
     - qpid-cpp-server-linearstore
-    - qpid-tools
 
 - name: Start and enable qpid-cpp server service
   service: name=qpidd state=started enabled=yes
