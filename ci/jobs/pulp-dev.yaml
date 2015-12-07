@@ -1,0 +1,90 @@
+- scm:
+    name: pulp-packaging
+    scm:
+        - git:
+            url: https://github.com/pulp/pulp_packaging.git
+            branches:
+                - '*/master'
+            skip-tag: true
+
+
+- job-template:
+    name: 'pulp-{pulp_version}-dev-{os}'
+    concurrent: true
+    node: '{os}-np'
+    scm:
+        - pulp-packaging
+    wrappers:
+        - config-file-provider:
+            files:
+                - file-id: rhn_credentials
+                  variable: RHN_CREDENTIALS
+    builders:
+        - shell: |
+            sudo yum install -y git ansible libselinux-python
+            echo 'localhost' > hosts
+            source ${{RHN_CREDENTIALS}}
+            ansible-playbook -i hosts ci/ansible/pulp_server.yaml \
+                -e pulp_version=2.7 \
+                -e "rhn_username=${{RHN_USERNAME}}" \
+                -e "rhn_password=${{RHN_PASSWORD}}" \
+                -e "rhn_poolid=${{RHN_POOLID}}" \
+                --connection=local
+            echo ${{SSH_CONNECTION}} | awk '{{ print "BASE_URL=https://"$3 }}' >> parameters.txt
+        - inject:
+            properties-file: parameters.txt
+        - trigger-builds:
+            - project:
+                - pulp-smash-runner
+              block: true
+              predefined-parameters: BASE_URL=$BASE_URL
+              block-thresholds:
+                  build-step-failure-threshold: never
+                  unstable-threshold: never
+                  failure-threshold: never
+        - copyartifact:
+            project: pulp-smash-runner
+            which-build: specific-build
+            build-number: ${{TRIGGERED_BUILD_NUMBER_PULP_SMASH_RUNNER}}
+            flatten: true
+    publishers:
+        - junit:
+            results: report.xml
+
+
+- job:
+    name: pulp-smash-runner
+    concurrent: true
+    properties:
+        - copyartifact:
+            projects: pulp-*-dev-*
+    node: f22-np
+    parameters:
+        - string:
+            name: BASE_URL
+    scm:
+        - pulp-packaging
+    builders:
+        - shell: |
+            sudo yum install -y git ansible
+            echo 'localhost' > hosts
+            ansible-playbook -i hosts ci/ansible/pulp_smash.yaml \
+                -e pulp_smash_baseurl=${BASE_URL} \
+                --connection=local
+    publishers:
+        - archive:
+            artifacts: 'ci/ansible/pulp-smash/report.xml'
+
+
+- project:
+    name: pulp-dev
+    os:
+        - f22
+        - f23
+        - rhel6
+        - rhel7
+    pulp_version:
+        - 2.6
+        - 2.7
+    jobs:
+        - pulp-{pulp_version}-dev-{os}
