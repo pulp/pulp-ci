@@ -37,7 +37,9 @@
             - project:
                 - pulp-smash-runner
               block: true
-              predefined-parameters: BASE_URL=$BASE_URL
+              predefined-parameters: |
+                  BASE_URL=$BASE_URL
+                  PULP_VERSION={pulp_version}
               block-thresholds:
                   build-step-failure-threshold: never
                   unstable-threshold: never
@@ -62,6 +64,10 @@
     parameters:
         - string:
             name: BASE_URL
+        - string:
+            name: PULP_VERSION
+            decription: |
+                Pulp version setup on the server.
     scm:
         - pulp-packaging
     builders:
@@ -70,6 +76,7 @@
             echo 'localhost' > hosts
             ansible-playbook -i hosts ci/ansible/pulp_smash.yaml \
                 -e pulp_smash_baseurl=${BASE_URL} \
+                -e pulp_smash_version=${PULP_VERSION} \
                 --connection=local
     publishers:
         - archive:
