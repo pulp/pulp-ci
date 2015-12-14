@@ -93,5 +93,6 @@
     pulp_version:
         - 2.6
         - 2.7
+        - 2.8
     jobs:
         - pulp-{pulp_version}-dev-{os}
