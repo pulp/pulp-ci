@@ -21,7 +21,8 @@
                   variable: RHN_CREDENTIALS
     triggers:
         - reverse:
-              jobs: build-automation-repo-{pulp_version}-dev
+            jobs: build-automation-repo-{pulp_version}-dev
+            result: success
     builders:
         - shell: |
             sudo yum install -y git ansible libselinux-python
