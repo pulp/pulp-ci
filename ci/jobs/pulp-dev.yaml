@@ -19,6 +19,9 @@
             files:
                 - file-id: rhn_credentials
                   variable: RHN_CREDENTIALS
+    triggers:
+        - reverse:
+              jobs: build-automation-repo-{pulp_version}-dev
     builders:
         - shell: |
             sudo yum install -y git ansible libselinux-python
