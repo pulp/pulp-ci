@@ -10,7 +10,7 @@
 
 - job-template:
     name: 'pulp-{pulp_version}-dev-{os}'
-    concurrent: true
+    concurrent: false
     node: '{os}-np'
     scm:
         - pulp-packaging
@@ -21,8 +21,8 @@
                   variable: RHN_CREDENTIALS
     triggers:
         - reverse:
-            jobs: build-automation-repo-{pulp_version}-dev
-            result: success
+            jobs: 'build-automation-repo-{pulp_version}-dev'
+            result: 'success'
     builders:
         - shell: |
             sudo yum install -y git ansible libselinux-python
@@ -60,7 +60,7 @@
 
 - job:
     name: pulp-smash-runner
-    concurrent: true
+    concurrent: false
     properties:
         - copyartifact:
             projects: pulp-*-dev-*
