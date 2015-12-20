@@ -11,7 +11,7 @@
 - job-template:
     name: 'pulp-{pulp_version}-dev-{os}'
     concurrent: false
-    node: '{os}-np'
+    node: '{os}-vanilla-np'
     scm:
         - pulp-packaging
     wrappers:
