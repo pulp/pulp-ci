@@ -56,6 +56,9 @@
     publishers:
         - junit:
             results: report.xml
+        # Take the node offline so that another build doesn't pile on
+        - groovy-postbuild:
+            script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
 
 
 - job:
@@ -85,6 +88,9 @@
     publishers:
         - archive:
             artifacts: 'ci/ansible/pulp-smash/report.xml'
+        # Take the node offline so that another build doesn't pile on
+        - groovy-postbuild:
+            script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
 
 
 - project:
