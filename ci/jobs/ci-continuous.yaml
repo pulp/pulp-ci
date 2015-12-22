@@ -43,7 +43,7 @@
             - pulp
           # Poll once per minute since our jenkins isn't public and web hooks aren't an option
           cron: '* * * * *'
-          trigger-phrase: 'ok test'
+          trigger-phrase: 'ok jenkies'
           allow-whitelist-orgs-as-admins: true
           # only-trigger-phrase: true
           white-list-target-branches:
