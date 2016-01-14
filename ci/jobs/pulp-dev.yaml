@@ -29,7 +29,7 @@
             echo 'localhost' > hosts
             source ${{RHN_CREDENTIALS}}
             ansible-playbook -i hosts ci/ansible/pulp_server.yaml \
-                -e pulp_version=2.7 \
+                -e pulp_version={pulp_version} \
                 -e "rhn_username=${{RHN_USERNAME}}" \
                 -e "rhn_password=${{RHN_PASSWORD}}" \
                 -e "rhn_poolid=${{RHN_POOLID}}" \
