@@ -6,7 +6,7 @@ installation of Pulp to be quickly deployed with Docker. With one command,
 you can have a fully-functional Pulp deployment ready to use.
 
 This deployment method is for demo purposes only. It may also serve as the basis
-for developing a more robust deployment approach. 
+for developing a more robust deployment approach.
 
 Each directory contains a Dockerfile to build the docker image for that Pulp
 service or component.
@@ -15,6 +15,8 @@ service or component.
 
 Deployment
 ----------
+
+.. note:: On some systems SELinux may cause permission failures. Until a proper configuration has been tested SELinux may need to be set to permissive mode as a workaround. Run command ``setenforce 0`` then run the ``start.sh`` script.
 
 Run ``./start.sh /path/to/lotsof/storage`` to pull and start all of the
 images for a multi-container Pulp server.
