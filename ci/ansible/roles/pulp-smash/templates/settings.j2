@@ -5,6 +5,9 @@
         {% if pulp_smash_version %}
         "version": "{{ pulp_smash_version }}",
         {% endif %}
+        {% if pulp_smash_cli_transport %}
+        "cli_transport": "{{ pulp_smash_cli_transport }}",
+        {% endif %}
         "verify": {{ pulp_smash_verify }}
     }
 }
