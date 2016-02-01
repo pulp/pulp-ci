@@ -26,7 +26,7 @@
   with_dict:
     pulp:
       name: Pulp Project repository
-      baseurl: "https://repos.fedorapeople.org/pulp/pulp/testing/automation/{{ pulp_version }}/dev/{% if ansible_distribution == 'Fedora' %}fedora-{% endif %}$releasever/$basearch/"
+      baseurl: "https://repos.fedorapeople.org/pulp/pulp/testing/automation/{{ pulp_version }}/stage/{% if ansible_distribution == 'Fedora' %}fedora-{% endif %}$releasever/$basearch/"
 
       gpgcheck: 0
 
