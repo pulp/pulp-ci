@@ -1,4 +1,5 @@
 ---
+- selinux: policy=targeted state=permissive
 
 - name: Install MongoDB server
   action: "{{ ansible_pkg_mgr }} name=mongodb-server state=latest"
