@@ -2,7 +2,10 @@
 - selinux: policy=targeted state=permissive
 
 - name: Install MongoDB server
-  action: "{{ ansible_pkg_mgr }} name=mongodb-server state=latest"
+  action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
+  with_items:
+    - mongodb-server
+    - mongodb
 
 - name: Start and enable MongoDB server service
   service: name=mongod state=started enabled=yes
