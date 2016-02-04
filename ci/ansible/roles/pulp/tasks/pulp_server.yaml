@@ -42,14 +42,6 @@
     - Restart Pulp celerybeat service
     - Restart Pulp resource manager service
 
-- name: Install Pulp OSTree
-  action: "{{ ansible_pkg_mgr }} name=pulp-ostree-plugins"
-  notify:
-    - Restart Apache service
-    - Restart Pulp workers service
-    - Restart Pulp celerybeat service
-    - Restart Pulp resource manager service
-
 - name: Check if Pulp's DB was initialized
   stat:
     path: /var/lib/pulp/db_initialized.flag
