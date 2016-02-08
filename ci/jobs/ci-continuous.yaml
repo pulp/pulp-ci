@@ -71,9 +71,9 @@
             echo "PULP BASE VERSION: ${PULP_VERSION}"
 
             if [ "$OS_NAME" == "RedHatEnterpriseServer" ]; then
-                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/${PULP_VERSION}/dev/\$releasever/\$basearch/"
+                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/${PULP_VERSION}/stage/\$releasever/\$basearch/"
             else
-                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/${PULP_VERSION}/dev/fedora-\$releasever/\$basearch/"
+                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/${PULP_VERSION}/stage/fedora-\$releasever/\$basearch/"
             fi
 
             cat > pulp-deps.repo<< EndOfMessage
@@ -228,9 +228,9 @@
             popd
             echo $PULP_VERSION
             if [ "$OS_NAME" == "RedHatEnterpriseServer" ]; then
-                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/$PULP_VERSION/dev/\$releasever/\$basearch/"
+                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/$PULP_VERSION/stage/\$releasever/\$basearch/"
             else
-                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/$PULP_VERSION/dev/fedora-\$releasever/\$basearch/"
+                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/$PULP_VERSION/stage/fedora-\$releasever/\$basearch/"
             fi
 
             cat > pulp-deps.repo<< EndOfMessage
@@ -242,7 +242,7 @@
             EndOfMessage
 
             sudo mv pulp-deps.repo /etc/yum.repos.d/
-
+            cd plugin
             if [ "$OS_NAME" == "Fedora" ]; then
               rpmspec -q --queryformat '[%{{REQUIRENEVRS}}\n]' *.spec | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq | xargs -d "\n" sudo dnf -y install --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel
               sudo dnf -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\*
