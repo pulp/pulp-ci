@@ -101,6 +101,8 @@
             sudo yum -y install python-pip python-virtualenv
             virtualenv venv
             source venv/bin/activate
+            git clone http://github.com/PulpQE/pulp-smash.git
+            cd pulp-smash
             pip install -U setuptools
             pip install -r requirements.txt pytest
 
