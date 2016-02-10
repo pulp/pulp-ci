@@ -143,6 +143,7 @@ def find_files_matching_pattern(root_directory, pattern):
         # don't look for things in playpen or testing directories
         if root.find('playpen', root_len) != -1 or \
                         root.find('test', root_len) != -1 or \
+                        root.find('deps', root_len) != -1 or \
                         root.find('build', root_len) != -1:
             continue
         for filename in fnmatch.filter(filenames, pattern):
