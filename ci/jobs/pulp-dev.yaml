@@ -63,6 +63,7 @@
     publishers:
         - junit:
             results: report.xml
+        - irc-notify-all-summary-scm
         # Take the node offline so that another build doesn't pile on
         - groovy-postbuild:
             script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"

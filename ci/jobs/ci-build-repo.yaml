@@ -63,6 +63,7 @@
               ./build-all.py {release_config}
             fi
     publishers:
+      - irc-notify-all-summary-scm
       # Take the node offline so that another build doesn't pile on
       - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
 
