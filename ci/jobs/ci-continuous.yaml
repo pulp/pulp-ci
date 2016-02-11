@@ -153,9 +153,11 @@
           results: 'test/*.xml'
           keep-long-stdio: true
           test-stability: true
+      - irc-notify-all-summary-scm
       # Take the node offline so that another build doesn't pile on
       - groovy-postbuild:
           script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
+
 
 - job-template:
     name: 'unittest-{pulp_plugin}-pr'
@@ -302,6 +304,7 @@
           results: 'test/*.xml'
           keep-long-stdio: true
           test-stability: true
+      - irc-notify-all-summary-scm
       # Take the node offline so that another build doesn't pile on
       - groovy-postbuild:
           script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
