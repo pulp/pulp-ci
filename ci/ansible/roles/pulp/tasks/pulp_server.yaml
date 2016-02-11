@@ -44,7 +44,7 @@
   action: "{{ ansible_pkg_mgr }} name=@pulp-admin"
 
 - name: Configure pulp-admin
-  shell: sudo sed -i 's/verify_ssl: True/verify_ssl: False/g' /etc/pulp/admin/admin.conf
+  shell: "sudo sed -i 's/verify_ssl: True/verify_ssl: False/g' /etc/pulp/admin/admin.conf"
 
 - name: Check if Pulp's DB was initialized
   stat:
