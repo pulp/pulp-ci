@@ -4,3 +4,4 @@
       - ircbot:
           strategy: all
           message-type: summary-scm
+          matrix-notifier: only-parent
