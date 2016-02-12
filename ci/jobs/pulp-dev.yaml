@@ -62,7 +62,7 @@
             flatten: true
     publishers:
         - junit:
-            results: report.xml
+            results: nose2-junit.xml
         - irc-notify-all-summary
         # Take the node offline so that another build doesn't pile on
         - groovy-postbuild:
@@ -105,7 +105,7 @@
             git clone http://github.com/PulpQE/pulp-smash.git
             cd pulp-smash
             pip install -U setuptools
-            pip install -r requirements.txt pytest
+            pip install -r requirements.txt nose2
 
             mkdir -p pulp_smash
             cat > pulp_smash/settings.json <<EOF
@@ -119,10 +119,10 @@
                 }
             }
             EOF
-            XDG_CONFIG_DIRS=. py.test -v --junit-xml=report.xml pulp_smash/tests
+            XDG_CONFIG_DIRS=. nose2 -v --plugin nose2.plugins.junitxml -X --junit-xml pulp_smash.tests
     publishers:
         - archive:
-            artifacts: 'pulp-smash/report.xml'
+            artifacts: 'pulp-smash/nose2-junit.xml'
         # Take the node offline so that another build doesn't pile on
         - groovy-postbuild:
             script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
