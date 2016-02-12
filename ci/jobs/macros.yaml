@@ -1,7 +1,19 @@
+# notify the default channel with a build summary on all build states (pass/unstable/fail)
+# good for things like nightly builds since it always reports
 - publisher:
-    name: irc-notify-all-summary-scm
+    name: irc-notify-all-summary
     publishers:
       - ircbot:
           strategy: all
-          message-type: summary-scm
+          message-type: summary
+          matrix-notifier: only-parent
+
+# notify the default channel with a build summary on new failure/fixed build states
+# good for per-commit things like PR testers since it only reports on status changes
+- publisher:
+    name: irc-notify-failedfixed-summary
+    publishers:
+      - ircbot:
+          strategy: new-failure-and-fixed
+          message-type: summary
           matrix-notifier: only-parent
