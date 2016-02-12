@@ -30,7 +30,7 @@
   when: ansible_distribution == "RedHat" and ansible_distribution_major_version|int >= 7
 
 - name: Enable atomic host repository
-  shell: "subscription-manager repos --enable rhel-atomic-host"
+  shell: "subscription-manager repos --enable rhel-atomic-host-rpms"
   when: ansible_distribution == "RedHat" and ansible_distribution_major_version|int >= 7
 
 - name: Enable EPEL repository
