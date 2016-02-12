@@ -49,7 +49,7 @@
     - pulp-ostree-plugins
     - pulp-ostree-admin-extensions
   when: (ansible_distribution == "RedHat" and ansible_distribution_major_version|int >= 7) or
-        (ansible_distribution == "Fedora" and ansible_distribution_major_version|int >= 23) or
+        (ansible_distribution == "Fedora" and ansible_distribution_major_version|int >= 23)
 
 - name: Configure pulp-admin
   shell: "sudo sed -i 's/# verify_ssl: True/verify_ssl: False/g' /etc/pulp/admin/admin.conf"
