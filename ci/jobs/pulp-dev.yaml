@@ -33,7 +33,7 @@
                 -e "rhn_username=${{RHN_USERNAME}}" \
                 -e "rhn_password=${{RHN_PASSWORD}}" \
                 -e "rhn_poolid=${{RHN_POOLID}}" \
-                -e "rhn_atomic_poolid=${{RHN_ATOMIC_POOL_ID}}" \
+                -e "rhn_atomic_poolid=${{RHN_ATOMIC_POOLID}}" \
                 --connection=local
             ssh-keygen -t rsa -N "" -f pulp_server_key
             cat pulp_server_key.pub >> ~/.ssh/authorized_keys
