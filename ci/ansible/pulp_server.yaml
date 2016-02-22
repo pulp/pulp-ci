@@ -4,4 +4,5 @@
   roles:
     - role: pulp
       pulp_install_server: true
+    - role: lazy
   sudo: true
