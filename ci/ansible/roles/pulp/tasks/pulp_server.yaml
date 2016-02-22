@@ -10,7 +10,7 @@
 
 - name: Setup qpid custom repo
   get_url: url=https://copr.fedoraproject.org/coprs/irina/qpid/repo/epel-6/irina-qpid-epel-6.repo dest=/etc/yum.repos.d/irina-qpid.repo
-  when: ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
 
 - name: Install qpid-cpp server
   action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
