@@ -9,7 +9,7 @@
   service: name=mongod state=started enabled=yes
 
 - name: Setup qpid custom repo
-  get_url: url=https://copr.fedoraproject.org/coprs/irina/qpid/repo/epel-6/irina-qpid-epel-6.repo dest=/etc/yum.repos.d/irina-qpid.repo
+  get_url: url=https://copr.fedorainfracloud.org/coprs/g/qpid/qpid/repo/epel-6/irina-qpid-epel-6.repo dest=/etc/yum.repos.d/copr-qpid.repo
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
 
 - name: Install qpid-cpp server
