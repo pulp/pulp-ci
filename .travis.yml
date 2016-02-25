@@ -1,0 +1,7 @@
+sudo: false
+language: python
+install:
+  - pip install ansible jenkins-job-builder
+script:
+  - ansible-playbook --syntax-check ci/ansible/*.yaml
+  - jenkins-jobs test -r -o /tmp/jobs ci/jobs
