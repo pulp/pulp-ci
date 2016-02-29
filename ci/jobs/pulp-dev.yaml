@@ -26,17 +26,17 @@
     builders:
         - shell: |
             sudo yum install -y git ansible libselinux-python
+            ssh-keygen -t rsa -N "" -f pulp_server_key
+            cat pulp_server_key.pub >> ~/.ssh/authorized_keys
+            export ANSIBLE_HOST_KEY_CHECKING=False
             echo 'localhost' > hosts
             source ${{RHN_CREDENTIALS}}
-            ansible-playbook -i hosts ci/ansible/pulp_server.yaml \
+            ansible-playbook --private-key pulp_server_key -i hosts ci/ansible/pulp_server.yaml \
                 -e pulp_version={pulp_version} \
                 -e "rhn_username=${{RHN_USERNAME}}" \
                 -e "rhn_password=${{RHN_PASSWORD}}" \
                 -e "rhn_poolid=${{RHN_POOLID}}" \
                 -e "rhn_atomic_poolid=${{RHN_ATOMIC_POOLID}}" \
-                --connection=local
-            ssh-keygen -t rsa -N "" -f pulp_server_key
-            cat pulp_server_key.pub >> ~/.ssh/authorized_keys
             echo ${{SSH_CONNECTION}} | awk '{{ print "BASE_URL=https://"$3 }}' >> parameters.txt
         - inject:
             properties-file: parameters.txt
