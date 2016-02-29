@@ -38,6 +38,7 @@
                 -e "rhn_poolid=${{RHN_POOLID}}" \
                 -e "rhn_atomic_poolid=${{RHN_ATOMIC_POOLID}}" \
             echo ${{SSH_CONNECTION}} | awk '{{ print "BASE_URL=https://"$3 }}' >> parameters.txt
+            cp /etc/pki/CA/cacert.pem cacert.pem
         - inject:
             properties-file: parameters.txt
         - trigger-builds:
@@ -55,6 +56,10 @@
                   - factory: binaryfile
                     parameter-name: PRIVATE_KEY
                     file-pattern: pulp_server_key
+                    no-files-found-action: FAIL
+                  - factory: binaryfile
+                    parameter-name: CA_CERT
+                    file-pattern: cacert.pem
                     no-files-found-action: FAIL
         - copyartifact:
             project: pulp-smash-runner
@@ -86,6 +91,9 @@
         - file:
             name: PRIVATE_KEY
             description: Private ssh key to connect on the server.
+        - file:
+            name: CA_CERT
+            description: The CA certificate that signed the Pulp apache server.
     scm:
         - pulp-packaging
     builders:
@@ -99,6 +107,10 @@
                 IdentityFile ${PWD}/PRIVATE_KEY
             EOF
             chmod 600 PRIVATE_KEY ~/.ssh/config
+
+            # Set up the CA certificate that signed Pulp's apache server.
+            sudo cp CA_CERT /etc/pki/ca-trust/source/anchors/cacert.pem
+            sudo update-ca-trust
 
             sudo yum -y install python-pip python-virtualenv
             virtualenv venv
@@ -116,7 +128,7 @@
                     "auth": ["admin", "admin"],
                     "version": "${PULP_VERSION}",
                     "cli_transport": "ssh",
-                    "verify": false
+                    "verify": true
                 }
             }
             EOF

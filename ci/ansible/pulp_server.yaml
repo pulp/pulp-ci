@@ -6,4 +6,5 @@
       pulp_install_server: true
     - role: lazy
       when: pulp_version|float >= 2.8
+    - role: pulp-certs
   sudo: true
