@@ -1,0 +1,16 @@
+---
+- name: Uninstall the coverage hook
+  command: ./coverage_hook uninstall
+  args:
+    chdir: pulp/playpen/coverage
+
+- name: Remove coverage directory
+  file:
+    path: /srv/pulp_coverage
+    state: absent
+
+- name: Restart services
+  service:
+    name: "{{ item }}"
+    state: restarted
+  with_items: "{{ pulp_coverage_services }}"
