@@ -1,4 +1,4 @@
-koji-target-prefix: pulp-2.7
+koji-target-prefix: pulp-2.8
 rsync-target-dir: 2.8/stage
 repositories:
   - name: pulp
