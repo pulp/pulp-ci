@@ -1,0 +1,9 @@
+---
+- include: install.yaml
+  when: pulp_coverage_action == "install"
+
+- include: report.yaml
+  when: pulp_coverage_action == "report"
+
+- include: uninstall.yaml
+  when: pulp_coverage_action == "uninstall"
