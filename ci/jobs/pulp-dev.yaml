@@ -72,6 +72,22 @@
                     -e pulp_coverage_report_xml=true
                 cp /tmp/report.xml coverage.xml
             fi
+        - conditional-step:
+            condition-kind: current-status
+            condition-worst: UNSTABLE
+            condition-best: FAILURE
+            steps:
+                - shell: |
+                    rm -rf logs
+                    mkdir logs
+                    if [ $(which journalctl1 &> /dev/null) ]; then
+                        journalctl > logs/syslog
+                    else
+                        cat /var/log/messages > logs/syslog
+                    fi
+                    [ -e /var/log/httpd ] && cp /var/log/httpd logs
+                    [ -e /var/log/squid ] && cp /var/log/squid logs
+                    tar -zcf logs.tar.gz logs
     publishers:
         - junit:
             results: nose2-junit.xml
@@ -86,6 +102,9 @@
                     healthy: 50
                     unhealthy: 40
                     failing: 30
+        - archive:
+            artifacts: "*.tar.gz"
+            allow-empty: true
         - irc-notify-all-summary
         # Take the node offline so that another build doesn't pile on
         - groovy-postbuild:
