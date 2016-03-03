@@ -6,14 +6,14 @@
   with_items: "{{ pulp_coverage_services }}"
 
 - name: Generate the coverage report
-  command: "./coverage_hook report {{ pulp_coverage_report_dir }}"
+  command: >
+      ./coverage_hook report
+      {% if pulp_coverage_report_erase|bool %}--erase{% endif %}
+      {% if pulp_coverage_report_html|bool %}--html{% endif %}
+      {% if pulp_coverage_report_xml|bool %}--xml{% endif %}
+      {{ pulp_coverage_report_dir }}
   args:
     chdir: pulp/playpen/coverage
-
-- name: Remove old coverage data
-  file:
-    path: /srv/pulp_coverage/*
-    state: absent
 
 - name: Start services
   service:
