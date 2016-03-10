@@ -12,7 +12,7 @@
 
 - name: Create Pulp coverage directory
   file:
-    mode: 1777
+    mode: 01777
     path: /srv/pulp_coverage
     state: directory
 
