@@ -22,8 +22,11 @@
     dest: pulp
     depth: 1
 
+- name: Install pip package
+  action: "{{ ansible_pkg_mgr }} name=python-pip state=latest"
+
 - name: Install coverage package
-  action: "{{ ansible_pkg_mgr }} name=python-coverage state=latest"
+  command: pip install -U coverage
 
 - name: Install the coverage hook
   command: ./coverage_hook install
