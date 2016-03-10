@@ -74,8 +74,8 @@
             fi
         - conditional-step:
             condition-kind: current-status
-            condition-worst: UNSTABLE
-            condition-best: FAILURE
+            condition-worst: FAILURE
+            condition-best: UNSTABLE
             steps:
                 - shell: |
                     rm -rf logs
