@@ -10,7 +10,6 @@
 
 - job-template:
     name: 'pulp-{pulp_version}-dev-{os}'
-    concurrent: false
     node: '{os}-vanilla-np'
     scm:
         - pulp-packaging
@@ -118,7 +117,7 @@
 
 - job:
     name: pulp-smash-runner
-    concurrent: false
+    concurrent: true
     properties:
         - copyartifact:
             projects: pulp-*-dev-*
