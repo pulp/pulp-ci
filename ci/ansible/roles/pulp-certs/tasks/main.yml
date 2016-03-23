@@ -20,13 +20,13 @@
 - name: Configure openssl subjectAltName
   lineinfile: dest=/etc/pki/tls/openssl.cnf
               insertafter="^\[ usr_cert \]"
-              line="subjectAltName=DNS:{{ansible_fqdn}}"
+              line="subjectAltName=DNS:{{ ansible_fqdn }},DNS:{{ ansible_nodename }},DNS:{{ ansible_hostname }}"
 
 - name: Create Apache certificate request
   command: >
     /usr/bin/openssl req -newkey rsa:2048 -keyout private/apachekey.pem -nodes -days 365
     -out certs/apachereq.pem \
-    -subj '/C=US/ST=North Carolina/L=Raleigh/O=Pulp/OU=Development/CN={{ansible_hostname}}'
+    -subj '/C=US/ST=North Carolina/L=Raleigh/O=Pulp/OU=Development/CN={{ ansible_hostname }}'
   args:
     chdir: /etc/pki/tls/
     creates: certs/apachereq.pem
