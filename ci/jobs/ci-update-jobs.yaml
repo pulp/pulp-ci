@@ -1,0 +1,48 @@
+- job:
+    name: ci-update-jobs
+    node: f23-np
+    scm:
+        - git:
+            url: https://github.com/pulp/pulp_packaging.git
+            branches:
+                - origin/master
+            skip-tag: true
+    triggers:
+        - pollscm:
+            cron: 'H/15 * * * *'
+    wrappers:
+        - inject-passwords:
+            global: true
+            mask-password-params: true
+    builders:
+        - shell: |
+            set -o nounset
+
+            if [ ! -z "${SETUP_CERTIFICATES:-}" ]; then
+                cd /etc/pki/ca-trust/source/anchors
+                for certificate in ${SETUP_CERTIFICATES}; do
+                    sudo curl -O --insecure "${certificate}"
+                done
+                sudo update-ca-trust extract
+                cd -
+            fi
+
+            sudo dnf install python-pip
+            sudo pip install jenkins-job-builder
+
+            cat > jenkins_jobs.ini <<EOF
+            [job_builder]
+            keep_descriptions=False
+            recursive=True
+            allow_duplicates=False
+
+            [jenkins]
+            user=${JENKINS_USER}
+            password=${JENKINS_PASSWORD}
+            url=${JENKINS_MASTER_URL}
+            EOF
+
+            jenkins-jobs --conf jenkins_jobs.ini test -o generated-jobs ci/jobs
+            jenkins-jobs --conf jenkins_jobs.ini update ci/jobs
+
+            rm jenkins_jobs.ini
