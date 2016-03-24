@@ -18,6 +18,10 @@
             files:
                 - file-id: rhn_credentials
                   variable: RHN_CREDENTIALS
+        - inject:
+            properties-content: |
+                OS={os}
+                PULP_VERSION={pulp_version}
     triggers:
         - reverse:
             jobs: 'build-automation-repo-{pulp_version}-dev'
@@ -36,7 +40,7 @@
                 -e "rhn_password=${{RHN_PASSWORD}}" \
                 -e "rhn_poolid=${{RHN_POOLID}}" \
                 -e "rhn_atomic_poolid=${{RHN_ATOMIC_POOLID}}"
-            if [ "{pulp_version}" = "2.8" ]; then
+            if [ "${{PULP_VERSION}}" = "2.8" ]; then
                 ansible-playbook --private-key pulp_server_key -i hosts ci/ansible/pulp_coverage.yaml
             fi
             echo ${{SSH_CONNECTION}} | awk '{{ print "BASE_URL=https://"$3 }}' >> parameters.txt
@@ -49,7 +53,7 @@
               block: true
               predefined-parameters: |
                   BASE_URL=$BASE_URL
-                  PULP_VERSION={pulp_version}
+                  PULP_VERSION=$PULP_VERSION
               block-thresholds:
                   build-step-failure-threshold: never
                   unstable-threshold: never
@@ -69,12 +73,16 @@
             build-number: ${{TRIGGERED_BUILD_NUMBER_PULP_SMASH_RUNNER}}
             flatten: true
         - shell: |
-            if [ "{pulp_version}" = "2.8" ]; then
+            if [ "${{PULP_VERSION}}" = "2.8" ]; then
                 ansible-playbook --private-key pulp_server_key -i hosts ci/ansible/pulp_coverage.yaml \
                     -e pulp_coverage_action=report \
                     -e pulp_coverage_report_dir=/tmp \
                     -e pulp_coverage_report_xml=true
                 cp /tmp/report.xml coverage.xml
+            fi
+            if [[ "${{OS}}" =~ "rhel[0-9]" ]]; then
+                subscription-manager unregister
+                subscription-manager clean
             fi
         - conditional-step:
             condition-kind: current-status
