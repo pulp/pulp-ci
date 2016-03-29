@@ -64,18 +64,5 @@
             fi
     publishers:
       - irc-notify-all-summary
-      # Take the node offline so that another build doesn't pile on
-      - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
+      - mark-node-offline
 
-
-- project:
-    name: automation-repos
-    jobs:
-     - 'build-automation-repo-{release_config}'
-    release_config:
-     - 2.6-dev
-     - 2.6-testing
-     - 2.6-release
-     - 2.7-dev
-     - 2.8-dev
-     - master

@@ -153,10 +153,7 @@
           results: 'test/*.xml'
           keep-long-stdio: true
           test-stability: true
-      # Take the node offline so that another build doesn't pile on
-      - groovy-postbuild:
-          script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
-
+      - mark-node-offline
 
 - job-template:
     name: 'unittest-{pulp_plugin}-pr'
@@ -303,80 +300,10 @@
           results: 'test/*.xml'
           keep-long-stdio: true
           test-stability: true
-      # Take the node offline so that another build doesn't pile on
-      - groovy-postbuild:
-          script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
+      - mark-node-offline
 
 - job-group:
-    name: 'unittest-pr-job'
+    name: 'unittest-plugins-pr-jobs'
     jobs:
       - 'unittest-{pulp_plugin}-pr'
 
-- project:
-    name: unit-tests-pr
-    jobs:
-     - 'unittest-pr-job'
-    pulp_plugin:
-      - pulp_deb:
-          min_coverage: 100
-          unittest_branches:
-            - master
-          unittest_platforms:
-            - f22-np
-            - f23-np
-            - rhel6-np
-            - rhel7-np
-      - pulp_docker:
-          min_coverage: 100
-          unittest_branches:
-            - master
-          unittest_platforms:
-            - f22-np
-            - f23-np
-            - rhel6-np
-            - rhel7-np
-      - pulp_ostree:
-          min_coverage: 100
-          unittest_branches:
-            - master
-          unittest_platforms:
-            - f22-np
-            - f23-np
-            - rhel7-np
-      - pulp_puppet:
-          min_coverage: 95.0
-          unittest_branches:
-            - 2.6-dev
-            - 2.6-testing
-            - 2.7-dev
-            - 2.7-testing
-            - master
-          unittest_platforms:
-            - f22-np
-            - f23-np
-            - rhel5-np
-            - rhel6-np
-            - rhel7-np
-      - pulp_python:
-          min_coverage: 100
-          unittest_branches:
-            - master
-          unittest_platforms:
-            - f22-np
-            - f23-np
-            - rhel6-np
-            - rhel7-np
-      - pulp_rpm:
-          min_coverage: 87.0
-          unittest_branches:
-            - 2.6-dev
-            - 2.6-testing
-            - 2.7-dev
-            - 2.7-testing
-            - master
-          unittest_platforms:
-            - f22-np
-            - f23-np
-            - rhel5-np
-            - rhel6-np
-            - rhel7-np

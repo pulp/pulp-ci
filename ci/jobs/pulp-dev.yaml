@@ -1,18 +1,8 @@
-- scm:
-    name: pulp-packaging
-    scm:
-        - git:
-            url: https://github.com/pulp/pulp_packaging.git
-            branches:
-                - '*/master'
-            skip-tag: true
-
-
 - job-template:
     name: 'pulp-{pulp_version}-dev-{os}'
     node: '{os}-vanilla-np'
     scm:
-        - pulp-packaging
+        - pulp-packaging-github
     wrappers:
         - config-file-provider:
             files:
@@ -118,10 +108,7 @@
             artifacts: "*.tar.gz"
             allow-empty: true
         - irc-notify-all-summary
-        # Take the node offline so that another build doesn't pile on
-        - groovy-postbuild:
-            script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
-
+        - mark-node-offline
 
 - job:
     name: pulp-smash-runner
@@ -143,7 +130,7 @@
             name: CA_CERT
             description: The CA certificate that signed the Pulp apache server.
     scm:
-        - pulp-packaging
+        - pulp-packaging-github
     builders:
         - shell: |
             # Setup ssh config and private key
@@ -184,24 +171,7 @@
     publishers:
         - archive:
             artifacts: 'pulp-smash/nose2-junit.xml'
-        # Take the node offline so that another build doesn't pile on
-        - groovy-postbuild:
-            script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
+        - mark-node-offline
         - email-ext:
             recipients: $PULP_AUTOMATION_EMAIL_RECIPIENTS
             attach-build-log: true
-
-
-- project:
-    name: pulp-dev
-    os:
-        - f22
-        - f23
-        - rhel6
-        - rhel7
-    pulp_version:
-        - 2.6
-        - 2.7
-        - 2.8
-    jobs:
-        - pulp-{pulp_version}-dev-{os}
