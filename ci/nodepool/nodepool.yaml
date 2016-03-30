@@ -8,13 +8,28 @@ zmq-publishers:
   - tcp://<jenkins-master-hostname>:8881
 
 labels:
-  - name: f21-np
-    image: f21-np
+  - name: f22-np
+    image: f22-np
     min-ready: 1
     providers:
       - name: qeos
-  - name: f22-np
-    image: f22-np
+  - name: f22-vanilla-np
+    image: f22-vanilla-np
+    min-ready: 1
+    providers:
+      - name: qeos
+  - name: f23-np
+    image: f23-np
+    min-ready: 2
+    providers:
+      - name: qeos
+  - name: f23-vanilla-np
+    image: f23-vanilla-np
+    min-ready: 1
+    providers:
+      - name: qeos
+  - name: f23-docker-np
+    image: f23-docker-np
     min-ready: 1
     providers:
       - name: qeos
@@ -28,8 +43,18 @@ labels:
     min-ready: 1
     providers:
       - name: qeos
+  - name: rhel6-vanilla-np
+    image: rhel6-vanilla-np
+    min-ready: 1
+    providers:
+      - name: qeos
   - name: rhel7-np
     image: rhel7-np
+    min-ready: 1
+    providers:
+      - name: qeos
+  - name: rhel7-vanilla-np
+    image: rhel7-vanilla-np
     min-ready: 1
     providers:
       - name: qeos
@@ -40,26 +65,22 @@ providers:
     password: '<openstack password>'
     auth-url: '<openstack auth auth url>'
     project-id: '<openstack project name>'
-    max-servers: 40
+    # The current quota allows for 40 VCPUs. The nodepool VM itself uses 2 of those,
+    # leaving 38. Each slave uses 2 VCPUs, which gives us a max of 19 nodepool slaves.
+    max-servers: 19
     boot-timeout: 240
     launch-timeout: 900
     images:
-      - name: f20-np
-        base-image: Fedora-x86_64-20-20140407
-        user: jenkins
-        setup: prepare_node.sh
-        private-key: /home/nodepool/.ssh/id_pulp_rsa
-        min-ram: 4096
-      - name: f21-np
-        base-image: Fedora-Cloud-Base-20141203-21.x86_64
+      - name: f22-np
+        base-image: Fedora-Cloud-Base-22-20150521.x86_64
         user: jenkins
         setup: prepare_node.sh
         private-key: /home/nodepool/.ssh/id_pulp_rsa
         min-ram: 3072
-      - name: f22-np
-        base-image: Fedora-Cloud-Base-22-20150521.x86_64
+      - name: f23-np
+        base-image: Fedora-Cloud-Base-23-20151113-py27.x86_64
         user: jenkins
-        setup: prepare_node.sh 
+        setup: prepare_node.sh
         private-key: /home/nodepool/.ssh/id_pulp_rsa
         min-ram: 3072
       - name: rhel5-np
@@ -80,6 +101,36 @@ providers:
         setup: prepare_node.sh
         private-key: /home/nodepool/.ssh/id_pulp_rsa
         min-ram: 4096
+      - name: f22-vanilla-np
+        base-image: fedora-cloud-base-22-20150521.x86_64
+        user: jenkins
+        setup: prepare_node.sh
+        private-key: /home/nodepool/.ssh/id_pulp_rsa
+        min-ram: 3072
+      - name: f23-vanilla-np
+        base-image: Fedora-Cloud-Base-23-20151113-py27.x86_64
+        user: jenkins
+        setup: prepare_node.sh
+        private-key: /home/nodepool/.ssh/id_pulp_rsa
+        min-ram: 3072
+      - name: rhel6-vanilla-np
+        base-image: RHEL-6.7-Server-x86_64-released
+        user: jenkins
+        setup: prepare_node.sh
+        private-key: /home/nodepool/.ssh/id_pulp_rsa
+        min-ram: 4096
+      - name: rhel7-vanilla-np
+        base-image: RHEL-x86_64-7.2-20151102
+        user: jenkins
+        setup: prepare_node.sh
+        private-key: /home/nodepool/.ssh/id_pulp_rsa
+        min-ram: 4096
+      - name: f23-docker-np
+        base-image: Fedora-Cloud-Base-23-20151113-py27.x86_64
+        user: jenkins
+        setup: prepare_node.sh
+        private-key: /home/nodepool/.ssh/id_pulp_rsa
+        min-ram: 3072
 
 targets:
   - name: pulp-jenkins
@@ -88,4 +139,3 @@ targets:
       user: <jenkins admin user>
       apikey: <jenkins admin user api key>
       credentials-id: 044c0620-d67e-4172-9814-dc49e443e7b6
-
