@@ -75,6 +75,13 @@
                 subscription-manager clean
             fi
         - conditional-step:
+            condition-kind: regex-match
+            regex: '2.8'
+            label: '${{ENV,var="PULP_VERSION"}}'
+            steps:
+                - sonar:
+                    sonar-name: 'Sonar Test Server'
+        - conditional-step:
             condition-kind: current-status
             condition-worst: FAILURE
             condition-best: UNSTABLE
