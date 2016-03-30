@@ -1,3 +1,39 @@
+###
+# When adding macros, please keep different build step types together,
+# e.g. wrappers belong with wrappers, publishers belong with publishers.
+# Within those sections, also organize macros alphabetically by name so
+# they're easy to find.
+###
+
+# Used in the "ci-workflow-runtest" defaults definition.
+- publisher:
+    name: default-ci-workflow-publishers
+    publishers:
+          - email-ext:
+              recipients: $DEFAULT_RECIPIENTS
+              reply-to: $DEFAULT_REPLYTO
+              content-type: default
+              subject: $DEFAULT_SUBJECT
+              body: $DEFAULT_CONTENT
+              attach-build-log: false
+              always: true
+              unstable: true
+              first-failure: true
+              not-built: true
+              aborted: true
+              regression: true
+              failure: true
+              improvement: true
+              still-failing: true
+              success: true
+              fixed: true
+              still-unstable: true
+              pre-build: true
+              matrix-trigger: only-configurations
+              send-to:
+                - requester
+                - recipients
+
 # notify the default channel with a build summary on all build states (pass/unstable/fail)
 # good for things like nightly builds since it always reports
 - publisher:
@@ -17,3 +53,63 @@
           strategy: new-failure-and-fixed
           message-type: summary
           matrix-notifier: only-parent
+
+# Mark this node offline so that jenkins does not assign jobs to it.
+# This avoids a race condition created by nodepool:
+#   Nodepool receives a notification that a job is finished on a node, and begins to destroy
+#   the instance in openstack. Because the node is not marked offline and jenkins is not aware
+#   of nodepool, jenkins assigns a job to the node that has been waiting for a node with this
+#   label to become available in the short span of time when the single job executor on the
+#   nodepool node is not running a job and has not yet been removed from the slave pool by
+#   nodepool. The job fails because its slave mysteriously disappears from jenkins. Marking
+#   the slave node as offline in a post-build step prevents jenkins from assigning jobs to
+#   the node.
+#
+# Marking the slave offline should be the last post-build step on a job, since nodepool
+# also terminates nodes that are marked offline in jenkins. This creates another potential
+# race condition where a slave is deleted before later post-build steps can finish, which
+# also causes the job to fail.
+- publisher:
+    name: mark-node-offline
+    publishers:
+      - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
+
+- scm:
+    name: pulp-packaging-github
+    scm:
+        - git:
+            url: https://github.com/pulp/pulp_packaging.git
+            branches:
+                - '*/master'
+            skip-tag: true
+
+- wrapper:
+    name: default-ci-workflow-wrappers
+    wrappers:
+        - ansicolor
+        - timestamps
+        - credentials-binding:
+            - zip-file:
+                credential-id: b3e6f337-5d44-4f57-921c-1632d796caa6
+                variable: QEOS_CONFIG_ZIP
+            # This is a zip file with the qeos credentials and my private key.
+            # This was just a temporary thing to make testing easier, and we can
+            # change it.
+            - zip-file:
+                credential-id: 560cbeac-170a-4ebe-bad0-37706307a4c8
+                variable: OS_CONFIG
+            - zip-file:
+                credential-id: 9051da21-c8af-49bd-a0ac-c1dd94a6d216
+                variable: KOJI_CONFIG
+        - default-ci-workflow-build-timeout-wrapper
+
+
+- wrapper:
+    name: default-ci-workflow-build-timeout-wrapper
+    wrappers:
+        - timeout:
+            # Timeout in minutes
+            timeout: 30
+            timeout-var: 'BUILD_TIMEOUT'
+            fail: true
+

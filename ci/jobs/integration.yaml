@@ -76,5 +76,4 @@
 
             cp -r test $WORKSPACE/test
     publishers:
-      # Take the node offline so that another build doesn't pile on
-      - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
+      - mark-node-offline

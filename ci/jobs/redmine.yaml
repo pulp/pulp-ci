@@ -47,7 +47,7 @@
 
     publishers:
       # Take the node offline so that another build doesn't pile on
-      - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
+      - mark-node-offline
       - email-ext:
           recipients: 'bbouters@redhat.com,mhrivnak@redhat.com'
           reply-to: $DEFAULT_REPLYTO
@@ -55,9 +55,3 @@
           body: $DEFAULT_CONTENT
           failure: false
           first-failure: true
-
-
-- project:
-    name: redmine-bugzilla-automation
-    jobs:
-     - 'redmine-bugzilla-automation'
