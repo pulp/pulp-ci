@@ -81,22 +81,17 @@
             steps:
                 - sonar:
                     sonar-name: 'Sonar Test Server'
-        - conditional-step:
-            condition-kind: current-status
-            condition-worst: FAILURE
-            condition-best: UNSTABLE
-            steps:
-                - shell: |
-                    rm -rf logs
-                    mkdir logs
-                    if [ $(which journalctl1 &> /dev/null) ]; then
-                        journalctl > logs/syslog
-                    else
-                        cat /var/log/messages > logs/syslog
-                    fi
-                    [ -e /var/log/httpd ] && cp /var/log/httpd logs
-                    [ -e /var/log/squid ] && cp /var/log/squid logs
-                    tar -zcf logs.tar.gz logs
+        - shell: |
+            rm -rf logs
+            mkdir logs
+            if [ $(which journalctl1 &> /dev/null) ]; then
+                journalctl > logs/syslog
+            else
+                cat /var/log/messages > logs/syslog
+            fi
+            [ -e /var/log/httpd ] && cp /var/log/httpd logs
+            [ -e /var/log/squid ] && cp /var/log/squid logs
+            tar -zcf logs.tar.gz logs
     publishers:
         - junit:
             results: nose2-junit.xml
