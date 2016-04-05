@@ -41,7 +41,7 @@
 
             # Here due to InsecurePlatformWarning
             # https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning
-            sudo pip install pyopenssl ndg-httpsclient pyasn1
+            sudo pip install ndg-httpsclient pyasn1 pyopenssl urllib3
 
             python pulp_packaging/ci/redmine_bugzilla.py
 
