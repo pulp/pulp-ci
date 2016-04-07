@@ -1,1 +1,3 @@
 *.pyc
+ci/nodepool/scripts/id_rsa.pub
+ci/nodepool/scripts/rhel*-rcm-internal.repo

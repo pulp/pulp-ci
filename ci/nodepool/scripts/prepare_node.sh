@@ -7,23 +7,18 @@ echo "Disable selinux"
 sudo setenforce 0
 
 # Fail immediately on error
-set -e
-set -x
+set -ex
 
+source bootstrap.sh
 
 echo "Performaing a general update"
-sudo yum update -y
+sudo "${PKG_MGR}" update -y
+
+echo "Installing git"
+sudo "${PKG_MGR}" install -y git
 
 echo "Installing Puppet"
-sudo yum install -y git
-sudo yum install -y redhat-lsb
-
-echo "Installing java as multiple versions makes this hard for puppet"
-sudo yum install -y java
-
-OS_NAME=$(lsb_release -si)
-OS_VERSION=$(lsb_release -sr | cut -f1 -d.)
-if [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION" == "5" ]; then
+if [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "5" ]; then
     sudo rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-5.noarch.rpm
     cat > mrg.repo <<EOF
 [mrg-el5]
@@ -33,18 +28,18 @@ enabled=1
 gpgcheck=0
 EOF
     sudo mv mrg.repo /etc/yum.repos.d/
-elif  [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION" == "6" ]; then
+elif  [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "6" ]; then
     sudo rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
     sudo rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-6.noarch.rpm
-elif  [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION" == "7" ]; then
+elif  [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "7" ]; then
     sudo rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
     sudo rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
-elif  [ "$OS_NAME" == "Fedora" ]; then
+elif  [ "${DISTRIBUTION}" == "fedora" ]; then
     sudo sed -i 's/clean_requirements_on_remove=true/clean_requirements_on_remove=false/g' /etc/dnf/dnf.conf
-    sudo dnf install -y python-dnf
+    sudo "${PKG_MGR}" install -y python-dnf
 fi
 
-sudo yum install -y puppet
+sudo "${PKG_MGR}" install -y puppet
 
 echo "Installing packaging repository"
 git clone https://github.com/pulp/pulp_packaging.git
@@ -65,16 +60,13 @@ fi
 echo "Disable ttysudo requirement"
 sudo sed -i 's|Defaults[ ]*requiretty|#Defaults    requiretty|g' /etc/sudoers
 
-echo "Configuring jenkins_node_setup user"
-sudo puppet apply pulp_packaging/ci/deploy/utils/puppet/jenkins_node_setup.pp
-
-if [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION" == "6" ] && [ ! "${DOCKER}" ]; then
+if [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "6" ] && [ ! "${DOCKER}" ]; then
     sudo rm -f /etc/udev/rules.d/70*
     sudo sed -i '/^\(HWADDR)\|UUID\)=/d' /etc/sysconfig/network-scripts/ifcfg-eth0
 fi
 
 if [ "${DOCKER}" ]; then
-    sudo yum install -y docker
+    sudo "${PKG_MGR}" install -y docker
     sudo systemctl enable docker
 
     echo "Allowing jenkins user access to docker"
