@@ -43,7 +43,7 @@
     name: unittests
     jobs:
      - 'unittest-pulp-pr'
-     - 'unittest-plugins-pr-jobs'
+     - 'unittest-{pulp_plugin}-pr'
     pulp_plugin:
       - pulp_deb:
           min_coverage: 100
