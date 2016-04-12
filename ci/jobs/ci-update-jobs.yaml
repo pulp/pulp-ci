@@ -33,9 +33,8 @@
 
             cat > jenkins_jobs.ini <<EOF
             [job_builder]
-            keep_descriptions=False
+            ignore_cache=True
             recursive=True
-            allow_duplicates=False
 
             [jenkins]
             user=${JENKINS_USER}
