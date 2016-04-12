@@ -114,49 +114,39 @@ def main():
 
     for issue in redmine_issues:
         for custom_field in issue.custom_fields.resources:
-            if custom_field['name'] == 'Bugzilla':
+            if custom_field['name'] == 'Bugzillas':
                 if custom_field['value'] == '':
                     continue
-                bug = BZ.getbug(int(custom_field['value']))
-                links_back = False
-                for external_bug in bug.external_bugs:
-                    if external_bug['type']['description'] == 'Pulp Redmine' and \
-                                    external_bug['ext_bz_bug_id'] == str(issue.id):
-                        add_cc_list_to_bugzilla_bug(bug)
-                        ext_params = {}
-                        if external_bug['ext_description'] != issue.subject:
-                            ext_params['ext_description'] = issue.subject
-                        if external_bug['ext_status'] != issue.status.name:
-                            ext_params['ext_status'] = issue.status.name
-                        if external_bug['ext_priority'] != issue.priority.name:
-                            ext_params['ext_priority'] = issue.priority.name
-                        if len(ext_params.keys()) > 0:
-                            ext_bug_record += 'Bugzilla bug %s updated from upstream bug %s with ' \
-                                              '%s\n' % (bug.id, issue.id, ext_params)
-                            ext_params['ids'] = external_bug['id']
-                            BZ.update_external_tracker(**ext_params)
-                            if 'ext_status' in ext_params:
-                                bug.addcomment(
-                                    'The Pulp upstream bug status is at %s. Updating the external '
-                                    'tracker on this bug.' % issue.status.name)
-                            if 'ext_priority' in ext_params:
-                                bug.addcomment(
-                                    'The Pulp upstream bug priority is at %s. Updating the '
-                                    'external tracker on this bug.' % issue.priority.name)
-
-                        # Remove the bug list gotten via search so we don't examine it again when
-                        #  bugzilla_bugs are iterated through
-                        bug_in_search_index_to_remove = None
-                        for i, bug_in_search in enumerate(bugzilla_bugs):
-                            if bug_in_search.id == bug.id:
-                                bug_in_search_index_to_remove = i
-                                break
-                        if bug_in_search_index_to_remove is not None:
-                            bugzilla_bugs.pop(bug_in_search_index_to_remove)
-
-                        links_back = True
-                if not links_back:
-                    links_issues_record += 'Redmine #%s -> Bugzilla %s, but Bugzilla %s does not ' \
+                for bug_id in [int(id_str) for id_str in custom_field['value'].split(',')]:
+                    links_back = False
+                    bug = BZ.getbug(bug_id)
+                    for external_bug in bug.external_bugs:
+                        if external_bug['type']['description'] == 'Pulp Redmine' and \
+                                        external_bug['ext_bz_bug_id'] == str(issue.id):
+                            add_cc_list_to_bugzilla_bug(bug)
+                            ext_params = {}
+                            if external_bug['ext_description'] != issue.subject:
+                                ext_params['ext_description'] = issue.subject
+                            if external_bug['ext_status'] != issue.status.name:
+                                ext_params['ext_status'] = issue.status.name
+                            if external_bug['ext_priority'] != issue.priority.name:
+                                ext_params['ext_priority'] = issue.priority.name
+                            if len(ext_params.keys()) > 0:
+                                ext_bug_record += 'Bugzilla bug %s updated from upstream bug %s with ' \
+                                                  '%s\n' % (bug.id, issue.id, ext_params)
+                                ext_params['ids'] = external_bug['id']
+                                BZ.update_external_tracker(**ext_params)
+                                if 'ext_status' in ext_params:
+                                    bug.addcomment(
+                                        'The Pulp upstream bug status is at %s. Updating the external '
+                                        'tracker on this bug.' % issue.status.name)
+                                if 'ext_priority' in ext_params:
+                                    bug.addcomment(
+                                        'The Pulp upstream bug priority is at %s. Updating the '
+                                        'external tracker on this bug.' % issue.priority.name)
+                            links_back = True
+                    if not links_back:
+                        links_issues_record += 'Redmine #%s -> Bugzilla %s, but Bugzilla %s does not ' \
                                            'link back\n' % (issue.id, bug.id, bug.id)
 
     for bug in bugzilla_bugs:
@@ -167,16 +157,17 @@ def main():
                     issue = redmine.issue.get(issue_id)
                     links_back = False
                     for custom_field in issue.custom_fields.resources:
-                        if custom_field['name'] == 'Bugzilla':
-                            try:
-                                if int(custom_field['value']) == bug.id:
-                                    links_back = True
-                            except KeyError:
-                                # If value isn't present this field is not linking back so continue
-                                continue
-                            except ValueError:
-                                # If value is present but empty this field is not linking back
-                                continue
+                        if custom_field['name'] == 'Bugzillas':
+                            for bug_id in [int(id_str) for id_str in custom_field['value'].split(',')]:
+                                try:
+                                    if bug_id == bug.id:
+                                        links_back = True
+                                except KeyError:
+                                    # If value isn't present this field is not linking back so continue
+                                    continue
+                                except ValueError:
+                                    # If value is present but empty this field is not linking back
+                                    continue
                     if not links_back:
                         links_issues_record += 'Bugzilla #%s -> Redmine %s, but Redmine %s does ' \
                                                'not link back\n' % (bug.id, issue.id, issue.id)
