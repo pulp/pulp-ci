@@ -49,7 +49,7 @@
       # Take the node offline so that another build doesn't pile on
       - mark-node-offline
       - email-ext:
-          recipients: 'bbouters@redhat.com,mhrivnak@redhat.com'
+          recipients: 'dkliban@redhat.com,bbouters@redhat.com,mhrivnak@redhat.com'
           reply-to: $DEFAULT_REPLYTO
           subject: 'Upstream/Downstream Linking Issues'
           body: $DEFAULT_CONTENT
