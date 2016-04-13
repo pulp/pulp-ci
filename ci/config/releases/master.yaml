@@ -1,5 +1,5 @@
 koji-target-prefix: pulp-2.9
-rsync-target-dir: 2.9-dev/stage
+rsync-target-dir: 2.9/stage
 repositories:
   - name: pulp
     external_deps: deps/external_deps.json
