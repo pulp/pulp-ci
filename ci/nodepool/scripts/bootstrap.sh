@@ -6,7 +6,14 @@ export DISTRIBUTION=$(python -c "import platform, sys
 sys.stdout.write(platform.dist()[0])")
 export DISTRIBUTION_MAJOR_VERSION=$(python -c "import platform, sys
 sys.stdout.write(platform.dist()[1].split('.')[0])")
-export PKG_MGR=$(which dnf 2>/dev/null || which yum 2>/dev/null)
+
+# use dnf if you can, otherwise use yum
+if dnf --version; then
+    PKG_MGR=dnf
+else
+    PKG_MGR=yum
+fi
+export PKG_MGR
 
 # Create the jenkins user in the jenkins group
 sudo useradd --user-group --create-home --home-dir /home/jenkins jenkins
