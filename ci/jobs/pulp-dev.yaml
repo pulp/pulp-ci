@@ -30,7 +30,7 @@
                 -e "rhn_password=${{RHN_PASSWORD}}" \
                 -e "rhn_poolid=${{RHN_POOLID}}" \
                 -e "rhn_atomic_poolid=${{RHN_ATOMIC_POOLID}}"
-            if [ "${{PULP_VERSION}}" = "2.8" ]; then
+            if [ "${{PULP_VERSION}}" = "2.8" ] && [ "${{OS}}" != "rhel6"]; then
                 ansible-playbook --private-key pulp_server_key -i hosts ci/ansible/pulp_coverage.yaml
             fi
             echo ${{SSH_CONNECTION}} | awk '{{ print "BASE_URL=https://"$3 }}' >> parameters.txt
