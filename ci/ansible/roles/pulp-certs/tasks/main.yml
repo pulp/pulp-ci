@@ -12,8 +12,8 @@
 
 - name: Add CA to trust store
   shell: >
-    /usr/bin/cp /etc/pki/CA/cacert.pem /etc/pki/ca-trust/source/anchors/cacert.pem &&
-    /usr/bin/update-ca-trust
+    cp /etc/pki/CA/cacert.pem /etc/pki/ca-trust/source/anchors/cacert.pem &&
+    update-ca-trust
   args:
     creates: /etc/pki/ca-trust/source/anchors/cacert.pem
 
