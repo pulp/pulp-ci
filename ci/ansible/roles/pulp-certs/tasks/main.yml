@@ -8,7 +8,7 @@
     creates: cacert.pem
 
 - name: Create CA index.txt
-  command: /usr/bin/touch /etc/pki/CA/index.txt creates=/etc/pki/CA/index.txt
+  file: path=/etc/pki/CA/index.txt state=touch owner=root group=root mode=0644
 
 - name: Add CA to trust store
   shell: >
