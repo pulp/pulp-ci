@@ -157,7 +157,7 @@ def main():
                     issue = redmine.issue.get(issue_id)
                     links_back = False
                     for custom_field in issue.custom_fields.resources:
-                        if custom_field['name'] == 'Bugzillas':
+                        if custom_field['name'] == 'Bugzillas' and custom_field['value']:
                             for bug_id in [int(id_str) for id_str in custom_field['value'].split(',')]:
                                 try:
                                     if bug_id == bug.id:
