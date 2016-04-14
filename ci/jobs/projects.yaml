@@ -58,6 +58,8 @@
           min_coverage: 100
           unittest_branches:
             - master
+            - 2.0-dev
+            - 2.0-release
           unittest_platforms:
             - f22-np
             - f23-np
@@ -67,6 +69,8 @@
           min_coverage: 100
           unittest_branches:
             - master
+            - 1.1-dev
+            - 1.1-release
           unittest_platforms:
             - f22-np
             - f23-np
@@ -75,9 +79,9 @@
           min_coverage: 95.0
           unittest_branches:
             - 2.6-dev
-            - 2.6-testing
             - 2.7-dev
-            - 2.7-testing
+            - 2.8-dev
+            - 2.8-release
             - master
           unittest_platforms:
             - f22-np
@@ -88,6 +92,8 @@
       - pulp_python:
           min_coverage: 100
           unittest_branches:
+            - 1.1-dev
+            - 1.1-release
             - master
           unittest_platforms:
             - f22-np
@@ -98,9 +104,10 @@
           min_coverage: 87.0
           unittest_branches:
             - 2.6-dev
-            - 2.6-testing
             - 2.7-dev
-            - 2.7-testing
+            - 2.7-release
+            - 2.8-dev
+            - 2.8-release
             - master
           unittest_platforms:
             - f22-np
