@@ -33,7 +33,7 @@
             if [ "${{PULP_VERSION}}" = "2.8" ] && [ "${{OS}}" != "rhel6"]; then
                 ansible-playbook --private-key pulp_server_key -i hosts ci/ansible/pulp_coverage.yaml
             fi
-            echo "BASE_URL=https://$(hostname --fqdn)" >> parameters.txt
+            echo "BASE_URL=https://$(hostname --short)" >> parameters.txt
             cp /etc/pki/CA/cacert.pem cacert.pem
         - inject:
             properties-file: parameters.txt
