@@ -18,7 +18,7 @@
   when: ansible_distribution == "RedHat" and rhn_username is defined and rhn_password is defined
 
 - name: Subscription Manager subscribe
-  shell: "subscription-manager subscribe --pool={{ rhn_poolid }} --pool={{ rhn_atomic_poolid }}"
+  shell: "subscription-manager subscribe --pool={{ rhn_poolid }}"
   when: ansible_distribution == "RedHat" and rhn_poolid is defined
 
 - name: Enable optional repository

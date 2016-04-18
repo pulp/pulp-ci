@@ -28,8 +28,7 @@
                 -e pulp_version={pulp_version} \
                 -e "rhn_username=${{RHN_USERNAME}}" \
                 -e "rhn_password=${{RHN_PASSWORD}}" \
-                -e "rhn_poolid=${{RHN_POOLID}}" \
-                -e "rhn_atomic_poolid=${{RHN_ATOMIC_POOLID}}"
+                -e "rhn_poolid=${{RHN_POOLID}}"
             if [ "${{PULP_VERSION}}" = "2.8" ] && [ "${{OS}}" != "rhel6" ]; then
                 ansible-playbook --private-key pulp_server_key -i hosts ci/ansible/pulp_coverage.yaml
             fi
@@ -73,9 +72,9 @@
                     -e pulp_coverage_report_xml=true
                 cp /tmp/report.xml coverage.xml
             fi
-            if [[ "${{OS}}" =~ "rhel[0-9]" ]]; then
-                subscription-manager unregister
-                subscription-manager clean
+            if [[ "${{OS}}" =~ "rhel" ]]; then
+                sudo subscription-manager unregister
+                sudo subscription-manager clean
             fi
         - conditional-step:
             condition-kind: regex-match
