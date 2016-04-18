@@ -30,7 +30,7 @@
                 -e "rhn_password=${{RHN_PASSWORD}}" \
                 -e "rhn_poolid=${{RHN_POOLID}}" \
                 -e "rhn_atomic_poolid=${{RHN_ATOMIC_POOLID}}"
-            if [ "${{PULP_VERSION}}" = "2.8" ] && [ "${{OS}}" != "rhel6"]; then
+            if [ "${{PULP_VERSION}}" = "2.8" ] && [ "${{OS}}" != "rhel6" ]; then
                 ansible-playbook --private-key pulp_server_key -i hosts ci/ansible/pulp_coverage.yaml
             fi
             echo "BASE_URL=https://$(hostname --short)" >> parameters.txt
@@ -66,7 +66,7 @@
             # Coverage report is introduced on Pulp 2.8 and requires Python
             # version 2.7+. Run the coverage report only if the system being
             # tested matches the required environment.
-            if [ "${{PULP_VERSION}}" = "2.8" ] && [ "${{OS}}" != "rhel6"]; then
+            if [ "${{PULP_VERSION}}" = "2.8" ] && [ "${{OS}}" != "rhel6" ]; then
                 ansible-playbook --private-key pulp_server_key -i hosts ci/ansible/pulp_coverage.yaml \
                     -e pulp_coverage_action=report \
                     -e pulp_coverage_report_dir=/tmp \
