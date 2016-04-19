@@ -76,13 +76,15 @@
                 sudo subscription-manager unregister
                 sudo subscription-manager clean
             fi
-        - conditional-step:
-            condition-kind: regex-match
-            regex: '2.8'
-            label: '${{ENV,var="PULP_VERSION"}}'
-            steps:
-                - sonar:
-                    sonar-name: 'Sonar Test Server'
+        # TODO: Uncomment and update the configuration when sonar is ready to
+        # be used
+        # - conditional-step:
+        #     condition-kind: regex-match
+        #     regex: '2.8'
+        #     label: '${{ENV,var="PULP_VERSION"}}'
+        #     steps:
+        #         - sonar:
+        #             sonar-name: 'Sonar Test Server'
         - shell: |
             rm -rf logs
             mkdir logs
