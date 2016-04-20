@@ -102,7 +102,7 @@ providers:
         private-key: /home/nodepool/.ssh/id_pulp_rsa
         min-ram: 4096
       - name: f22-vanilla-np
-        base-image: fedora-cloud-base-22-20150521.x86_64
+        base-image: Fedora-Cloud-Base-22-20150521.x86_64
         user: jenkins
         setup: prepare_node.sh
         private-key: /home/nodepool/.ssh/id_pulp_rsa
