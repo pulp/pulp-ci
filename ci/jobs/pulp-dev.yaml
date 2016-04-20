@@ -88,7 +88,7 @@
         - shell: |
             rm -rf logs
             mkdir logs
-            if [ $(which journalctl1 &> /dev/null) ]; then
+            if [ "$(which journalctl 2>/dev/null)" ]; then
                 journalctl > logs/syslog
             else
                 cat /var/log/messages > logs/syslog
