@@ -40,6 +40,8 @@ elif  [ "${DISTRIBUTION}" == "fedora" ]; then
     sudo "${PKG_MGR}" install -y python-dnf
     if  [ "${DISTRIBUTION_MAJOR_VERSION}" == "22" ]; then
         sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-fedora-22.noarch.rpm
+        # "which" isn't installed in fedora 22 by default?
+        sudo "${PKG_MGR}" install -y which
     fi
 fi
 
