@@ -6,22 +6,21 @@ repositories:
     git_url: git@github.com:pulp/pulp.git
     git_branch: 2.8.3-freeze
     parent_branch: 2.8-dev
-    version: 2.8.3-0.4.rc
+    version: 2.8.3-0.2.beta
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
     git_branch: 2.8.3-freeze
     parent_branch: 2.8-dev
-    version: 2.8.3-0.4.rc
+    version: 2.8.3-0.2.beta
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
     git_branch: 2.8.3-freeze
     parent_branch: 2.8-dev
-    version: 2.8.3-0.4.rc
+    version: 2.8.3-0.2.beta
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
-    git_branch: 2.0.1-build
-    parent_branch: 2.0-dev
-    version: 2.0.1-0.4.rc
+    git_branch: 2.0-dev
+    version: 2.0.1-0.2.beta
   - name: crane
     git_url: git@github.com:pulp/crane.git
     git_branch: 2.0-release
@@ -30,8 +29,8 @@ repositories:
   - name: pulp_ostree
     git_url: git@github.com:pulp/pulp_ostree.git
     git_branch: 1.1-dev
-    version: 1.1.1-0.4.rc
+    version: 1.1.1-0.2.beta
   - name: pulp_python
     git_url: git@github.com:pulp/pulp_python.git
     git_branch: 1.1-dev
-    version: 1.1.1-0.4.rc
+    version: 1.1.1-0.2.beta
