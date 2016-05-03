@@ -28,9 +28,11 @@
         - rhel6
         - rhel7
     pulp_version:
-        - 2.6
         - 2.7
         - 2.8
+        - 2.9:
+            reverse_trigger: 'master'
+    reverse_trigger: '{pulp_version}-dev'
     jobs:
         - pulp-{pulp_version}-dev-{os}
 
