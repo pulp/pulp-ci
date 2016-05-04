@@ -37,6 +37,11 @@
         - pulp-{pulp_version}-dev-{os}
 
 - project:
+    name: pulp-fixtures-publisher
+    jobs:
+        - pulp-fixtures-publisher
+
+- project:
     name: redmine
     jobs:
      - redmine-bugzilla-automation

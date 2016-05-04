@@ -1,0 +1,32 @@
+# This job publishes pulp-fixtures (https://github.com/PulpQE/pulp-fixtures) to
+# https://repos.fedorapeople.org/repos/pulp/pulp/fixtures/
+
+- job-template:
+    name: 'pulp-fixtures-publisher'
+    node: 'f23-docker-np'
+    scm:
+        - git:
+            url: https://github.com/PulpQE/pulp-fixtures.git
+            branches:
+                - '*/master'
+            skip-tag: true
+    triggers:
+        - timed: '@midnight'
+    wrappers:
+        - ssh-agent-credentials:
+            user: '044c0620-d67e-4172-9814-dc49e443e7b6'
+    builders:
+        - shell: |
+            sudo dnf -y install createrepo make
+
+            make all
+
+            mkdir fixtures
+            mv docker-fixtures fixtures/docker
+            mv rpm-fixtures fixtures/rpm
+
+            rsync -arvze "ssh -o StrictHostKeyChecking=no" --delete \
+                fixtures/* \
+                pulpadmin@repos.fedorapeople.org:/srv/repos/pulp/pulp/fixtures
+    publishers:
+      - mark-node-offline
