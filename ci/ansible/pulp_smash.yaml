@@ -1,6 +1,0 @@
----
-
-- hosts: all
-  roles:
-    - pulp-smash
-  sudo: true

@@ -1,7 +1,0 @@
-[Unit]
-Description=nodepoold
-
-[Service]
-Type=simple
-ExecStart=/bin/nodepoold -d
-User=nodepool
