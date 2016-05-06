@@ -20,7 +20,7 @@
     name: docs-ownership
     properties:
         - ownership:
-            owner: bmbouter
+            owner: bbouters
             co-owners:
                 - ttereshc
 

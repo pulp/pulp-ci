@@ -1,0 +1,69 @@
+# This set of Jenkins jobs creates an installs all the
+# necessary tools to build a repository with the help of Koji, then publishes
+# the results.
+
+- project:
+    name: docs-builder
+    jobs:
+     - 'docs-builder-{release_config}'
+    release_config:
+     - 2.8-build
+     - 2.8-dev
+     - 2.8-release
+     - 2.9-build
+     - 2.9-dev
+     - master
+- job-template:
+    name: 'docs-builder-{release_config}'
+    defaults: ci-workflow-runtest
+    node: 'f23-np'
+    properties:
+        - docs-ownership
+    scm:
+        - git:
+            url: 'https://github.com/pulp/pulp_packaging.git'
+            branches:
+                - origin/master
+            basedir: pulp_packaging
+            skip-tag: true
+            wipe-workspace: false
+    triggers:
+        - timed: "@midnight"
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '044c0620-d67e-4172-9814-dc49e443e7b6'
+                - '2f7a0c14-d520-40d3-b9b5-ebd8bb780d03'
+        - credentials-binding:
+            - zip-file:
+                credential-id: 9051da21-c8af-49bd-a0ac-c1dd94a6d216
+                variable: KOJI_CONFIG
+        - timeout:
+            # Timeout in minutes
+            timeout: 240
+            timeout-var: 'BUILD_TIMEOUT'
+            fail: true
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            sudo dnf install graphviz plantuml python-sphinx PyYAML python-sphinx_rtd_theme -y
+
+            git config --global user.email "pulp-infra@redhat.com"
+            git config --global user.name "pulpbot"
+            git config --global push.default simple
+            set -x
+
+            # Add github.com as a known host
+            echo "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> /home/jenkins/.ssh/known_hosts
+            echo "docs-pulp.rhcloud.com,52.1.83.65 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAwUPkUQ84FKIWhOxy5RBBuR9gbrov2epARmFmaxD7NFRayobnDvl8GaBTbH1kxaZ/tYQeIqVE1assL74KArMQBzz6rj0FEWf0zrXxAY55EGswmWEEdqlYu1LbIxDCG6opqkiq6ocxjea9K3XYq+2aYoAvI3sshSImTYZP1glFhrh3QUsNJHOfDboTLJFNSdLjzXubRMa4eEx7s9pe9kwBOaLNIiVeGzUWg5+KaykSg2UMB3aG127t8kX+OhDYceVR42ehQJ0MjQGlGoNtldxGrlX8NjxUqvJAo6pqNqRK8Cps7/x/m0GPXWAgSZymhurXmj1o2LP5nKLtVzMPvwMb0w==" >> /home/jenkins/.ssh/known_hosts
+
+            chmod 644 /home/jenkins/.ssh/known_hosts
+
+            # clone and build the docs
+            cd pulp_packaging/ci/
+            export PYTHONUNBUFFERED=1
+            python docs-builder.py --release {release_config}
+    publishers:
+      - email-notify-owners
+      - mark-node-offline
