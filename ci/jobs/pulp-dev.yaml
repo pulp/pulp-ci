@@ -168,7 +168,7 @@
             mkdir -p pulp_smash
             cat > pulp_smash/settings.json <<EOF
             {
-                "default": {
+                "pulp": {
                     "base_url": "${BASE_URL}",
                     "auth": ["admin", "admin"],
                     "version": "${PULP_VERSION}",
