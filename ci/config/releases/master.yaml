@@ -20,9 +20,8 @@ repositories:
     version: 2.1.0-0.1.beta
   - name: crane
     git_url: git@github.com:pulp/crane.git
-    git_branch: 2.0-release
-    parent_branch: master
-    version: 2.0.0-1
+    git_branch: master
+    version: 2.0.1-0.1beta
   - name: pulp_python
     git_url: git@github.com:pulp/pulp_python.git
     git_branch: master
