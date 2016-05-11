@@ -18,13 +18,7 @@
     builders:
         - shell: |
             sudo dnf -y install createrepo make
-
-            make all
-
-            mkdir fixtures
-            mv docker-fixtures fixtures/docker
-            mv rpm-fixtures fixtures/rpm
-
+            make fixtures
             rsync -arvze "ssh -o StrictHostKeyChecking=no" --delete \
                 fixtures/* \
                 pulpadmin@repos.fedorapeople.org:/srv/repos/pulp/pulp/fixtures
