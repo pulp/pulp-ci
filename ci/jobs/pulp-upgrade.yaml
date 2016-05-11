@@ -1,0 +1,166 @@
+# This job test Pulp upgrading from a X.Y to a X.Y+1 version on many Operating
+# Systems.
+
+- job-template:
+    name: 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-{os}'
+    node: '{os}-vanilla-np'
+    scm:
+        - pulp-packaging-github
+    wrappers:
+        - config-file-provider:
+            files:
+                - file-id: rhn_credentials
+                  variable: RHN_CREDENTIALS
+        - credentials-binding:
+            - file:
+                credential-id: c7fb90a7-154c-45d6-b820-a742cf300615
+                variable: CDN_CERTIFICATES
+        - inject:
+            properties-content: |
+                OS={os}
+                PULP_PASSWORD=admin
+                PULP_USER=admin
+                PULP_VERSION={pulp_version}
+                UPGRADE_PULP_VERSION={upgrade_pulp_version}
+    builders:
+        - shell: |
+            sudo yum install -y git ansible libselinux-python
+            ssh-keygen -t rsa -N "" -f pulp_server_key
+            cat pulp_server_key.pub >> ~/.ssh/authorized_keys
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            echo 'localhost' > hosts
+            source "${{RHN_CREDENTIALS}}"
+            ansible-playbook --private-key pulp_server_key -i hosts ci/ansible/pulp_server.yaml \
+                -e pulp_version=${{PULP_VERSION}} \
+                -e "rhn_username=${{RHN_USERNAME}}" \
+                -e "rhn_password=${{RHN_PASSWORD}}" \
+                -e "rhn_poolid=${{RHN_POOLID}}"
+        - shell: |
+            tar -zxvf "${{CDN_CERTIFICATES}}"
+
+            pulp-admin login -u "${{PULP_USER}}" -p "${{PULP_PASSWORD}}"
+
+            pulp-admin rpm repo create \
+                --feed https://cdn.redhat.com/content/dist/rhel/rhui/server/6/6.7/x86_64/kickstart/ \
+                --feed-ca-cert cdn/cdn.redhat.com-chain.crt \
+                --feed-cert cdn/914f702153514b06c1ef279db9dcadce.crt \
+                --feed-key cdn/914f702153514b06c1ef279db9dcadce.key \
+                --remove-missing true \
+                --repo-id rhel6 \
+                --serve-http true
+            pulp-admin rpm repo sync run --repo-id rhel6 >/dev/null
+
+            pulp-admin rpm repo create \
+                --checksum-type sha \
+                --feed http://ftp.linux.ncsu.edu/pub/CentOS/5.11/os/x86_64/ \
+                --repo-id centos5 \
+                --serve-http true \
+                --skip erratum
+            pulp-admin rpm repo sync run --repo-id centos5 >/dev/null
+
+            pulp-admin rpm repo create \
+                --feed http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo \
+                --relative-url zoo \
+                --repo-id zoo \
+                --retain-old-count 0
+
+            pulp-admin rpm repo sync run --repo-id zoo
+            pulp-admin rpm repo sync schedules create \
+                --repo-id zoo \
+                --schedule 2015-06-06T14:29:00Z/PT1M
+
+            pulp-admin puppet repo create \
+                --feed http://forge.puppetlabs.com \
+                --repo-id forge
+            pulp-admin puppet repo sync run --repo-id forge >/dev/null
+
+            pulp-admin rpm repo create \
+                --feed http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/pulp_unittest/ \
+                --repo-id repo_1
+
+            pulp-admin rpm repo create \
+                --feed file:///var/lib/pulp/published/yum/https/repos/repos/pulp/pulp/demo_repos/zoo/ \
+                --repo-id file-feed
+            pulp-admin rpm repo sync run --repo-id file-feed
+
+            pulp-admin iso repo create \
+                --feed https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/test_file_repo/ \
+                --repo-id filerepo
+            pulp-admin iso repo sync run --repo-id filerepo
+
+            if [ "$(echo -e \"2.8\n${{PULP_VERSION}}\" | sort -V | head -n 1)" = "2.8" ]; then
+                pulp-admin docker repo create \
+                    --feed https://index.docker.io \
+                    --repo-id busybox \
+                    --upstream-name busybox
+                pulp-admin docker repo sync run --repo-id busybox
+            fi
+
+            pulp-admin repo group create --group-id my-zoo --display-name "My Zoo"
+            pulp-admin repo group members add  --group-id my-zoo --repo-id zoo
+
+            pulp-admin rpm repo create \
+                --feed https://cdn.redhat.com/content/dist/rhel/rhui/server/7/7.2/x86_64/os/ \
+                --feed-ca-cert cdn/cdn.redhat.com-chain.crt \
+                --feed-cert cdn/914f702153514b06c1ef279db9dcadce.crt \
+                --feed-key cdn/914f702153514b06c1ef279db9dcadce.key \
+                --repo-id rhel7 \
+                --skip erratum
+            pulp-admin rpm repo sync run --repo-id rhel7 >/dev/null
+
+            pulp-admin logout
+        - shell: |
+            cat /etc/yum.repos.d/pulp.repo
+            sudo sed -i "s/${{PULP_VERSION}}/${{UPGRADE_PULP_VERSION}}/" /etc/yum.repos.d/pulp.repo
+            cat /etc/yum.repos.d/pulp.repo
+            sudo yum repolist
+            sudo yum -y update
+            sudo -u apache pulp-manage-db
+
+            if [ "$(which systemctl 2>/dev/null)" ]; then
+                sudo systemctl daemon-reload
+                systemctl restart httpd pulp_workers pulp_celerybeat pulp_resource_manager
+            else
+                for service in httpd pulp_workers pulp_celerybeat pulp_resource_manager; do
+                    sudo service "${{service}}" restart
+                done
+            fi
+        - shell: |
+            pulp-admin login -u "${{PULP_USER}}" -p "${{PULP_PASSWORD}}"
+
+            pulp-admin rpm repo list --repo-id rhel6
+            pulp-admin rpm repo list --repo-id centos5
+            pulp-admin rpm repo list --repo-id zoo
+            pulp-admin puppet repo list --repo-id forge
+            pulp-admin rpm repo list --repo-id repo_1
+            pulp-admin rpm repo list --repo-id file-feed
+            pulp-admin iso repo list --repo-id filerepo
+            if [ "$(echo -e \"2.8\n${{PULP_VERSION}}\" | sort -V | head -n 1)" = "2.8" ]; then
+                pulp-admin docker repo list --repo-id busybox
+            fi
+            pulp-admin rpm repo list --repo-id rhel7
+
+            pulp-admin logout
+        - shell: |
+            if [[ "${{OS}}" =~ "rhel" ]]; then
+                sudo subscription-manager unregister
+                sudo subscription-manager clean
+            fi
+    publishers:
+      - irc-notify-all-summary
+      - mark-node-offline
+
+
+# Job that triggers the upgrade jobs
+
+- job-template:
+    name: 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-trigger'
+    triggers:
+        - timed: '@weekly'
+    builders:
+        - trigger-builds:
+            - project:
+                - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-f22'
+                - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-f23'
+                - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-rhel6'
+                - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-rhel7'
