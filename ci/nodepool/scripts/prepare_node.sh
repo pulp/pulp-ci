@@ -42,6 +42,11 @@ elif  [ "${DISTRIBUTION}" == "fedora" ]; then
         sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-fedora-22.noarch.rpm
         # "which" isn't installed in fedora 22 by default?
         sudo "${PKG_MGR}" install -y which
+        # due to some selinux problems, squid won't start on f22. While there are many
+        # good solutions to this problem, the imminent release of f24 means that the simplest
+        # solution is setting selinux to permissive on f22 until we stop supporting it in a
+        # few weeks. Upstream issues and more details here: https://pulp.plan.io/issues/1904
+        sed -i -e 's/^SELINUX=.*/SELINUX=permissive/' /etc/sysconfig/selinux 
     fi
 fi
 
