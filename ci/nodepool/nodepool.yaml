@@ -13,26 +13,31 @@ labels:
     min-ready: 1
     providers:
       - name: qeos
+    ready-script: fix_hostname.sh
   - name: f22-vanilla-np
     image: f22-vanilla-np
     min-ready: 1
     providers:
       - name: qeos
+    ready-script: fix_hostname.sh
   - name: f23-np
     image: f23-np
     min-ready: 2
     providers:
       - name: qeos
+    ready-script: fix_hostname.sh
   - name: f23-vanilla-np
     image: f23-vanilla-np
     min-ready: 1
     providers:
       - name: qeos
+    ready-script: fix_hostname.sh
   - name: f23-docker-np
     image: f23-docker-np
     min-ready: 1
     providers:
       - name: qeos
+    ready-script: fix_hostname.sh
   - name: rhel5-np
     image: rhel5-np
     min-ready: 1
@@ -43,21 +48,25 @@ labels:
     min-ready: 1
     providers:
       - name: qeos
+    ready-script: fix_hostname.sh
   - name: rhel6-vanilla-np
     image: rhel6-vanilla-np
     min-ready: 1
     providers:
       - name: qeos
+    ready-script: fix_hostname.sh
   - name: rhel7-np
     image: rhel7-np
     min-ready: 1
     providers:
       - name: qeos
+    ready-script: fix_hostname.sh
   - name: rhel7-vanilla-np
     image: rhel7-vanilla-np
     min-ready: 1
     providers:
       - name: qeos
+    ready-script: fix_hostname.sh
 
 providers:
   - name: qeos
