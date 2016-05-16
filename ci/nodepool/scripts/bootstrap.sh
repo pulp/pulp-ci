@@ -16,8 +16,13 @@ fi
 export PKG_MGR
 
 # Create the jenkins user in the jenkins group
-sudo useradd --user-group --create-home --home-dir /home/jenkins jenkins
-sudo cp jenkins-sudoers "/etc/sudoers.d/00-jenkins"
+if  [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "5" ]; then
+    sudo useradd --create-home --home-dir /home/jenkins jenkins
+    cat scripts/jenkins-sudoers | sudo tee -a /etc/sudoers
+else
+    sudo useradd --user-group --create-home --home-dir /home/jenkins jenkins
+    sudo cp jenkins-sudoers "/etc/sudoers.d/00-jenkins"
+fi
 echo jenkins | sudo passwd --stdin jenkins
 
 # Authorize Jenkins to ssh into

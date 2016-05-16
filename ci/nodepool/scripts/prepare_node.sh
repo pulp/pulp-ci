@@ -14,12 +14,13 @@ source bootstrap.sh
 echo "Performaing a general update"
 sudo "${PKG_MGR}" update -y
 
-echo "Installing git"
-sudo "${PKG_MGR}" install -y git
-
 echo "Installing Puppet"
 if [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "5" ]; then
-    sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-el-5.noarch.rpm
+    sudo "${PKG_MGR}" install -y yum-security
+    curl -O https://dl.fedoraproject.org/pub/epel/epel-release-latest-5.noarch.rpm
+    sudo rpm -ivh epel-release-latest-5.noarch.rpm
+    curl -O https://yum.puppetlabs.com/puppetlabs-release-pc1-el-5.noarch.rpm
+    sudo rpm -ivh puppetlabs-release-pc1-el-5.noarch.rpm
     cat > mrg.repo <<EOF
 [mrg-el5]
 name=mrg-el5
@@ -57,6 +58,9 @@ else
     PUPPET="/opt/puppetlabs/bin/puppet"
     sudo "${PKG_MGR}" install -y puppet-agent
 fi
+
+echo "Installing git"
+sudo "${PKG_MGR}" install -y git
 
 echo "Installing packaging repository"
 git clone https://github.com/pulp/pulp_packaging.git
