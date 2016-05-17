@@ -47,7 +47,7 @@ elif  [ "${DISTRIBUTION}" == "fedora" ]; then
         # good solutions to this problem, the imminent release of f24 means that the simplest
         # solution is setting selinux to permissive on f22 until we stop supporting it in a
         # few weeks. Upstream issues and more details here: https://pulp.plan.io/issues/1904
-        sudo sed -i -e 's/^SELINUX=.*/SELINUX=permissive/' /etc/sysconfig/selinux
+        sudo sed -i -e 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config
     fi
 fi
 
