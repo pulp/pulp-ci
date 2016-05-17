@@ -93,7 +93,7 @@ providers:
         private-key: /home/nodepool/.ssh/id_pulp_rsa
         min-ram: 3072
       - name: rhel5-np
-        base-image: RHEL-x86_64-5.10-20140827
+        base-image: rhel-5.11-server-x86_64-released
         user: jenkins
         setup: prepare_node.sh
         private-key: /home/nodepool/.ssh/id_pulp_rsa

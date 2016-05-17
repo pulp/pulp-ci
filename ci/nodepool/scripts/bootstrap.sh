@@ -18,7 +18,7 @@ export PKG_MGR
 # Create the jenkins user in the jenkins group
 if  [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "5" ]; then
     sudo useradd --create-home --home-dir /home/jenkins jenkins
-    cat scripts/jenkins-sudoers | sudo tee -a /etc/sudoers
+    cat jenkins-sudoers | sed -e "s/^%//" | sudo tee -a /etc/sudoers
 else
     sudo useradd --user-group --create-home --home-dir /home/jenkins jenkins
     sudo cp jenkins-sudoers "/etc/sudoers.d/00-jenkins"
