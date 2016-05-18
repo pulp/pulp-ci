@@ -117,6 +117,9 @@
         - archive:
             artifacts: "*.tar.gz"
             allow-empty: true
+        - email-ext:
+            recipients: $PULP_AUTOMATION_EMAIL_RECIPIENTS
+            attach-build-log: true
         - irc-notify-all-summary
         - mark-node-offline
 
@@ -182,6 +185,3 @@
         - archive:
             artifacts: 'pulp-smash/nose2-junit.xml'
         - mark-node-offline
-        - email-ext:
-            recipients: $PULP_AUTOMATION_EMAIL_RECIPIENTS
-            attach-build-log: true
