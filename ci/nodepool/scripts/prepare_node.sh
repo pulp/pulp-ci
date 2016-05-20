@@ -81,11 +81,6 @@ fi
 echo "Disable ttysudo requirement"
 sudo sed -i 's|Defaults[ ]*requiretty|#Defaults    requiretty|g' /etc/sudoers
 
-if [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "6" ] && [ ! "${DOCKER}" ]; then
-    sudo rm -f /etc/udev/rules.d/70*
-    sudo sed -i '/^\(HWADDR)\|UUID\)=/d' /etc/sysconfig/network-scripts/ifcfg-eth0
-fi
-
 if [ "${DOCKER}" ]; then
     sudo "${PKG_MGR}" install -y docker
     sudo systemctl enable docker

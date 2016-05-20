@@ -1,6 +1,4 @@
-elements-dir: /usr/share/diskimage-builder/elements/
-script-dir: /home/nodepool/scripts/
-images-dir: /home/nodepool/images/
+script-dir: /home/pulp/pulp_packaging/ci/nodepool/scripts/
 
 dburi: 'postgresql:///nodepool'
 
@@ -10,141 +8,138 @@ zmq-publishers:
 labels:
   - name: f22-np
     image: f22-np
-    min-ready: 1
+    min-ready: 2
     providers:
-      - name: qeos
+      - name: cios
     ready-script: fix_hostname.sh
   - name: f22-vanilla-np
     image: f22-vanilla-np
     min-ready: 1
     providers:
-      - name: qeos
+      - name: cios
     ready-script: fix_hostname.sh
   - name: f23-np
     image: f23-np
-    min-ready: 2
+    min-ready: 1
     providers:
-      - name: qeos
+      - name: cios
     ready-script: fix_hostname.sh
   - name: f23-vanilla-np
     image: f23-vanilla-np
     min-ready: 1
     providers:
-      - name: qeos
+      - name: cios
     ready-script: fix_hostname.sh
   - name: f23-docker-np
     image: f23-docker-np
     min-ready: 1
     providers:
-      - name: qeos
+      - name: cios
     ready-script: fix_hostname.sh
   - name: rhel5-np
     image: rhel5-np
     min-ready: 1
     providers:
-      - name: qeos
+      - name: cios
   - name: rhel6-np
     image: rhel6-np
     min-ready: 1
     providers:
-      - name: qeos
+      - name: cios
     ready-script: fix_hostname.sh
   - name: rhel6-vanilla-np
     image: rhel6-vanilla-np
     min-ready: 1
     providers:
-      - name: qeos
+      - name: cios
     ready-script: fix_hostname.sh
   - name: rhel7-np
     image: rhel7-np
     min-ready: 1
     providers:
-      - name: qeos
+      - name: cios
     ready-script: fix_hostname.sh
   - name: rhel7-vanilla-np
     image: rhel7-vanilla-np
     min-ready: 1
     providers:
-      - name: qeos
+      - name: cios
     ready-script: fix_hostname.sh
 
 providers:
-  - name: qeos
-    username: '<openstack username>'
-    password: '<openstack password>'
-    auth-url: '<openstack auth auth url>'
-    project-id: '<openstack project name>'
+  - name: cios
+    cloud: cios
     # The current quota allows for 40 VCPUs. The nodepool VM itself uses 2 of those,
     # leaving 38. Each slave uses 2 VCPUs, which gives us a max of 19 nodepool slaves.
     max-servers: 19
     boot-timeout: 240
     launch-timeout: 900
+    pool: "10.8.180.0/22"
     images:
       - name: f22-np
         base-image: Fedora-Cloud-Base-22-20150521.x86_64
         user: jenkins
         setup: prepare_node.sh
-        private-key: /home/nodepool/.ssh/id_pulp_rsa
+        private-key: /etc/nodepool/pulp_rsa
+        min-ram: 3072
+      - name: f22-vanilla-np
+        base-image: Fedora-Cloud-Base-22-20150521.x86_64
+        user: jenkins
+        setup: prepare_node.sh
+        private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
       - name: f23-np
         base-image: Fedora-Cloud-Base-23-20151113-py27.x86_64
         user: jenkins
         setup: prepare_node.sh
-        private-key: /home/nodepool/.ssh/id_pulp_rsa
-        min-ram: 3072
-      - name: rhel5-np
-        base-image: rhel-5.11-server-x86_64-released
-        user: jenkins
-        setup: prepare_node.sh
-        private-key: /home/nodepool/.ssh/id_pulp_rsa
-        min-ram: 4096
-      - name: rhel6-np
-        base-image: RHEL-6.7-Server-x86_64-released
-        user: jenkins
-        setup: prepare_node.sh
-        private-key: /home/nodepool/.ssh/id_pulp_rsa
-        min-ram: 4096
-      - name: rhel7-np
-        base-image: rhel-7.2-server-x86_64-released
-        user: jenkins
-        setup: prepare_node.sh
-        private-key: /home/nodepool/.ssh/id_pulp_rsa
-        min-ram: 4096
-      - name: f22-vanilla-np
-        base-image: Fedora-Cloud-Base-22-20150521.x86_64
-        user: jenkins
-        setup: prepare_node.sh
-        private-key: /home/nodepool/.ssh/id_pulp_rsa
+        private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
       - name: f23-vanilla-np
         base-image: Fedora-Cloud-Base-23-20151113-py27.x86_64
         user: jenkins
         setup: prepare_node.sh
-        private-key: /home/nodepool/.ssh/id_pulp_rsa
+        private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
-      - name: rhel6-vanilla-np
-        base-image: RHEL-6.7-Server-x86_64-released
-        user: jenkins
-        setup: prepare_node.sh
-        private-key: /home/nodepool/.ssh/id_pulp_rsa
-        min-ram: 4096
-      - name: rhel7-vanilla-np
-        base-image: rhel-7.2-server-x86_64-released
-        user: jenkins
-        setup: prepare_node.sh
-        private-key: /home/nodepool/.ssh/id_pulp_rsa
-        min-ram: 4096
       - name: f23-docker-np
         base-image: Fedora-Cloud-Base-23-20151113-py27.x86_64
         user: jenkins
         setup: prepare_node.sh
-        private-key: /home/nodepool/.ssh/id_pulp_rsa
+        private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
-
+      - name: rhel5-np
+        base-image: rhel-5.11-server-x86_64-released
+        user: jenkins
+        password: redhat
+        setup: prepare_node.sh
+        private-key: /etc/nodepool/pulp_rsa
+        min-ram: 4096
+      - name: rhel6-np
+        base-image: rhel-6.8-server-x86_64-released
+        user: jenkins
+        setup: prepare_node.sh
+        private-key: /etc/nodepool/pulp_rsa
+        min-ram: 4096
+        name-filter: m3.medium
+      - name: rhel6-vanilla-np
+        base-image: rhel-6.8-server-x86_64-released
+        user: jenkins
+        setup: prepare_node.sh
+        private-key: /etc/nodepool/pulp_rsa
+        min-ram: 4096
+        name-filter: m3.medium
+      - name: rhel7-np
+        base-image: rhel-7.2-server-x86_64-released
+        user: jenkins
+        setup: prepare_node.sh
+        private-key: /etc/nodepool/pulp_rsa
+        min-ram: 4096
+        name-filter: m3.medium
+      - name: rhel7-vanilla-np
+        base-image: rhel-7.2-server-x86_64-released
+        user: jenkins
+        setup: prepare_node.sh
+        private-key: /etc/nodepool/pulp_rsa
+        min-ram: 4096
+        name-filter: m3.medium
 targets:
   - name: pulp-jenkins
-    jenkins:
-      url: https://pulp-jenkins.rhev-ci-vms.eng.rdu2.redhat.com/
-      user: <jenkins admin user>
-      apikey: <jenkins admin user api key>
-      credentials-id: 044c0620-d67e-4172-9814-dc49e443e7b6
