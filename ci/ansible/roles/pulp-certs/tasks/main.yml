@@ -10,12 +10,23 @@
 - name: Create CA index.txt
   file: path=/etc/pki/CA/index.txt state=touch owner=root group=root mode=0644
 
+- name: Enable dynamic CA trust store
+  shell: update-ca-trust enable
+  when: ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6
+
 - name: Add CA to trust store
   shell: >
-    cp /etc/pki/CA/cacert.pem /etc/pki/ca-trust/source/anchors/cacert.pem &&
-    update-ca-trust
+    cp /etc/pki/CA/cacert.pem /etc/pki/ca-trust/source/anchors/cacert.pem
   args:
     creates: /etc/pki/ca-trust/source/anchors/cacert.pem
+
+- name: Update CA trust
+  shell: update-ca-trust
+
+- name: Check if the certificate is trusted
+  shell: >
+    openssl s_client -connect $(hostname --long):443 <<< "" |
+    grep "Verify return code: 0 (ok)"
 
 - name: Configure openssl subjectAltName
   lineinfile: dest=/etc/pki/tls/openssl.cnf
