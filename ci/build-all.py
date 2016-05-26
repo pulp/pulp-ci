@@ -1,7 +1,6 @@
 #!/usr/bin/env python2
 
 import argparse
-import yaml
 import os
 import subprocess
 import sys
@@ -34,17 +33,6 @@ builder.ensure_dir(MASH_DIR, clean=True)
 builder.ensure_dir(WORKING_DIR, clean=True)
 
 
-def load_config(config_name):
-    # Get the config
-    config_file = os.path.join(os.path.dirname(__file__),
-                               'config', 'releases', '%s.yaml' % config_name)
-    if not os.path.exists(config_file):
-        print "Error: %s not found. " % config_file
-        sys.exit(1)
-    with open(config_file, 'r') as config_handle:
-        config = yaml.safe_load(config_handle)
-    return config
-
 def get_components(configuration):
     repos = configuration['repositories']
     for component in repos:
@@ -66,7 +54,7 @@ builder.init_koji()
 working_dir = WORKING_DIR
 print working_dir
 # Load the config file
-configuration = load_config(opts.config)
+configuration = builder.load_config(opts.config)
 koji_prefix = configuration['koji-target-prefix']
 
 # Source extract all the components
