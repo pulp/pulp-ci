@@ -23,11 +23,6 @@
 - name: Update CA trust
   shell: update-ca-trust
 
-- name: Check if the certificate is trusted
-  shell: >
-    openssl s_client -connect $(hostname --long):443 <<< "" |
-    grep "Verify return code: 0 (ok)"
-
 - name: Configure openssl subjectAltName
   lineinfile: dest=/etc/pki/tls/openssl.cnf
               insertafter="^\[ usr_cert \]"
