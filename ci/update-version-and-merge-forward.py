@@ -60,4 +60,7 @@ for component in get_components(configuration):
     subprocess.call(command, cwd=CI_DIR)
     command = ['git', 'commit', '-a', '-m', 'Bumping version to %s' % component['version']]
     subprocess.call(command, cwd=project_dir)
+    if push_to_github:
+        command = ['git', 'push', '-v']
+        subprocess.call(command, cwd=project_dir)
     promote.merge_forward(project_dir, push=push_to_github, parent_branch=parent_branch) 

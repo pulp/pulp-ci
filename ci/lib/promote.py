@@ -218,7 +218,7 @@ def merge_forward(git_directory, push=False, parent_branch=None):
         subprocess.check_call(['git', 'merge', '-s', 'ours', local_source_branch, '--no-edit'],
                               cwd=git_directory)
         if push:
-            subprocess.call(['git', 'push'], cwd=git_directory)
+            subprocess.call(['git', 'push', '-v'], cwd=git_directory)
 
     # Set the branch back tot he one we started on
     checkout_branch(git_directory, starting_branch)
