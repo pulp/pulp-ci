@@ -15,7 +15,7 @@ from lib.builder import WORKSPACE, TITO_DIR, MASH_DIR, WORKING_DIR, CI_DIR
 parser = argparse.ArgumentParser()
 parser.add_argument("config", help="The name of the config file to load from config/releases")
 parser.add_argument("--push", action="store_true", default=False,
-                    help="Don't push to GitHub")
+                    help="Push to GitHub")
 
 opts = parser.parse_args()
 push_to_github = opts.push
