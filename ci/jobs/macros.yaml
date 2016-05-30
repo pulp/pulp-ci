@@ -5,6 +5,33 @@
 # they're easy to find.
 ###
 
+# Ownership that indicates bmbouter is the contact for the job
+- property:
+    name: bmbouter-ownership
+    properties:
+        - ownership:
+            owner: bmbouter
+
+# Ownership that indicates developers are the primary contact for the job
+- property:
+    name: dev-ownership
+    properties:
+        - ownership:
+            owner: semyers
+            co-owners:
+                - dkliban
+
+# Ownership that indicates quality engineers are the primary contact for the
+# job
+- property:
+    name: qe-ownership
+    properties:
+        - ownership:
+            owner: erezende
+            co-owners:
+                - jaudet
+                - pthomas
+
 # Used in the "ci-workflow-runtest" defaults definition.
 - publisher:
     name: default-ci-workflow-publishers
@@ -32,6 +59,17 @@
               matrix-trigger: only-configurations
               send-to:
                 - requester
+                - recipients
+
+# Notify job owners whenever the build is unstable or failed.
+- publisher:
+    name: email-notify-owners
+    publishers:
+        - email-ext:
+            failure: true
+            not-built: true
+            recipients: $JOB_COOWNERS_EMAILS # includes the owner
+            send-to:
                 - recipients
 
 # notify the default channel with a build summary on all build states (pass/unstable/fail)
@@ -112,4 +150,3 @@
             timeout: 30
             timeout-var: 'BUILD_TIMEOUT'
             fail: true
-

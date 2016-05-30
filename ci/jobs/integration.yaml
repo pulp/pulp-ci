@@ -20,6 +20,7 @@
             - fc20-np
     # enable nodepool monitoring
     properties:
+      - dev-ownership
       - zeromq-event
     parameters:
         - string:
@@ -76,4 +77,5 @@
 
             cp -r test $WORKSPACE/test
     publishers:
+      - email-notify-owners
       - mark-node-offline

@@ -6,6 +6,8 @@
     name: 'build-automation-repo-{release_config}'
     defaults: ci-workflow-runtest
     node: 'rhel7-np'
+    properties:
+        - dev-ownership
     scm:
         - git:
             url: 'https://github.com/pulp/pulp_packaging.git'
@@ -69,5 +71,6 @@
             fi
     publishers:
       - irc-notify-all-summary
+      - email-notify-owners
       - mark-node-offline
 

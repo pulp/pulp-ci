@@ -5,6 +5,8 @@
     name: 'redmine-bugzilla-automation'
     defaults: ci-workflow-runtest
     node: 'f23-np'
+    properties:
+        - dev-ownership
     scm:
         - git:
             url: 'https://github.com/pulp/pulp_packaging.git'
@@ -47,11 +49,5 @@
 
     publishers:
       # Take the node offline so that another build doesn't pile on
+      - email-notify-owners
       - mark-node-offline
-      - email-ext:
-          recipients: 'dkliban@redhat.com,bbouters@redhat.com,mhrivnak@redhat.com'
-          reply-to: $DEFAULT_REPLYTO
-          subject: 'Upstream/Downstream Linking Issues'
-          body: $DEFAULT_CONTENT
-          failure: false
-          first-failure: true

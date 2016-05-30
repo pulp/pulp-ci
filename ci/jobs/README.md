@@ -34,3 +34,24 @@ correspond to their project name, and therefore their yaml file name.
 
 When creating any new definition, please use a descriptive and accurate names so that you don't
 necessarily need, for example, to consult a macro definition to know what a macro does.
+
+Job template
+------------
+
+The job template `template.yaml.sample` can be used to create new job
+definitions. The template defines some required and minial set of options in
+order to conform with:
+
+* All jobs should have a owner.
+* All owners should receive an email if his/her jobs fail or are not built.
+* Before finishing the job the node should be marked offline in order to avoid
+  issues with Jenkins reusing a node that is about to be deleted by Nodepool.
+
+To start a new job from the template `cp` it into an YAML file:
+
+    cp template.yaml.sample my-job.yaml
+
+It is suggested to name the file as the name of the job if the new file will
+have just one job. Otherwise give the job a meaningful name that describes the
+set of jobs that will be defined on the file. Fore more information about job
+definition check the previous section.

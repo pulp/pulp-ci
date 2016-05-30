@@ -23,9 +23,10 @@
             name: MATRIX_AXIS
     # enable nodepool monitoring
     properties:
-    - github:
-        url: https://github.com/pulp/pulp/
-    - zeromq-event
+      - dev-ownership
+      - github:
+          url: https://github.com/pulp/pulp/
+      - zeromq-event
     scm:
         - git:
             url: 'https://github.com/pulp/pulp.git'
@@ -300,6 +301,7 @@
           results: 'test/*.xml'
           keep-long-stdio: true
           test-stability: true
+      - email-notify-owners
       - mark-node-offline
 
 - job-group:

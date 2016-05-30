@@ -4,6 +4,8 @@
 - job-template:
     name: 'pulp-fixtures-publisher'
     node: 'f23-docker-np'
+    properties:
+        - qe-ownership
     scm:
         - git:
             url: https://github.com/PulpQE/pulp-fixtures.git
@@ -23,4 +25,5 @@
                 fixtures/* \
                 pulpadmin@repos.fedorapeople.org:/srv/repos/pulp/pulp/fixtures
     publishers:
+      - email-notify-owners
       - mark-node-offline

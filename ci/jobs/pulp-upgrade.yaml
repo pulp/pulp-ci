@@ -4,6 +4,8 @@
 - job-template:
     name: 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-{os}'
     node: '{os}-vanilla-np'
+    properties:
+        - qe-ownership
     scm:
         - pulp-packaging-github
     wrappers:
@@ -147,6 +149,7 @@
                 sudo subscription-manager clean
             fi
     publishers:
+      - email-notify-owners
       - irc-notify-all-summary
       - mark-node-offline
 

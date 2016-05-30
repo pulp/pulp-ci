@@ -1,6 +1,8 @@
 - job-template:
     name: 'pulp-{pulp_version}-dev-{os}'
     node: '{os}-vanilla-np'
+    properties:
+        - qe-ownership
     scm:
         - pulp-packaging-github
     wrappers:
@@ -117,9 +119,7 @@
         - archive:
             artifacts: "*.tar.gz"
             allow-empty: true
-        - email-ext:
-            recipients: $PULP_AUTOMATION_EMAIL_RECIPIENTS
-            attach-build-log: true
+        - email-notify-owners
         - irc-notify-all-summary
         - mark-node-offline
 
@@ -142,6 +142,8 @@
         - file:
             name: CA_CERT
             description: The CA certificate that signed the Pulp apache server.
+    properties:
+        - qe-ownership
     scm:
         - pulp-packaging-github
     builders:
@@ -184,4 +186,5 @@
     publishers:
         - archive:
             artifacts: 'pulp-smash/nose2-junit.xml'
+        - email-notify-owners
         - mark-node-offline

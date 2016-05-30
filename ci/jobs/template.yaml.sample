@@ -1,0 +1,7 @@
+- job:
+    name: job-name
+    properties:
+        - {dev,qe,...}-ownership
+    publishers:
+        - email-notify-owners
+        - mark-node-offline
