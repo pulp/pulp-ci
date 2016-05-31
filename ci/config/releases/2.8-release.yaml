@@ -4,29 +4,35 @@ repositories:
   - name: pulp
     external_deps: deps/external_deps.json
     git_url: git@github.com:pulp/pulp.git
-    git_branch: 2.8-release
-    version: 2.8.3-1
+    git_branch: 2.8.4-hotfix
+    parent_branch: 2.8-dev
+    version: 2.8.4-0.2.beta
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
-    git_branch: 2.8-release
-    version: 2.8.3-1
+    git_branch: pulp-puppet-2.8.3-1
+    parent_branch: 2.8-dev
+    version: 2.8.4-0.2.beta
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
-    git_branch: 2.8-release
-    version: 2.8.3-1
+    git_branch: 2.8.4-hotfix
+    parent_branch: 2.8-dev
+    version: 2.8.4-0.2.beta
+# docker needs to be bumped to 2.0.2-0.2.beta for the next release (probably 2.8.5)
+# since 2.0.2-0.1.beta, accidentally built from the release branch,  was released
+# with pulp 2.8.4 beta 1, but not the 2.8.4 beta 2+ hotfix
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
-    git_branch: 2.0-release
+    git_branch: pulp-docker-2.0.1-1
     version: 2.0.1-1
   - name: crane
     git_url: git@github.com:pulp/crane.git
-    git_branch: 2.0-release
+    git_branch: python-crane-2.0.0-1
     version: 2.0.0-1
   - name: pulp_ostree
     git_url: git@github.com:pulp/pulp_ostree.git
-    git_branch: 1.1-release
+    git_branch: pulp-ostree-1.1.1-1
     version: 1.1.1-1
   - name: pulp_python
     git_url: git@github.com:pulp/pulp_python.git
-    git_branch: 1.1-release
+    git_branch: pulp-python-1.1.1-1
     version: 1.1.1-1
