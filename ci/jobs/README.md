@@ -55,3 +55,23 @@ It is suggested to name the file as the name of the job if the new file will
 have just one job. Otherwise give the job a meaningful name that describes the
 set of jobs that will be defined on the file. Fore more information about job
 definition check the previous section.
+
+SSH Agent Configuration
+-----------------------
+
+The [Jenkins SSH-Agent Plugin](https://wiki.jenkins-ci.org/display/JENKINS/SSH+Agent+Plugin) allows
+the `ssh agent` to be configured with privately stored, secure credentials. The credentials are
+installed in the ssh-agent on the machine only during execution.
+
+Add the credential by going to Manage Jenkins -> Manage Credentials and select Add Credential.
+Select "SSH Username with private key" and configure as necessary. It is common to enter the key
+directly and enter a passphrase using advanced.
+
+Once created, you'll need to find the UUID of the saved credential. From the Jenkins home, select
+Credentials -> Global credentials (unrestricted) -> $YOUR_CREDENTIAL. The UUID to use is in the URL
+of this page.
+
+Once you have the UUID of interest, add it into your job template. Each job template can define one
+or more private credentials to be installed in the `ssh-agent` using the `ssh-agent-credentials`
+directive. See the [`ssh-agent-credentials docs`](http://docs.openstack.org/infra/jenkins-job-builder/wrappers.html#wrappers.ssh-agent-credentials)
+for examples.
