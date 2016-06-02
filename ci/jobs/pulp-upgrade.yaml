@@ -9,6 +9,7 @@
     scm:
         - pulp-packaging-github
     wrappers:
+        - ansicolor
         - config-file-provider:
             files:
                 - file-id: rhn_credentials
@@ -50,7 +51,7 @@
                 --remove-missing true \
                 --repo-id rhel6 \
                 --serve-http true
-            pulp-admin rpm repo sync run --repo-id rhel6 >/dev/null
+            pulp-admin rpm repo sync run --repo-id rhel6
 
             pulp-admin rpm repo create \
                 --checksum-type sha \
@@ -58,7 +59,7 @@
                 --repo-id centos5 \
                 --serve-http true \
                 --skip erratum
-            pulp-admin rpm repo sync run --repo-id centos5 >/dev/null
+            pulp-admin rpm repo sync run --repo-id centos5
 
             pulp-admin rpm repo create \
                 --feed http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo \
@@ -74,7 +75,7 @@
             pulp-admin puppet repo create \
                 --feed http://forge.puppetlabs.com \
                 --repo-id forge
-            pulp-admin puppet repo sync run --repo-id forge >/dev/null
+            pulp-admin puppet repo sync run --repo-id forge
 
             pulp-admin rpm repo create \
                 --feed http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/pulp_unittest/ \
@@ -90,7 +91,7 @@
                 --repo-id filerepo
             pulp-admin iso repo sync run --repo-id filerepo
 
-            if [ "$(echo -e \"2.8\n${{PULP_VERSION}}\" | sort -V | head -n 1)" = "2.8" ]; then
+            if [ "$(echo -e 2.8\\n${{PULP_VERSION}} | sort -V | head -n 1)" = "2.8" ]; then
                 pulp-admin docker repo create \
                     --feed https://index.docker.io \
                     --repo-id busybox \
@@ -108,7 +109,7 @@
                 --feed-key cdn/914f702153514b06c1ef279db9dcadce.key \
                 --repo-id rhel7 \
                 --skip erratum
-            pulp-admin rpm repo sync run --repo-id rhel7 >/dev/null
+            pulp-admin rpm repo sync run --repo-id rhel7
 
             pulp-admin logout
         - shell: |
@@ -137,7 +138,7 @@
             pulp-admin rpm repo list --repo-id repo_1
             pulp-admin rpm repo list --repo-id file-feed
             pulp-admin iso repo list --repo-id filerepo
-            if [ "$(echo -e \"2.8\n${{PULP_VERSION}}\" | sort -V | head -n 1)" = "2.8" ]; then
+            if [ "$(echo -e 2.8\\n${{PULP_VERSION}} | sort -V | head -n 1)" = "2.8" ]; then
                 pulp-admin docker repo list --repo-id busybox
             fi
             pulp-admin rpm repo list --repo-id rhel7
