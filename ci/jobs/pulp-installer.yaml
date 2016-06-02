@@ -1,0 +1,56 @@
+# Job that help installing Pulp on any machine. This is useful for setting up
+# machines for running Pulp Smash.
+- job:
+    name: 'pulp-installer'
+    node: 'f23-vanilla-np'
+    description: |
+        <p>Job that installs Pulp on the machine identified by the job
+        parameter.</p>
+        <p>In order to use this job, make sure that the target machine have the
+        following key on the <code>.ssh/authorized_keys</code>.</p>
+        <pre>
+        ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6DJ8fmd61DWPCMiOEuy96ajI7rL3rWu7C9NQhE9a4SfyaiBcghREHJNCz9LGJ57jtOmNV0+UEDhyvTckZI2YQeDqGCP/xO9B+5gQNlyGZ9gSmFz+68NhYQ0vRekikpb9jNdy6ZZbfZDLp1w7dxqDIKfoyu7QO3Qr3E/9CpiucQif2p+oQOVOCdKEjvGYNkYQks0jVTYNRscgmcezpfLKhqWzAre5+JaMB0kRD5Nqadm2uXKZ4cNYStrpZ4xUrnMvAqjormxW2VJNx+0716Wc2Byhg8Nva+bsOkxp/GewBWHfNPtzQGMsL7oYZPtOd/LrmyYeu/M5Uz7/6QCv4N90P pulp
+        </pre>
+        <p>In addition to the key, make sure the target machine have the
+        Ansible
+        <a href="http://docs.ansible.com/ansible/intro_installation.html#managed-node-requirements">
+        Managed Node Requirements</a> in place. Would be required to install
+        some other packages like <code>dnf-python</code>.</p>
+    parameters:
+        - choice:
+            name: PULP_VERSION
+            choices:
+                - '2.9'
+                - '2.8'
+                - '2.7'
+        - string:
+            name: HOSTNAME
+        - string:
+            name: USER
+            default: root
+    properties:
+      - qe-ownership
+    scm:
+        - pulp-packaging-github
+    wrappers:
+        - config-file-provider:
+            files:
+                - file-id: rhn_credentials
+                  variable: RHN_CREDENTIALS
+        - ssh-agent-credentials:
+            user: '044c0620-d67e-4172-9814-dc49e443e7b6'
+    builders:
+        - shell: |
+            sudo yum install -y ansible
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            echo "${HOSTNAME} ansible_user=${USER}" > hosts
+            source "${RHN_CREDENTIALS}"
+            ansible-playbook --private-key pulp_server_key -i hosts \
+                ci/ansible/pulp_server.yaml \
+                -e "pulp_version=${PULP_VERSION}" \
+                -e "rhn_username=${RHN_USERNAME}" \
+                -e "rhn_password=${RHN_PASSWORD}" \
+                -e "rhn_poolid=${RHN_POOLID}"
+    publishers:
+        - email-notify-owners
+        - mark-node-offline

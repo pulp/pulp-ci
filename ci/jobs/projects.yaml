@@ -42,6 +42,11 @@
         - pulp-fixtures-publisher
 
 - project:
+    name: pulp-installer
+    jobs:
+        - pulp-installer
+
+- project:
     name: pulp-upgrade
     os:
         - f22
