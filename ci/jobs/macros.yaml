@@ -5,12 +5,14 @@
 # they're easy to find.
 ###
 
-# Ownership that indicates bmbouter is the contact for the job
+# Ownership that defines owners used for docs related jobs
 - property:
-    name: bmbouter-ownership
+    name: docs-ownership
     properties:
         - ownership:
             owner: bmbouter
+            co-owners:
+                - ttereshc
 
 # Ownership that indicates developers are the primary contact for the job
 - property:
