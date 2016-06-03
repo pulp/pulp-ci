@@ -34,6 +34,7 @@
             echo 'localhost' > hosts
             source "${{RHN_CREDENTIALS}}"
             ansible-playbook --private-key pulp_server_key -i hosts ci/ansible/pulp_server.yaml \
+                -e pulp_build=stable \
                 -e pulp_version=${{PULP_VERSION}} \
                 -e "rhn_username=${{RHN_USERNAME}}" \
                 -e "rhn_password=${{RHN_PASSWORD}}" \
@@ -114,7 +115,7 @@
             pulp-admin logout
         - shell: |
             cat /etc/yum.repos.d/pulp.repo
-            sudo sed -i "s/${{PULP_VERSION}}/${{UPGRADE_PULP_VERSION}}/" /etc/yum.repos.d/pulp.repo
+            sudo sed -i "s|stable/${{PULP_VERSION}}/|testing/automation/${{UPGRADE_PULP_VERSION}}/stage/|" /etc/yum.repos.d/pulp.repo
             cat /etc/yum.repos.d/pulp.repo
             sudo yum repolist
             sudo yum -y update
