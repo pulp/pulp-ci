@@ -21,7 +21,7 @@
 - name: Start and enable qpid-cpp server service
   service: name=qpidd state=started enabled=yes
 
-- name: Setup Pulp repository
+- name: Setup Pulp nightly repository
   template:
     src: yum_repo.j2
     dest: /etc/yum.repos.d/{{ item.key }}.repo
@@ -31,6 +31,18 @@
       baseurl: "https://repos.fedorapeople.org/pulp/pulp/testing/automation/{{ pulp_version }}/stage/{% if ansible_distribution == 'Fedora' %}fedora-{% endif %}$releasever/$basearch/"
 
       gpgcheck: 0
+  when: pulp_build == "nightly"
+
+- name: Setup Pulp beta or stable repository
+  template:
+    src: yum_repo.j2
+    dest: /etc/yum.repos.d/{{ item.key }}.repo
+  with_dict:
+    pulp:
+      name: Pulp Project repository
+      baseurl: "https://repos.fedorapeople.org/pulp/pulp/{{ pulp_build }}/{{ pulp_version }}/{% if ansible_distribution == 'Fedora' %}fedora-{% endif %}$releasever/$basearch/"
+      gpgcheck: 0
+  when: pulp_build == "beta" or pulp_build == "stable"
 
 - name: Install Pulp Server
   action: "{{ ansible_pkg_mgr }} name=@pulp-server-qpid"
