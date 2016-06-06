@@ -27,6 +27,13 @@
                 UPGRADE_PULP_VERSION={upgrade_pulp_version}
     builders:
         - shell: |
+            echo "PULP_VERSION=$(cut -d- -f1 <<< ${{PULP_VERSION}})" > pulp_version.properties
+            echo "PULP_BUILD=$(cut -d- -f2 <<< ${{PULP_VERSION}})" >> pulp_version.properties
+            echo "UPGRADE_PULP_VERSION=$(cut -d- -f1 <<< ${{UPGRADE_PULP_VERSION}})" >> pulp_version.properties
+            echo "UPGRADE_PULP_BUILD=$(cut -d- -f2 <<< ${{UPGRADE_PULP_VERSION}})" >> pulp_version.properties
+        - inject:
+            properties-file: pulp_version.properties
+        - shell: |
             sudo yum install -y git ansible libselinux-python
             ssh-keygen -t rsa -N "" -f pulp_server_key
             cat pulp_server_key.pub >> ~/.ssh/authorized_keys
@@ -34,7 +41,7 @@
             echo 'localhost' > hosts
             source "${{RHN_CREDENTIALS}}"
             ansible-playbook --private-key pulp_server_key -i hosts ci/ansible/pulp_server.yaml \
-                -e pulp_build=stable \
+                -e pulp_build=${{PULP_BUILD}} \
                 -e pulp_version=${{PULP_VERSION}} \
                 -e "rhn_username=${{RHN_USERNAME}}" \
                 -e "rhn_password=${{RHN_PASSWORD}}" \
@@ -115,7 +122,17 @@
             pulp-admin logout
         - shell: |
             cat /etc/yum.repos.d/pulp.repo
-            sudo sed -i "s|stable/${{PULP_VERSION}}/|testing/automation/${{UPGRADE_PULP_VERSION}}/stage/|" /etc/yum.repos.d/pulp.repo
+            if [ "${{PULP_BUILD}}" = "nightly" ]; then
+                from_url="testing/automation/${{PULP_VERSION}}/stage/"
+            else
+                from_url="${{PULP_BUILD}}/${{PULP_VERSION}}/"
+            fi
+            if [ "${{UPGRADE_PULP_BUILD}}" = "nightly" ]; then
+                to_url="testing/automation/${{UPGRADE_PULP_VERSION}}/stage/"
+            else
+                to_url="${{UPGRADE_PULP_BUILD}}/${{UPGRADE_PULP_VERSION}}/"
+            fi
+            sudo sed -i "s|${{from_url}}|${{to_url}}|" /etc/yum.repos.d/pulp.repo
             cat /etc/yum.repos.d/pulp.repo
             sudo yum repolist
             sudo yum -y update
@@ -123,7 +140,7 @@
 
             if [ "$(which systemctl 2>/dev/null)" ]; then
                 sudo systemctl daemon-reload
-                systemctl restart httpd pulp_workers pulp_celerybeat pulp_resource_manager
+                sudo systemctl restart httpd pulp_workers pulp_celerybeat pulp_resource_manager
             else
                 for service in httpd pulp_workers pulp_celerybeat pulp_resource_manager; do
                     sudo service "${{service}}" restart
