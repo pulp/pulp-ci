@@ -36,6 +36,10 @@ elif  [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == 
 elif  [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "7" ]; then
     sudo rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
     sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
+    # https://bugzilla.redhat.com/show_bug.cgi?id=1173993 is similar to what we've been seeing
+    # to break the rhel7 image booting. This fixes it, but it's not clear why.
+    sudo sed -i '/sixteenbit=/d' /etc/grub.d/10_linux
+    sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 elif  [ "${DISTRIBUTION}" == "fedora" ]; then
     sudo sed -i 's/clean_requirements_on_remove=true/clean_requirements_on_remove=false/g' /etc/dnf/dnf.conf
     sudo "${PKG_MGR}" install -y python-dnf
