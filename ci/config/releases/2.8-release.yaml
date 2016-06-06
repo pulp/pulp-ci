@@ -6,17 +6,17 @@ repositories:
     git_url: git@github.com:pulp/pulp.git
     git_branch: 2.8.4-hotfix
     parent_branch: 2.8-dev
-    version: 2.8.4-0.2.beta
+    version: 2.8.4-1
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
     git_branch: pulp-puppet-2.8.3-1
     parent_branch: 2.8-dev
-    version: 2.8.4-0.2.beta
+    version: 2.8.4-1
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
     git_branch: 2.8.4-hotfix
     parent_branch: 2.8-dev
-    version: 2.8.4-0.2.beta
+    version: 2.8.4-1
 # docker needs to be bumped to 2.0.2-0.2.beta for the next release (probably 2.8.5)
 # since 2.0.2-0.1.beta, accidentally built from the release branch,  was released
 # with pulp 2.8.4 beta 1, but not the 2.8.4 beta 2+ hotfix
