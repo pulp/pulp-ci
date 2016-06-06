@@ -23,7 +23,7 @@
           name: RELEASE_BUILD
           default: false
           description: "Perform a release build, defaults to 'false'."
-
+      - python-unbuffered
     wrappers:
         - ssh-agent-credentials:
             user: '044c0620-d67e-4172-9814-dc49e443e7b6'
@@ -62,7 +62,6 @@
             cp -v $KOJI_CONFIG/satellite6_rsa .
             koji moshimoshi
             cd pulp_packaging/ci
-            export PYTHONUNBUFFERED=1
 
             if [ $RELEASE_BUILD == true ] ; then
               ./build-all.py {release_config} --release
@@ -70,7 +69,60 @@
               ./build-all.py {release_config}
             fi
     publishers:
+      - join-trigger:
+          # join-trigger does not fail the build if this project doesn't exist, so we
+          # do not need to ensure that there is a promote job for every release config
+          projects:
+            - "build-automation-promote-{release_config}"
       - irc-notify-all-summary
       - email-notify-owners
       - mark-node-offline
 
+- job-template:
+    name: build-automation-promote-{release_config}
+    defaults: ci-workflow-runtest
+    node: 'rhel7-np'
+    properties:
+        - dev-ownership
+    parameters:
+      - python-unbuffered
+      - bool:
+          name: FORCE_PROMOTE
+          default: false
+          description: "Force promotion."
+      - bool:
+          name: DRY_RUN
+          default: false
+          description: "Make no changes to remote repos."
+    scm:
+        - git:
+            url: 'https://github.com/pulp/pulp_packaging.git'
+            branches:
+                - origin/master
+            basedir: pulp_packaging
+            skip-tag: true
+            wipe-workspace: false
+    wrappers:
+        - ssh-agent-credentials:
+            user: '044c0620-d67e-4172-9814-dc49e443e7b6'
+        - timeout:
+            # Timeout in minutes
+            timeout: 240
+            timeout-var: 'BUILD_TIMEOUT'
+            fail: true
+    builders:
+        - shell: |
+            cd "$WORKSPACE/pulp_packaging/ci"
+
+            if [[ $FORCE_PROMOTE = "true" ]]; then promote_opts="$promote_opts --force"; fi
+            if [[ $DRY_RUN = "true" ]]; then promote_opts="$promote_opts --dry-run"; fi
+
+            ./promote-build.py $promote_opts --job-prefix pulp-{version}-dev {release_config}
+    publishers:
+      # - mark-node-offline is omitted: you can't have more than one groovy postbuild step, and
+      #   groovy is used here to mark the build as unstable when promotion is blocked
+      - groovy-postbuild: |
+          manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)
+          if(manager.logContains(".*Promotion blocked.*")) {{ manager.buildUnstable() }}
+      - irc-notify-all-summary
+      - email-notify-owners

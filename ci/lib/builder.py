@@ -13,6 +13,7 @@ import uuid
 
 import koji
 import requests
+import yaml
 
 
 home_directory = os.path.expanduser('~')
@@ -709,3 +710,15 @@ def does_git_tag_exist(tag, directory):
     if output:
         return True
     return False
+
+
+def load_config(config_name):
+    # Get the config
+    config_file = os.path.join(os.path.dirname(__file__), '..',
+                               'config', 'releases', '%s.yaml' % config_name)
+    if not os.path.exists(config_file):
+        print "Error: %s not found. " % config_file
+        sys.exit(1)
+    with open(config_file, 'r') as config_handle:
+        config = yaml.safe_load(config_handle)
+    return config

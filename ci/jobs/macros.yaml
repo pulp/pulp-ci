@@ -5,6 +5,16 @@
 # they're easy to find.
 ###
 
+# Inject the PYTHONUNBUFFERED env var into builds using a parameter. This needs to be a string
+# param, not a bool, because any value turns on unbuffered mode, including "false".
+- parameter:
+    name: python-unbuffered
+    parameters:
+      - string:
+          name: PYTHONUNBUFFERED
+          default: "true"
+          description: "Run Python unbuffered -- leave blank for normal unbuffered behavior"
+
 # Ownership that defines owners used for docs related jobs
 - property:
     name: docs-ownership
