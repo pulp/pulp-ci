@@ -23,6 +23,12 @@
                 - '2.9'
                 - '2.8'
                 - '2.7'
+        - choice:
+            name: PULP_BUILD
+            choices:
+                - 'nightly'
+                - 'beta'
+                - 'stable'
         - string:
             name: HOSTNAME
         - string:
@@ -47,6 +53,7 @@
             source "${RHN_CREDENTIALS}"
             ansible-playbook --private-key pulp_server_key -i hosts \
                 ci/ansible/pulp_server.yaml \
+                -e "pulp_build=${PULP_BUILD}" \
                 -e "pulp_version=${PULP_VERSION}" \
                 -e "rhn_username=${RHN_USERNAME}" \
                 -e "rhn_password=${RHN_PASSWORD}" \
