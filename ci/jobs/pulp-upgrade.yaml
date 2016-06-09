@@ -135,6 +135,10 @@
             sudo sed -i "s|${{from_url}}|${{to_url}}|" /etc/yum.repos.d/pulp.repo
             cat /etc/yum.repos.d/pulp.repo
             sudo yum repolist
+            if [ "${{OS}}" = "f22" ]; then
+                # Check https://pulp.plan.io/issues/1987 for more information
+                sudo rpm -e --nodeps python-semantic-version
+            fi
             sudo yum -y update
             sudo -u apache pulp-manage-db
 
