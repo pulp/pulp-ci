@@ -182,7 +182,10 @@
                 }
             }
             EOF
+            set +e
             XDG_CONFIG_DIRS=. nose2 -v --plugin nose2.plugins.junitxml -X --junit-xml pulp_smash.tests
+            set -e
+            test -f nose2-junit.xml
     publishers:
         - archive:
             artifacts: 'pulp-smash/nose2-junit.xml'
