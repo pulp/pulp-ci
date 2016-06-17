@@ -25,11 +25,6 @@
      - ci-update-jobs
 
 - project:
-    name: integration
-    jobs:
-     - integration-tests
-
-- project:
     name: pulp-dev
     os:
         - 'f22'
