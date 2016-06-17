@@ -108,7 +108,7 @@
             - f23-np
             - rhel7-np
       - pulp_puppet:
-          min_coverage: 95.0
+          min_coverage: 95
           unittest_branches:
             - 2.8-dev
             - 2.9-dev
@@ -131,7 +131,7 @@
             - rhel6-np
             - rhel7-np
       - pulp_rpm:
-          min_coverage: 87.0
+          min_coverage: 87
           unittest_branches:
             - 2.8-dev
             - 2.9-dev
