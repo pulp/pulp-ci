@@ -125,4 +125,5 @@
           manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)
           if(manager.logContains(".*Promotion blocked.*")) {{ manager.buildUnstable() }}
       - irc-notify-all-summary
-      - email-notify-owners
+      # - email-notify-owners
+      # don't notify owners until #2022 is fixed
