@@ -44,8 +44,7 @@
             files:
                 - file-id: rhn_credentials
                   variable: RHN_CREDENTIALS
-        - ssh-agent-credentials:
-            user: '044c0620-d67e-4172-9814-dc49e443e7b6'
+        - jenkins-ssh-credentials
     builders:
         - shell: |
             sudo yum install -y ansible

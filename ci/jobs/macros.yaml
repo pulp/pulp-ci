@@ -122,7 +122,8 @@
 - publisher:
     name: mark-node-offline
     publishers:
-      - groovy-postbuild: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
+      - groovy-postbuild:
+          script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
 
 - scm:
     name: pulp-packaging-github
@@ -153,7 +154,6 @@
                 variable: KOJI_CONFIG
         - default-ci-workflow-build-timeout-wrapper
 
-
 - wrapper:
     name: default-ci-workflow-build-timeout-wrapper
     wrappers:
@@ -162,3 +162,10 @@
             timeout: 30
             timeout-var: 'BUILD_TIMEOUT'
             fail: true
+
+- wrapper:
+    name: jenkins-ssh-credentials
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '044c0620-d67e-4172-9814-dc49e443e7b6'

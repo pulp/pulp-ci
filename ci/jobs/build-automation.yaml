@@ -25,8 +25,7 @@
           description: "Perform a release build, defaults to 'false'."
       - python-unbuffered
     wrappers:
-        - ssh-agent-credentials:
-            user: '044c0620-d67e-4172-9814-dc49e443e7b6'
+        - jenkins-ssh-credentials
         - credentials-binding:
             - zip-file:
                 credential-id: 9051da21-c8af-49bd-a0ac-c1dd94a6d216
@@ -103,8 +102,7 @@
             skip-tag: true
             wipe-workspace: false
     wrappers:
-        - ssh-agent-credentials:
-            user: '044c0620-d67e-4172-9814-dc49e443e7b6'
+        - jenkins-ssh-credentials
         - timeout:
             # Timeout in minutes
             timeout: 240
@@ -121,9 +119,10 @@
     publishers:
       # - mark-node-offline is omitted: you can't have more than one groovy postbuild step, and
       #   groovy is used here to mark the build as unstable when promotion is blocked
-      - groovy-postbuild: |
-          manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)
-          if(manager.logContains(".*Promotion blocked.*")) {{ manager.buildUnstable() }}
+      - groovy-postbuild:
+          script: |
+            manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)
+            if(manager.logContains(".*Promotion blocked.*")) {{ manager.buildUnstable() }}
       - irc-notify-all-summary
       # - email-notify-owners
       # don't notify owners until #2022 is fixed
