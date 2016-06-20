@@ -5,8 +5,8 @@ Block until a decision can be made to promote a nightly build to its tested loca
 decision is made to promote the build, copy the built packages from their staging location to
 their tested location, as determined by the release config named on the command line.
 
-If promotion is blocked for any reason, "Promotion blocked" should be printed to stdout.
-Jenkins will use that text to differentiate job failures (red ball/failure) from promotion
+If promotion is blocked for any reason, "Promotion blocked" will be printed to stdout.
+Jenkins can use that text to differentiate job failures (red ball/failure) from promotion
 criteria no being met (yellow ball/unstable). This makes it easy for folks looking at the
 job to know if the job itself worked and decided not to promote a build, or if the job is
 broken and needs developer attention.
@@ -31,7 +31,8 @@ UPLOAD_BASE_DIR = '/srv/repos/pulp/pulp/testing/automation/'
 
 def main():
     """Parse arguments and return an exit code (e.g. 0 for success, >=1 for failure)"""
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('config', help='The name of the release config file to load')
     parser.add_argument('--job-prefix', action='append', dest='prefixes',
                         help='Prefix of jobs to wait to finish and succeed before promoting, '
@@ -57,7 +58,10 @@ def main():
 
     if not promote:
         print "Promotion blocked by check function, exiting now."
-        return 1
+        # Returning 0 here, since this is a "normal" script exit. Jenkins scripting
+        # can be used to parse the output and change the build to Unstable, if desired,
+        # based on the printing of this message, as mentioned in the script's docstring.
+        return 0
 
     # Rsync the repos from the source dir to the target dir
     # source dir trailing slash is needed: it ensures that the *contents* of the
