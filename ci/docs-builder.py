@@ -57,9 +57,9 @@ def main():
     if version.endswith('alpha'):
         build_type = 'nightly'
     elif version.endswith('beta'):
-        build_type = 'dev'
+        build_type = 'testing'
     elif version.endswith('rc'):
-        build_type = 'dev'
+        build_type = 'testing'
     else:
         build_type = 'ga'
 
@@ -135,7 +135,7 @@ def main():
         rsync_command = ['rsync', '-avzh', '--rsync-path', path_option_arg, '--delete', local_path_arg, remote_path_arg]
     else:
         path_option_arg = 'mkdir -p %sen/%s/ && rsync' % (SITE_ROOT, x_y_version)
-        rsync_command = ['rsync', '-avzh', '--rsync-path', path_option_arg, '--delete', '--exclude', 'nightly', '--exclude', 'dev', local_path_arg, remote_path_arg]
+        rsync_command = ['rsync', '-avzh', '--rsync-path', path_option_arg, '--delete', '--exclude', 'nightly', '--exclude', 'testing', local_path_arg, remote_path_arg]
     exit_code = subprocess.call(rsync_command, cwd=docs_directory)
     if exit_code != 0:
         raise RuntimeError('An error occurred while pushing docs to OpenShift.')
