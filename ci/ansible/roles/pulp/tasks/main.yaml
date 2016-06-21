@@ -25,6 +25,10 @@
   shell: "subscription-manager repos --disable \"*\""
   when: ansible_distribution == "RedHat"
 
+- name: Enable main repository
+  shell: "subscription-manager repos --enable rhel-{{ ansible_distribution_major_version }}-server-rpms"
+  when: ansible_distribution == "RedHat"
+
 - name: Enable optional repository
   shell: "subscription-manager repos --enable rhel-{{ ansible_distribution_major_version }}-server-optional-rpms"
   when: ansible_distribution == "RedHat"
