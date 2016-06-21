@@ -109,6 +109,14 @@ def main():
     all_content_index_rst = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'all_content_index.rst'])
     copyfile('docs/all_content_index.rst', all_content_index_rst)
 
+    # make the _templates dir
+    layout_dir = os.sep.join([WORKING_DIR, 'pulp', 'docs', '_templates'])
+    os.makedirs(layout_dir)
+
+    # copy in the layout.html file for analytics
+    layout_html_path = os.sep.join([WORKING_DIR, 'pulp', 'docs', '_templates', 'layout.html'])
+    copyfile('docs/layout.html', layout_html_path)
+
     # build the docs via the Pulp project itself
     print "Building the docs"
     docs_directory = os.sep.join([WORKING_DIR, 'pulp', 'docs'])
