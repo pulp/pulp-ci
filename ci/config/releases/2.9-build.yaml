@@ -6,15 +6,15 @@ repositories:
     external_deps: deps/external_deps.json
     git_url: git@github.com:pulp/pulp.git
     git_branch: 2.9-dev
-    version: 2.9.0-0.2.alpha
+    version: 2.9.0-0.2.beta
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
     git_branch: 2.9-dev
-    version: 2.9.0-0.2.alpha
+    version: 2.9.0-0.2.beta
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
     git_branch: 2.9-dev
-    version: 2.9.0-0.2.alpha
+    version: 2.9.0-0.2.beta
 # These should match 2.8-build, we're building the releases simultaneously,
 # and no independent plugins have x or y bumps for 2.9. 2.8.5 will release
 # before 2.9, so 2.9 should use the plugin versions released with 2.8.5
