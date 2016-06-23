@@ -111,13 +111,13 @@
             pulp-admin repo group members add  --group-id my-zoo --repo-id zoo
 
             pulp-admin rpm repo create \
-                --feed https://cdn.redhat.com/content/dist/rhel/rhui/server/7/7.2/x86_64/os/ \
+                --feed https://cdn.redhat.com/content/dist/rhel/rhui/server/7/7Server/x86_64/rhn-tools/os/ \
                 --feed-ca-cert cdn/cdn.redhat.com-chain.crt \
                 --feed-cert cdn/914f702153514b06c1ef279db9dcadce.crt \
                 --feed-key cdn/914f702153514b06c1ef279db9dcadce.key \
-                --repo-id rhel7 \
+                --repo-id rhel7-rhn-tools \
                 --skip erratum
-            pulp-admin rpm repo sync run --repo-id rhel7
+            pulp-admin rpm repo sync run --repo-id rhel7-rhn-tools
 
             pulp-admin logout
         - shell: |
@@ -164,7 +164,7 @@
             if [ "$(echo -e 2.8\\n${{PULP_VERSION}} | sort -V | head -n 1)" = "2.8" ]; then
                 pulp-admin docker repo list --repo-id busybox
             fi
-            pulp-admin rpm repo list --repo-id rhel7
+            pulp-admin rpm repo list --repo-id rhel7-rhn-tools
 
             pulp-admin logout
         - shell: |
