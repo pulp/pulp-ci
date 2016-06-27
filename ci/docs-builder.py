@@ -90,14 +90,7 @@ def main():
         os.symlink(src, dst)
 
     # copy in the pulp_index.rst file
-    if x_y_version == '2.8' and build_type == 'ga':
-        # This is a temporary codepath and should be removed when 2.8.5 is GA.
-        # On 2.8.5+ the installation index page was moved and the pulp_index_2_8.txt
-        # is the version that is compatible with 2.8.4 and earlier. Once 2.8.5 is GA
-        # this if statement branch and the pulp_index_2_8.rst file should be removed.
-        src_path = 'docs/pulp_index_2_8.rst'
-    else:
-        src_path = 'docs/pulp_index.rst'
+    src_path = 'docs/pulp_index.rst'
     pulp_index_rst = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'index.rst'])
     copyfile(src_path, pulp_index_rst)
 
