@@ -2,17 +2,6 @@
 # necessary tools to build a repository with the help of Koji, then publishes
 # the results.
 
-- project:
-    name: docs-builder
-    jobs:
-     - 'docs-builder-{release_config}'
-    release_config:
-     - 2.8-build
-     - 2.8-dev
-     - 2.8-release
-     - 2.9-build
-     - 2.9-dev
-     - master
 - job-template:
     name: 'docs-builder-{release_config}'
     defaults: ci-workflow-runtest
