@@ -122,7 +122,6 @@
           unittest_platforms:
             - f22-np
             - f23-np
-            - rhel5-np
             - rhel6-np
             - rhel7-np
       - pulp_python:
@@ -145,6 +144,5 @@
           unittest_platforms:
             - f22-np
             - f23-np
-            - rhel5-np
             - rhel6-np
             - rhel7-np

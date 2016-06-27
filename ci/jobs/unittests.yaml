@@ -10,7 +10,6 @@
           values:
             - f22-np
             - f23-np
-            - rhel5-np
             - rhel6-np
             - rhel7-np
     parameters:
