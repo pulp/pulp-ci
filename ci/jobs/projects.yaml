@@ -25,16 +25,24 @@
      - ci-update-jobs
 
 - project:
-    name: docs
+    name: docs-build-nightly
+    jobs:
+     - 'docs-builder-{release_config}'
+    release_config:
+     - 2.8-dev
+     - 2.9-dev
+     - master
+    trigger_times: '@midnight'
+
+- project:
+    name: docs-build-manually
     jobs:
      - 'docs-builder-{release_config}'
     release_config:
      - 2.8-build
-     - 2.8-dev
      - 2.8-release
      - 2.9-build
-     - 2.9-dev
-     - master
+    trigger_times: ''
 
 - project:
     name: pulp-dev

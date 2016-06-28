@@ -1,6 +1,5 @@
-# This set of Jenkins jobs creates an installs all the
-# necessary tools to build a repository with the help of Koji, then publishes
-# the results.
+# This set of Jenkins jobs which build the Pulp platform and plugin documentation and publishes
+# it to https://docs.pulpproject.org/
 
 - job-template:
     name: 'docs-builder-{release_config}'
@@ -17,7 +16,7 @@
             skip-tag: true
             wipe-workspace: false
     triggers:
-        - timed: "@midnight"
+        - timed: '{trigger_times}'
     wrappers:
         - ssh-agent-credentials:
             users:
