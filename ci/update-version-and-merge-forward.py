@@ -16,6 +16,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("config", help="The name of the config file to load from config/releases")
 parser.add_argument("--push", action="store_true", default=False,
                     help="Push to GitHub")
+parser.add_argument("--merge-forward-only", action="store_false", default=True,
+                    dest="update_version", help="Don't update versions, only merge forward.")
 
 opts = parser.parse_args()
 push_to_github = opts.push
@@ -52,15 +54,18 @@ for component in get_components(configuration):
     subprocess.call(command, cwd=working_dir)
     project_dir = os.path.join(working_dir, component['name'])
     git_branch = promote.get_current_git_upstream_branch(project_dir)
-    promotion_chain = promote.get_promotion_chain(project_dir, git_branch, parent_branch=parent_branch)
-    promote.check_merge_forward(project_dir, promotion_chain)
-    update_version = os.path.join(CI_DIR, 'update-version.py')
-    # Update the version to the one specified in the config
-    command = ['./update-version.py', '--version', component['version'], project_dir]
-    subprocess.call(command, cwd=CI_DIR)
-    command = ['git', 'commit', '-a', '-m', 'Bumping version to %s' % component['version']]
-    subprocess.call(command, cwd=project_dir)
-    if push_to_github:
-        command = ['git', 'push', '-v']
+    if opts.update_version:
+        promotion_chain = promote.get_promotion_chain(project_dir, git_branch, parent_branch=parent_branch)
+        promote.check_merge_forward(project_dir, promotion_chain)
+        update_version = os.path.join(CI_DIR, 'update-version.py')
+        # Update the version to the one specified in the config
+        command = ['./update-version.py', '--version', component['version'], project_dir]
+        subprocess.call(command, cwd=CI_DIR)
+        command = ['git', 'commit', '-a', '-m', 'Bumping version to %s' % component['version']]
         subprocess.call(command, cwd=project_dir)
+        if push_to_github:
+            command = ['git', 'push', '-v']
+            subprocess.call(command, cwd=project_dir)
+    else:
+        print "Skipping version update, only merging branches forward."
     promote.merge_forward(project_dir, push=push_to_github, parent_branch=parent_branch) 
