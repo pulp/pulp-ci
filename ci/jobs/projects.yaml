@@ -25,6 +25,18 @@
      - ci-update-jobs
 
 - project:
+    name: docs
+    jobs:
+     - 'docs-builder-{release_config}'
+    release_config:
+     - 2.8-build
+     - 2.8-dev
+     - 2.8-release
+     - 2.9-build
+     - 2.9-dev
+     - master
+
+- project:
     name: pulp-dev
     os:
         - 'f22'
