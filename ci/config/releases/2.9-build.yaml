@@ -2,19 +2,22 @@ koji-target-prefix: pulp-2.9
 rsync-target-dir: 2.9/stage
 rsync-tested-dir: 2.9/dev
 repositories:
+# -0.1.beta was a broken build, beta 1 is versioned -0.2.beta
   - name: pulp
     external_deps: deps/external_deps.json
     git_url: git@github.com:pulp/pulp.git
     git_branch: 2.9-dev
-    version: 2.9.0-0.2.beta
+    version: 2.9.0-0.3.beta
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
     git_branch: 2.9-dev
-    version: 2.9.0-0.2.beta
+    version: 2.9.0-0.3.beta
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
     git_branch: 2.9-dev
-    version: 2.9.0-0.2.beta
+    version: 2.9.0-0.3.beta
+# No plugin features with 2.9, using the latest bugfix
+# release plugin versions (from 2.8.5)
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
     git_branch: 2.0-release
