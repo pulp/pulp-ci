@@ -6,16 +6,16 @@ repositories:
   - name: pulp
     external_deps: deps/external_deps.json
     git_url: git@github.com:pulp/pulp.git
-    git_branch: 2.9-dev
-    version: 2.9.0-0.3.beta
+    git_branch: pulp-2.9.0-0.3.beta
+    version: 2.9.0-0.4.rc
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
-    git_branch: 2.9-dev
-    version: 2.9.0-0.3.beta
+    git_branch: pulp-puppet-2.9.0-0.3.beta
+    version: 2.9.0-0.4.rc
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
-    git_branch: 2.9-dev
-    version: 2.9.0-0.3.beta
+    git_branch: pulp-rpm-2.9.0-0.3.beta
+    version: 2.9.0-0.4.rc
 # No plugin features with 2.9, using the latest bugfix
 # release plugin versions (from 2.8.5)
   - name: pulp_docker
