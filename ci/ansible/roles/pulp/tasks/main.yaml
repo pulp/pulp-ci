@@ -15,7 +15,16 @@
 
 - name: Subscription Manager register
   shell: "subscription-manager register --force --user={{ rhn_username }} --password={{ rhn_password }}"
-  when: ansible_distribution == "RedHat" and rhn_username is defined and rhn_password is defined
+  when: ansible_distribution == "RedHat" and rhn_username is defined and rhn_password is defined and
+        rhn_activation_key is undefined and rhn_organization is undefined
+
+- name: Subscription Manager register by Activation Key
+  shell: >
+        subscription-manager register --force
+        --activationkey={{ rhn_activation_key }}
+        --org={{ rhn_organization }}
+  when: ansible_distribution == "RedHat" and
+        rhn_activation_key is defined and rhn_organization is defined
 
 - name: Subscription Manager subscribe
   shell: "subscription-manager subscribe --pool={{ rhn_poolid }}"
