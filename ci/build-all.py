@@ -15,7 +15,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("config", help="The name of the config file to load from config/releases")
 parser.add_argument("--release", action="store_true", default=False,
                     help="Perform a release build. A scratch build will be performed first to "
-                         "validate the spec files. ")
+                         "validate the spec files unless skipped with --skipscratch. ")
+parser.add_argument("--skipscratch", action="store_true", default=False,
+                    help="When performing a release build, skip the scratch build step.")
 parser.add_argument("--disable-push", action="store_true", default=False,
                     help="Don't push to fedorapeople")
 parser.add_argument("--rpmsig", help="The rpm signature hash to use when downloading RPMs. "
@@ -145,14 +147,18 @@ if build_list:
             print "%s %s" % (spec, dist)
         sys.exit(1)
 
-    print "Performing koji scratch build "
-    for spec, dist in build_list:
-        spec_dir = os.path.dirname(spec)
-        builder.build_srpm_from_spec(spec_dir, TITO_DIR, testing=True, dist=dist)
+    if release_build and opts.skipscratch:
+        # scratch build can only be skipped for release builds
+        print "Skipping koji scratch build for release "
+    else:
+        print "Performing koji scratch build "
+        for spec, dist in build_list:
+            spec_dir = os.path.dirname(spec)
+            builder.build_srpm_from_spec(spec_dir, TITO_DIR, testing=True, dist=dist)
 
-    build_ids = builder.build_with_koji(build_tag_prefix=koji_prefix,
-                                        srpm_dir=TITO_DIR, scratch=True)
-    builder.wait_for_completion(build_ids)
+        build_ids = builder.build_with_koji(build_tag_prefix=koji_prefix,
+                                            srpm_dir=TITO_DIR, scratch=True)
+        builder.wait_for_completion(build_ids)
 
     if release_build:
         print "Performing koji release build"

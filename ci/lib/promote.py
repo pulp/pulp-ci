@@ -45,7 +45,7 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
         return ['master']
 
     # parse the git_branch: x.y-(dev|testing|release)
-    branch_regex = "(\d+.\d+)-(dev|testing|release)"
+    branch_regex = "(\d+.\d+)-(dev|testing|release)$"
     match = re.search(branch_regex, git_branch)
     source_branch_version = match.group(1)
     source_branch_stream = match.group(2)
