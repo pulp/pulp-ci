@@ -1,0 +1,18 @@
+- job:
+    name: sync-triage-logs
+    triggers:
+      # ideally, should trigger this with an event from the triage bot
+      # for now we'll fire it nightly and after triage is supposed to end
+      - timed: |
+          @nightly
+          31 11 * * 2,5
+    wrappers:
+      - jenkins-ssh-credentials
+    builders:
+      # requires ssh access to the box running supybot using the jenkins ssh key
+      # to download the meeting logs prior to uploading them to repos.fedorapeople
+      - shell: |
+          rm -rf *
+          rsync -rv jenkins@10.8.180.47:/srv/supybot/meetings/pulp-dev/ pulp_dev
+          rsync -rv pulp_dev/ pulpadmin@repos.fedorapeople.org:public_html/triage
+    # One of the few jobs that can run on the jenkins master, no need to mark offline

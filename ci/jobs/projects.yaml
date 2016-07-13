@@ -97,6 +97,11 @@
      - redmine-bugzilla-automation
 
 - project:
+    name: sync
+    jobs:
+     - sync-triage-logs
+
+- project:
     name: unittests
     jobs:
      - 'unittest-pulp-pr'
