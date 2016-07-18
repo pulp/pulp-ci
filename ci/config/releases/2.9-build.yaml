@@ -14,8 +14,7 @@ repositories:
     version: 2.9.0-1
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
-    git_branch: 2.9.0-releasenotes
-    parent_branch: 2.9-dev
+    git_branch: 2.9-dev
     version: 2.9.0-1
 # No plugin features with 2.9, using the latest bugfix
 # release plugin versions (from 2.8.5)
