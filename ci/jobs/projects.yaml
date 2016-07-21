@@ -48,7 +48,6 @@
 - project:
     name: pulp-dev
     os:
-        - 'f22'
         - 'f23'
         - 'rhel6'
         - 'rhel7'
@@ -74,7 +73,6 @@
 - project:
     name: pulp-upgrade
     os:
-        - f22
         - f23
         - rhel6
         - rhel7
@@ -108,7 +106,6 @@
           unittest_branches:
             - master
           unittest_platforms:
-            - f22-np
             - f23-np
             - rhel6-np
             - rhel7-np
@@ -119,7 +116,6 @@
             - 2.0-dev
             - 2.0-release
           unittest_platforms:
-            - f22-np
             - f23-np
             - rhel6-np
             - rhel7-np
@@ -130,7 +126,6 @@
             - 1.1-dev
             - 1.1-release
           unittest_platforms:
-            - f22-np
             - f23-np
             - rhel7-np
       - pulp_puppet:
@@ -140,7 +135,6 @@
             - 2.9-dev
             - master
           unittest_platforms:
-            - f22-np
             - f23-np
             - rhel6-np
             - rhel7-np
@@ -151,7 +145,6 @@
             - 1.1-release
             - master
           unittest_platforms:
-            - f22-np
             - f23-np
             - rhel6-np
             - rhel7-np
@@ -162,7 +155,6 @@
             - 2.9-dev
             - master
           unittest_platforms:
-            - f22-np
             - f23-np
             - rhel6-np
             - rhel7-np
