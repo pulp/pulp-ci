@@ -2,14 +2,6 @@
     name: build-automation
     jobs:
      - 'build-automation-repo-{release_config}'
-    release_config:
-     - 2.8-dev
-     - 2.9-dev
-     - master
-
-- project:
-    name: build-automation-promote
-    jobs:
      - 'build-automation-promote-{release_config}'
     release_config:
       - 2.8-dev:
@@ -94,6 +86,11 @@
     name: redmine
     jobs:
      - redmine-bugzilla-automation
+
+- project:
+    name: sync
+    jobs:
+     - sync-triage-logs
 
 - project:
     name: unittests
