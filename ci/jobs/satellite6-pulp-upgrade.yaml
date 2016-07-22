@@ -1,0 +1,35 @@
+- job:
+    name: satellite6-pulp-upgrade
+    node: f23-vanilla-np
+    properties:
+        - qe-ownership
+    wrappers:
+        - ansicolor
+        - ssh-agent-credentials:
+            users:
+                - '044c0620-d67e-4172-9814-dc49e443e7b6'
+    builders:
+        - shell: |
+            echo "Start upgrading Pulp on ${INSTANCE_IP}..."
+            ssh -o StrictHostKeyChecking=no cloud-user@$INSTANCE_IP exit
+            alias SSH_CLI="ssh -t -t -o StrictHostKeyChecking=no cloud-user@$INSTANCE_IP"
+            set +e
+            SSH_CLI "sudo katello-service stop"
+            SSH_CLI "rpm -qa | grep pulp"
+            SSH_CLI "sudo yum-config-manager --add-repo https://repos.fedorapeople.org/pulp/pulp/beta/2.8/7Server/x86_64/"
+            SSH_CLI "sudo yum repolist enabled | grep pulp"
+            SSH_CLI "sudo yum update -y --nogpgcheck pulp-*"
+            SSH_CLI "rpm -qa | grep pulp"
+            SSH_CLI "sudo katello-service restart"
+            SSH_CLI "sudo -u apache pulp-manage-db"
+            curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python
+            SSH_CLI "sudo easy_install pip"
+            SSH_CLI "sudo pip install httpie"
+            SSH_CLI "http https://pulp-jenkins-sat6-tester.os1.phx2.redhat.com/pulp/api/v2/status/"
+            UPDATE_PULP_VERSION="$(SSH_CLI rpm -qa | grep pulp-server)"
+            UPDATE_PULP_VERSION="$(echo ${UPDATE_PULP_VERSION} | awk -F'-' '{ print $3 }')"
+            set -e
+            echo "Current version of Pulp is: ${UPDATE_PULP_VERSION}."
+            echo "PULP_VERSION=${UPDATE_PULP_VERSION}" > pulp-smash.properties
+        - inject:
+            properties-file: pulp-smash.properties

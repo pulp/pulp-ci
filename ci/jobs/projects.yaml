@@ -158,3 +158,10 @@
             - f23-np
             - rhel6-np
             - rhel7-np
+
+- project:
+    name: satellite6-pulp-automation
+    jobs:
+        - satellite6-pulp-automation
+        - satellite6-pulp-upgrade
+        - satellite6-pulp-trigger

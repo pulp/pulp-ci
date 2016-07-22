@@ -1,0 +1,101 @@
+- job:
+    name: satellite6-pulp-trigger
+    node: f23-vanilla-np
+    properties:
+        - qe-ownership
+    wrappers:
+        - ansicolor
+    builders:
+        - shining-panda:
+            build-environment: virtualenv
+            name: satellite6-pulp-trigger
+            python-version: System-CPython-2.7
+            nature: shell
+            command: |
+                pip install -U pip
+                pip install requests
+        - shining-panda:
+            build-environment: virtualenv
+            name: satellite6-pulp-trigger
+            python-version: System-CPython-2.7
+            nature: python
+            command: |
+                from __future__ import print_function
+                import logging
+                import os
+                import pip
+                import pprint
+                import requests
+                import sys
+                import time
+
+                JENKINS_URL = os.environ.get('REMOTE_JENKINS_URL')
+                JENKINS_API_TOKEN = os.environ.get('REMOTE_JENKINS_API_TOKEN')
+                JENKINS_USERNAME = os.environ.get('REMOTE_JENKINS_USERNAME')
+                # Change the remote job name here.
+                trigger_type = os.environ.get('TRIGGER_TYPE')
+                # Note: if trigger_type is 'installation'? False
+                if trigger_type == 'installation':
+                    remote_job_name = 'satellite6-installer'
+                elif trigger_type == 'robottelo':
+                    remote_job_name = 'satellite6-standalone-automation'
+                else:
+                    print('The job has failed because the trigger type cannot be recognized.')
+                    print(
+                        'Available trigger types are: 1) installation, to trigger '
+                        'satellite6-installer job; 2) robottelo, to trigger '
+                        'satellite6-standalone-automation job.'
+                    )
+                    sys.exit(1)
+
+                logging.captureWarnings(True)
+                print('Get crumb from Satellite Jenkins server...')
+                crumb = requests.get(
+                    JENKINS_URL + '/crumbIssuer/api/json',
+                    auth=(JENKINS_USERNAME, JENKINS_API_TOKEN),
+                    verify=False
+                ).json()
+                print('Trigger the remote Jenkins job {}...'.format(remote_job_name))
+                queue_url = requests.post(
+                    JENKINS_URL + '/job/{}/buildWithParameters'
+                    .format(remote_job_name),
+                    auth=(JENKINS_USERNAME, JENKINS_API_TOKEN),
+                    data={
+                        'SERVER_HOSTNAME': os.environ.get('SERVER_HOSTNAME'),
+                        'DISTRIBUTION': os.environ.get('DISTRIBUTION', 'DOWNSTREAM'),
+                        'SATELLITE_RELEASE': os.environ.get('SATELLITE_RELEASE', '6.2'),
+                        'SATELLITE_VERSION': os.environ.get('SATELLITE_VERSION', 'GA'),
+                        'SETUP_FAKE_MANIFEST_CERTIFICATE': True,
+                        'TEST_TYPE': os.environ.get('SATELLITE_TEST_TYPE', 'endtoend-api'),
+                        'REMOTE_JENKINS_USERNAME': os.environ.get('REMOTE_JENKINS_USERNAME'),
+                        'REMOTE_JENKINS_API_TOKEN': os.environ.get('REMOTE_JENKINS_API_TOKEN'),
+                        'REMOTE_JENKINS_URL': os.environ.get('REMOTE_JENKINS_URL'),
+                        crumb['crumbRequestField']: crumb['crumb']
+                    },
+                    verify=False
+                ).headers['Location']
+
+                time.sleep(5)
+                queue = requests.get(queue_url + '/api/json', verify=False).json()
+                while not queue.get('executable'):
+                    time.sleep(1)
+                    queue = requests.get(queue_url + '/api/json', verify=False).json()
+                print('Job #{0} ({1}) was triggered...'.format(
+                    queue['executable']['number'],
+                    queue['executable']['url']
+                ))
+
+                result = None
+                while result is None:
+                    time.sleep(1)
+                    response = requests.get(
+                        JENKINS_URL + '/job/{0}/{1}/api/json'
+                        .format(
+                            remote_job_name,
+                            queue['executable']['number']
+                        ),
+                        verify=False
+                    ).json()
+                    result = response.get('result')
+                    if result:
+                        pprint.pprint(result)

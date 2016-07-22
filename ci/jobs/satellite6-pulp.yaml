@@ -1,0 +1,175 @@
+# This job automates the process of deploying Satellite 6 on OpenStack instances
+# and upgrading the Pulp for Robottelo and Pulp Smash tests.
+# Prerequisites:
+#     1) Active account on OpenStack platform.
+#     2) Download the OpenStack RC file from Access&Security>API Access.
+#     3) Create a secret credential file <os-secret.sh> with the following format:
+#         export OS_AUTH_URL=OS_AUTH_URL
+#         export OS_USERNAME=OS_USERNAME
+#         export OS_PASSWORD=password
+#         export OS_TENANT_NAME='"US.ENG Perf R&D"'
+#     4) Upload this secret file to Jenkins UI, for a credentials-binding id.
+#     5) Create a secret credential file <jenkins-secret.sh>:
+#         export REMOTE_JENKINS_USERNAME=username
+#         export REMOTE_JENKINS_API_TOKEN=token
+#         export REMOTE_JENKINS_URL=<remote-jenkins-server-host>
+#     4) Upload this secret file to Jenkins UI, for a credentials-binding id.
+# The automation steps are as following:
+#     1) Create an instance on Open Stack;
+#     2) Run satellite6-installer to install latest Satellite 6 downstream build;
+#     3) Run satellite6-pulp-upgrade job to upgrade the version of Pulp;
+#     4) Run satellite6-standalone-automation.
+# This Jenkins job thus glues these steps together, in order to provide automated sanity checks.
+
+- job:
+    name: satellite6-pulp-automation
+    node: f23-vanilla-np
+    properties:
+        - qe-ownership
+    wrappers:
+        - ansicolor
+        - ssh-agent-credentials:
+            users:
+                - '044c0620-d67e-4172-9814-dc49e443e7b6'
+        - credentials-binding:
+            - file:
+                credential-id: 7ca95790-1c85-4418-ac4c-082a366cf2db
+                variable: REMOTE_JENKINS_CREDENTIALS
+            - file:
+                credential-id: ff1c87ec-76f1-4bb1-a947-fd2114cd8fd9
+                variable: OPENSTACK_CREDENTIALS
+    builders:
+        - shell: |
+            source ${OPENSTACK_CREDENTIALS}
+            source ${REMOTE_JENKINS_CREDENTIALS}
+
+            echo "Preparing OpenStack client environment on Jenkins server..."
+            sudo yum -y update python
+            sudo yum -y install wget
+            sudo pip install pip --upgrade
+            sudo pip install virtualenv --upgrade
+            virtualenv sat-pulp
+            source sat-pulp/bin/activate
+            sudo yum -y install redhat-rpm-config python-devel
+
+            if [ ! -f ./requirements.txt ]; then
+                echo "Downloading requirement.txt for OpenStack client..."
+                wget https://raw.githubusercontent.com/SatelliteQE/5minute/master/requirements.txt
+            fi
+            echo "Installing all dependent packages..."
+            pip install -r requirements.txt
+
+            # Only underscores, hyphens, and alphanumeric characters are allowed for keypair names
+            KEY_NAME=pulp-jenkins
+            INSTANCE_NAME=${KEY_NAME}-sat6-tester
+            IMAGE_ID="$(glance image-list | grep '| rhel-guest-image-7.2' | awk '{ print $2 }')"
+
+            # Upload SSH key pair for OpenStack instance.
+            echo "Uploading the SSH key pair..."
+            if [[ -z $(nova keypair-list | grep ${KEY_NAME} | awk '{ print $2 }') ]]; then
+                echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6DJ8fmd61DWPCMiOEuy96ajI7rL3rWu7C9NQhE9a4SfyaiBcghREHJNCz9LGJ57jtOmNV0+UEDhyvTckZI2YQeDqGCP/xO9B+5gQNlyGZ9gSmFz+68NhYQ0vRekikpb9jNdy6ZZbfZDLp1w7dxqDIKfoyu7QO3Qr3E/9CpiucQif2p+oQOVOCdKEjvGYNkYQks0jVTYNRscgmcezpfLKhqWzAre5+JaMB0kRD5Nqadm2uXKZ4cNYStrpZ4xUrnMvAqjormxW2VJNx+0716Wc2Byhg8Nva+bsOkxp/GewBWHfNPtzQGMsL7oYZPtOd/LrmyYeu/M5Uz7/6QCv4N90P pulp" > pulp-jenkins.pub
+                echo "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAzoPajR2xtQOAfBebX69Mx9Ee4P/LMqlxQLKvF0bc79/1ayMf3IrmpY1V6JCpABvMV1830I9D9x9Tr8E9zjg2wWT14hhHsrUKSWUsy3doIwz3MtISBZPMig5AizVjH6Wl/t833zgkeHtStCYI/bmJQykj6AgB8/A4L5SRIpNnl1q7V+sw37Rmumaiqu4lRDXyTXY7mlOCuxrus/WcGyVTh2k+oBVqkz2V2s3+Or8Zy2Y441B4z3vF3lE6aoIBwidBVZ1LKaofZDMRf/lu575cI4AB3N5DQvpqwLSc4+HIvog0FdKUo3qMaFgg0KNkYS5fnpDpRDRQnFw7oFnBHiPNqw== jenkins@satellite-jenkins" >> pulp-jenkins.pub
+                nova keypair-add --pub-key pulp-jenkins.pub $KEY_NAME
+            fi
+
+            # Setup security group rules.
+            echo "Setup firewall rules that Satellite 6 needs to work properly."
+            SECURITY_GROUP_NAME=pulp-jenkins
+            if [[ -z $(nova secgroup-list | grep ${SECURITY_GROUP_NAME}) ]]; then
+                nova secgroup-create ${SECURITY_GROUP_NAME} "Security group for Satellite6-Pulp testing"
+            fi
+
+            if [[ -z $(nova secgroup-list-rules ${SECURITY_GROUP_NAME} | grep "0.0.0.0/0") ]]; then
+                nova secgroup-add-rule $SECURITY_GROUP_NAME icmp -1 -1 0.0.0.0/0
+                for tcp_port in 22 80 443 5000 5646 5647 5671 8000 8140 8443 9090; do
+                    nova secgroup-add-rule $SECURITY_GROUP_NAME tcp $tcp_port $tcp_port 0.0.0.0/0
+                done
+                for udp_port in 53 69; do
+                    nova secgroup-add-rule $SECURITY_GROUP_NAME udp $udp_port $udp_port 0.0.0.0/0
+                done
+            fi
+
+            echo "Booting an OpenStack instance and getting its floating IP address..."
+            # Note: the flavor "c3.xlarge" might cause error on OS platform;
+            # Note: the flavor "c3.large" is stable but will likely cause memory
+            # error on Satellite6 installer job.
+            nova boot --flavor 'c3.xlarge' \
+                --image $IMAGE_ID \
+                --key-name $KEY_NAME \
+                --security-groups $SECURITY_GROUP_NAME \
+                $INSTANCE_NAME
+            INSTANCE_IP=""
+            while [[ -z "${INSTANCE_IP}" ]]; do
+                echo "The network is not yet ready..."
+                sleep 1
+                INSTANCE_IP="$(nova list | grep ${INSTANCE_NAME} | awk {' print $13 '} | head -1)"
+            done
+            echo "The network is ready! The floating-IP of this instance is: ${INSTANCE_IP}"
+            # Sleep 10 seconds until the instance is fully ready.
+            sleep 10
+
+            INSTANCE_ID="$(nova list | grep ${INSTANCE_NAME} | awk {' print $2 '} | head -1)"
+
+            # Inject environment variables.
+            echo "Injecting environment variables..."
+            echo "KEY_NAME=${KEY_NAME}" > jenkins_openstack.properties
+            echo "INSTANCE_IP=${INSTANCE_IP}" >> jenkins_openstack.properties
+            echo "INSTANCE_ID=${INSTANCE_ID}" >> jenkins_openstack.properties
+            echo "SECURITY_GROUP_NAME=${SECURITY_GROUP_NAME}" >> jenkins_openstack.properties
+            echo "REMOTE_JENKINS_USERNAME=${REMOTE_JENKINS_USERNAME}" >> jenkins_openstack.properties
+            echo "REMOTE_JENKINS_API_TOKEN=${REMOTE_JENKINS_API_TOKEN}" >> jenkins_openstack.properties
+            echo "REMOTE_JENKINS_URL=${REMOTE_JENKINS_URL}" >> jenkins_openstack.properties
+        - inject:
+            properties-file: jenkins_openstack.properties
+        - shell: |
+            # Wait until the OpenStack instance can be connected by SSH sessions.
+            # The following trigger builders will depend on SSH connectivity.
+            set +e
+            while true; do
+                ssh -o ConnectTimeout=5 \
+                    -o StrictHostKeyChecking=no \
+                    cloud-user@${INSTANCE_IP} echo testing
+                if [[ $? = 0 ]]; then
+                    break
+                fi
+                echo "$INSTANCE_IP is not yet ready...";
+                sleep 5
+            done
+            set -e
+        - trigger-builds:
+            - project: "satellite6-pulp-trigger"
+              block: true
+              bool-parameters:
+                  - name:  SETUP_FAKE_MANIFEST_CERTIFICATE
+                    value: true
+              predefined-parameters: |
+                  TRIGGER_TYPE=installation
+                  SERVER_HOSTNAME=${INSTANCE_IP}
+                  DISTRIBUTION=DOWNSTREAM
+                  SATELLITE_VERSION=6.2
+                  SATELLITE_RELEASE=GA
+                  REMOTE_JENKINS_USERNAME=${REMOTE_JENKINS_USERNAME}
+                  REMOTE_JENKINS_API_TOKEN=${REMOTE_JENKINS_API_TOKEN}
+                  REMOTE_JENKINS_URL=${REMOTE_JENKINS_URL}
+        - trigger-builds:
+            - project: "satellite6-pulp-upgrade"
+              block: true
+              predefined-parameters: |
+                  INSTANCE_IP=${INSTANCE_IP}
+        - trigger-builds:
+            - project: "satellite6-pulp-trigger"
+              block: true
+              predefined-parameters: |
+                  TRIGGER_TYPE=robottelo
+                  SERVER_HOSTNAME=${INSTANCE_IP}
+                  TEST_TYPE=endtoend-api
+                  REMOTE_JENKINS_USERNAME=${REMOTE_JENKINS_USERNAME}
+                  REMOTE_JENKINS_API_TOKEN=${REMOTE_JENKINS_API_TOKEN}
+                  REMOTE_JENKINS_URL=${REMOTE_JENKINS_URL}
+        - shell: |
+            echo ${REMOTE_JENKINS_USERNAME}
+            source sat-pulp/bin/activate
+            source ${OPENSTACK_CREDENTIALS}
+            if [[ ! -z "$(nova list | grep ${INSTANCE_ID})" ]]; then
+               nova delete $INSTANCE_ID
+            fi
