@@ -19,7 +19,6 @@
                 The hash or refname of the branch to build: for example: origin/pr/9/head
         - matrix-combinations:
             name: MATRIX_AXIS
-    # enable nodepool monitoring
     properties:
       - dev-ownership
       - github:
@@ -141,10 +140,10 @@
           report-file: 'coverage/*.xml'
           fail-no-reports: true
           targets:
-            - lines:
+            - line:
                 healthy: 84
-                unhealthy: 0.0
-                failing: 0.0
+                unhealthy: 0
+                failing: 0
       # Publish a pretty graph of the test results
       - junit:
           results: 'test/*.xml'
@@ -288,10 +287,10 @@
           report-file: 'coverage/*.xml'
           fail-no-reports: true
           targets:
-            - lines:
-                healthy: {min_coverage}
-                unhealthy: 0.0
-                failing: 0.0
+            - line:
+                healthy: "{min_coverage}"
+                unhealthy: 0
+                failing: 0
       # Publish a pretty graph of the test results
       - junit:
           results: 'test/*.xml'
