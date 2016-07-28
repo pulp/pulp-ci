@@ -18,7 +18,7 @@
         - jenkins-ssh-credentials
     builders:
         - shell: |
-            sudo dnf -y install createrepo make patch
+            sudo dnf -y install createrepo make patch rpm-sign
             make fixtures
             rsync -arvze "ssh -o StrictHostKeyChecking=no" --delete \
                 fixtures/* \
