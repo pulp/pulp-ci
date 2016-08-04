@@ -49,6 +49,7 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
     match = re.search(branch_regex, git_branch)
     source_branch_version = match.group(1)
     source_branch_stream = match.group(2)
+    source_branch_major, source_branch_minor = map(int, source_branch_version.split('.'))
 
     # get the branch list
     raw_branch_list = subprocess.check_output(['git', 'branch', '-r'], cwd=git_directory)
@@ -65,7 +66,9 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
         if match:
             all_branches.add(match.group(0))
             branch_version = match.group(1)
-            if branch_version > source_branch_version:
+            branch_major, branch_minor = map(int, branch_version.split('.'))
+            # this check only includes changes from the same major version
+            if branch_major == source_branch_major and branch_minor > source_branch_minor:
                 target_branch_versions.add(branch_version)
     result_list = [git_branch]
     if source_branch_stream == 'release':
