@@ -23,6 +23,7 @@
     release_config:
      - 2.8-dev
      - 2.9-dev
+     - 2.10-dev
      - master
     trigger_times: '@midnight'
 
@@ -35,6 +36,8 @@
      - 2.8-release
      - 2.9-build
      - 2.9-release
+     - 2.10-build
+     - 2.10-release
     trigger_times: ''
 
 - project:
