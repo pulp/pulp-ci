@@ -4,7 +4,7 @@
       # ideally, should trigger this with an event from the triage bot
       # for now we'll fire it nightly and after triage is supposed to end
       - timed: |
-          @nightly
+          H H * * *
           31 11 * * 2,5
     wrappers:
       - jenkins-ssh-credentials
