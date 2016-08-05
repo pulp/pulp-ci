@@ -205,14 +205,17 @@ if minor_release is not None:
 if stage is not None:
     calculated_release += '.%s' % stage
 
-python_version = calculated_version
-if stage == 'alpha':
-    python_version += 'a'
-elif stage == 'beta':
-    python_version += 'b'
-elif stage == 'rc':
-    python_version += 'c'
-if minor_release is not None:
+if patch_version > 0:
+    python_version = calculated_version
+else:
+    python_version = "%d.%d" % (major_version, minor_version)
+if stage in ('alpha', 'beta', 'rc'):
+    if stage == 'alpha':
+        python_version += 'a'
+    elif stage == 'beta':
+        python_version += 'b'
+    elif stage == 'rc':
+        python_version += 'c'
     python_version += '%s' % minor_release
 
 # Update the all the files
@@ -220,8 +223,5 @@ set_spec_version(spec_file, calculated_version, calculated_release)
 find_replace_in_files(os.path.dirname(spec_file), 'setup.py', python_version, VERSION_REGEX)
 find_replace_in_files(os.path.dirname(spec_file), '__init__.py', python_version, VERSION_REGEX)
 
-conf_version = "%s.%s" % (major_version, minor_version)
-find_replace_in_files(os.path.dirname(spec_file), 'conf.py', conf_version, VERSION_REGEX)
+find_replace_in_files(os.path.dirname(spec_file), 'conf.py', python_version, VERSION_REGEX)
 find_replace_in_files(os.path.dirname(spec_file), 'conf.py', python_version, RELEASE_REGEX)
-
-
