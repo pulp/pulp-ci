@@ -1,11 +1,32 @@
 #!/bin/bash
+# This script is meant to be sourced, not executed directly, and shouldn't do
+# anything more than determine some system basics and get the jenkins user and
+# dependencies installed.
 set -ex
 
-# Collect some facts
-export DISTRIBUTION=$(python -c "import platform, sys
-sys.stdout.write(platform.dist()[0])")
-export DISTRIBUTION_MAJOR_VERSION=$(python -c "import platform, sys
-sys.stdout.write(platform.dist()[1].split('.')[0])")
+# This file doesn't exist on el5, but we don't test on el5 anymore,
+# so that's probably(?) fine. If needed, we could add special handling for el5
+. /etc/os-release
+
+if [ -z $ID ] || [ -z $VERSION_ID ]; then
+   echo "ID and VERSION_ID not set in /etc/os-release"
+   return 1
+fi
+
+# set DISTRIBUTION based on ID: If it's rhel or centos,
+# make it the common "redhat". Otherwise, use ID directly.
+# For our purposes, this means it should either be "redhat" or "fedora".
+if [[ $ID == 'centos' ]] || [[ $ID == 'rhel' ]]; then
+  DISTRIBUTION=redhat
+else
+  DISTRIBUTION="$ID"
+fi
+
+# We only care about the major version, so split on the dots
+# and only take the first field (7.1 and 7 are stored as 7).
+DISTRIBUTION_MAJOR_VERSION=`echo "$VERSION_ID"|cut -d . -f 1`
+
+echo Bootstrapping jenkins for $DISTRIBUTION $DISTRIBUTION_MAJOR_VERSION
 
 # use dnf if you can, otherwise use yum
 if dnf --version; then

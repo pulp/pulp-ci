@@ -39,29 +39,19 @@ elif  [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == 
     # https://bugzilla.redhat.com/show_bug.cgi?id=1173993 is similar to what we've been seeing
     # to break the rhel7 image booting. This fixes it, but it's not clear why.
     sudo sed -i '/sixteenbit=/d' /etc/grub.d/10_linux
+    # after fixing that ^, the rhel7-vanilla images occasional kernel panic starting the apic timer
+    # simple solution: don't use apic?
+    sudo sed -i 's/GRUB_CMDLINE_LINUX="/GRUB_CMDLINE_LINUX="apic=verbose /' /etc/default/grub
     sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 elif  [ "${DISTRIBUTION}" == "fedora" ]; then
     sudo sed -i 's/clean_requirements_on_remove=true/clean_requirements_on_remove=false/g' /etc/dnf/dnf.conf
-    sudo "${PKG_MGR}" install -y python-dnf
-    if  [ "${DISTRIBUTION_MAJOR_VERSION}" == "22" ]; then
-        sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-fedora-22.noarch.rpm
-        # "which" isn't installed in fedora 22 by default?
-        sudo "${PKG_MGR}" install -y which
-        # due to some selinux problems, squid won't start on f22. While there are many
-        # good solutions to this problem, the imminent release of f24 means that the simplest
-        # solution is setting selinux to permissive on f22 until we stop supporting it in a
-        # few weeks. Upstream issues and more details here: https://pulp.plan.io/issues/1904
-        sudo sed -i -e 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config
-    fi
+    # "which" isn't installed in fedora 22+ by default?
+    sudo "${PKG_MGR}" install -y python2 python-dnf which
+    sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-fedora-${DISTRIBUTION_MAJOR_VERSION}.noarch.rpm
 fi
 
-if  [ "${DISTRIBUTION}" == "fedora" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "23" ]; then
-    PUPPET="puppet"
-    sudo "${PKG_MGR}" install -y puppet
-else
-    PUPPET="/opt/puppetlabs/bin/puppet"
-    sudo "${PKG_MGR}" install -y puppet-agent
-fi
+PUPPET="/opt/puppetlabs/bin/puppet"
+sudo "${PKG_MGR}" install -y puppet-agent
 
 echo "Installing git"
 sudo "${PKG_MGR}" install -y git
