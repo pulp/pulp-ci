@@ -5,16 +5,18 @@ repositories:
   - name: pulp
     external_deps: deps/external_deps.json
     git_url: git@github.com:pulp/pulp.git
-    git_branch: 2.9-dev
-    version: 2.9.2-0.2.beta
+    git_branch: 2.9.2-hotfix
+    parent_branch: 2.9-dev
+    version: 2.9.2-0.3.beta
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
     git_branch: 2.9-dev
     version: 2.9.2-0.1.beta
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
-    git_branch: 2.9-dev
-    version: 2.9.2-0.1.beta
+    git_branch: 2.9.2-hotfix
+    parent_branch: 2.9-dev
+    version: 2.9.2-0.2.beta
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
     git_branch: 2.0-release
