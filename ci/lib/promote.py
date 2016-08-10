@@ -52,7 +52,8 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
     source_branch_major, source_branch_minor = map(int, source_branch_version.split('.'))
 
     # get the branch list
-    raw_branch_list = subprocess.check_output(['git', 'branch', '-r'], cwd=git_directory)
+    raw_branch_list = subprocess.check_output('git branch -r|sort -V', cwd=git_directory,
+                                              shell=True)
 
     lines = raw_branch_list.splitlines()
 
@@ -75,7 +76,7 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
         result_list.append("%s-dev" % source_branch_version)
 
     result_list.extend(["%s-dev" % branch_version
-                        for branch_version in sorted(target_branch_versions)])
+                        for branch_version in target_branch_versions])
 
     # Do this check before adding master since we explicitly won't match master in the above regex
     if not set(result_list).issubset(all_branches):
