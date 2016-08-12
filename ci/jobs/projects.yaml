@@ -163,4 +163,3 @@
     jobs:
         - satellite6-pulp-automation
         - satellite6-pulp-upgrade
-        - satellite6-pulp-trigger
