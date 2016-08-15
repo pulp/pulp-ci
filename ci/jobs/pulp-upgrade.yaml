@@ -167,12 +167,44 @@
             pulp-admin rpm repo list --repo-id rhel7-rhn-tools
 
             pulp-admin logout
+        - shell:
+            echo "BASE_URL=https://$(hostname --long)" > parameters.txt
+            cp /etc/pki/CA/cacert.pem cacert.pem
+        - inject:
+            properties-file: parameters.txt
+        - trigger-builds:
+            - project:
+                - pulp-smash-runner
+              block: true
+              predefined-parameters: |
+                  BASE_URL=$BASE_URL
+                  PULP_VERSION=$UPGRADE_PULP_VERSION
+              block-thresholds:
+                  build-step-failure-threshold: never
+                  unstable-threshold: never
+                  failure-threshold: never
+              parameter-factories:
+                  - factory: binaryfile
+                    parameter-name: PRIVATE_KEY
+                    file-pattern: pulp_server_key
+                    no-files-found-action: FAIL
+                  - factory: binaryfile
+                    parameter-name: CA_CERT
+                    file-pattern: cacert.pem
+                    no-files-found-action: FAIL
+        - copyartifact:
+            project: pulp-smash-runner
+            which-build: specific-build
+            build-number: ${{TRIGGERED_BUILD_NUMBER_PULP_SMASH_RUNNER}}
+            flatten: true
         - shell: |
             if [[ "${{OS}}" =~ "rhel" ]]; then
                 sudo subscription-manager unregister
                 sudo subscription-manager clean
             fi
     publishers:
+      - junit:
+          results: nose2-junit.xml
       - email-notify-owners
       - irc-notify-all-summary
       - mark-node-offline
