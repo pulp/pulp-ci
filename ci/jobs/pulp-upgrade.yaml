@@ -8,6 +8,8 @@
         - qe-ownership
     scm:
         - pulp-packaging-github
+    triggers:
+        - timed: '@weekly'
     wrappers:
         - ansicolor
         - config-file-provider:
@@ -208,18 +210,3 @@
       - email-notify-owners
       - irc-notify-all-summary
       - mark-node-offline
-
-
-# Job that triggers the upgrade jobs
-
-- job-template:
-    name: 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-trigger'
-    triggers:
-        - timed: '@weekly'
-    builders:
-        - trigger-builds:
-            - project:
-                - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-f22'
-                - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-f23'
-                - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-rhel6'
-                - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-rhel7'
