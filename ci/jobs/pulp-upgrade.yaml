@@ -169,7 +169,7 @@
             pulp-admin rpm repo list --repo-id rhel7-rhn-tools
 
             pulp-admin logout
-        - shell:
+        - shell: |
             echo "BASE_URL=https://$(hostname --long)" > parameters.txt
             cp /etc/pki/CA/cacert.pem cacert.pem
         - inject:
