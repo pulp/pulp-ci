@@ -192,10 +192,7 @@
             fi
 
             echo "Booting an OpenStack instance and getting its floating IP address..."
-            # Note: the flavor "c3.xlarge" might cause error on OS platform;
-            # Note: the flavor "c3.large" is stable but will likely cause memory
-            # error on Satellite6 installer job.
-            nova boot --flavor 'c3.xlarge' \
+            nova boot --flavor 'm4.xlarge' \
                 --image $IMAGE_ID \
                 --key-name $KEY_NAME \
                 --security-groups $SECURITY_GROUP_NAME \
