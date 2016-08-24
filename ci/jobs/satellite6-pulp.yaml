@@ -83,9 +83,9 @@
                     queue['executable']['url']
                 ))
 
-                result = None
-                while result is None:
-                    time.sleep(1)
+                result = ''
+                while not result:
+                    time.sleep(30)
                     response = requests.get(
                         JENKINS_URL + '/job/{{0}}/{{1}}/api/json'
                         .format(
@@ -94,10 +94,22 @@
                         ),
                         verify=False
                     ).json()
-                    result = response.get('result')
-                    if result:
-                        pprint.pprint(result)
-
+                    result = response.get('result') or ''
+                    if result.lower() == 'failure':
+                        print(
+                            'Triggered job failed. Check its console output '
+                            'for more information: {{}}console'
+                            .format(queue['executable']['url'])
+                        )
+                        sys.exit(1)
+                    elif result.lower() == 'success':
+                        print('Triggered job succeeded.')
+                    elif result:
+                        print(
+                            'Triggered job completed with result: {{}}'
+                            .format(result)
+                        )
+                        sys.exit(1)
 
 
 # This job automates the process of deploying Satellite 6 on OpenStack instances
@@ -145,80 +157,82 @@
             source ${OPENSTACK_CREDENTIALS}
             source ${REMOTE_JENKINS_CREDENTIALS}
 
-            echo "Preparing OpenStack client environment on Jenkins server..."
-            sudo yum -y update python
-            sudo yum -y install wget
-            sudo pip install pip --upgrade
-            sudo pip install virtualenv --upgrade
-            virtualenv sat-pulp
-            source sat-pulp/bin/activate
-            sudo yum -y install redhat-rpm-config python-devel
-
-            if [ ! -f ./requirements.txt ]; then
-                echo "Downloading requirement.txt for OpenStack client..."
-                wget https://raw.githubusercontent.com/SatelliteQE/5minute/master/requirements.txt
-            fi
-            echo "Installing all dependent packages..."
-            pip install -r requirements.txt
+            sudo dnf -y install python-devel redhat-rpm-config wget
+            sudo pip install -U pip virtualenv
+            virtualenv satellite-pulp
+            source satellite-pulp/bin/activate
+            pip install python-glanceclient python-novaclient
 
             # Only underscores, hyphens, and alphanumeric characters are allowed for keypair names
-            KEY_NAME=pulp-jenkins
-            INSTANCE_NAME=${KEY_NAME}-sat6-tester
+            KEY_NAME="pulp-jenkins"
+            INSTANCE_NAME="${KEY_NAME}-sat6-tester"
             IMAGE_ID="$(glance image-list | grep '| rhel-guest-image-7.2' | awk '{ print $2 }')"
 
             # Upload SSH key pair for OpenStack instance.
-            echo "Uploading the SSH key pair..."
-            if [[ -z $(nova keypair-list | grep ${KEY_NAME} | awk '{ print $2 }') ]]; then
+            if [[ -z "$(nova keypair-list | grep ${KEY_NAME} | awk '{ print $2 }')" ]]; then
                 echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6DJ8fmd61DWPCMiOEuy96ajI7rL3rWu7C9NQhE9a4SfyaiBcghREHJNCz9LGJ57jtOmNV0+UEDhyvTckZI2YQeDqGCP/xO9B+5gQNlyGZ9gSmFz+68NhYQ0vRekikpb9jNdy6ZZbfZDLp1w7dxqDIKfoyu7QO3Qr3E/9CpiucQif2p+oQOVOCdKEjvGYNkYQks0jVTYNRscgmcezpfLKhqWzAre5+JaMB0kRD5Nqadm2uXKZ4cNYStrpZ4xUrnMvAqjormxW2VJNx+0716Wc2Byhg8Nva+bsOkxp/GewBWHfNPtzQGMsL7oYZPtOd/LrmyYeu/M5Uz7/6QCv4N90P pulp" > pulp-jenkins.pub
                 echo "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAzoPajR2xtQOAfBebX69Mx9Ee4P/LMqlxQLKvF0bc79/1ayMf3IrmpY1V6JCpABvMV1830I9D9x9Tr8E9zjg2wWT14hhHsrUKSWUsy3doIwz3MtISBZPMig5AizVjH6Wl/t833zgkeHtStCYI/bmJQykj6AgB8/A4L5SRIpNnl1q7V+sw37Rmumaiqu4lRDXyTXY7mlOCuxrus/WcGyVTh2k+oBVqkz2V2s3+Or8Zy2Y441B4z3vF3lE6aoIBwidBVZ1LKaofZDMRf/lu575cI4AB3N5DQvpqwLSc4+HIvog0FdKUo3qMaFgg0KNkYS5fnpDpRDRQnFw7oFnBHiPNqw== jenkins@satellite-jenkins" >> pulp-jenkins.pub
-                nova keypair-add --pub-key pulp-jenkins.pub $KEY_NAME
+                nova keypair-add --pub-key pulp-jenkins.pub "${KEY_NAME}"
             fi
 
             # Setup security group rules.
-            echo "Setup firewall rules that Satellite 6 needs to work properly."
-            SECURITY_GROUP_NAME=pulp-jenkins
-            if [[ -z $(nova secgroup-list | grep ${SECURITY_GROUP_NAME}) ]]; then
-                nova secgroup-create ${SECURITY_GROUP_NAME} "Security group for Satellite6-Pulp testing"
+            if [[ -z "$(nova secgroup-list | grep ${KEY_NAME})" ]]; then
+                nova secgroup-create "${KEY_NAME}" "Security group for Satellite6-Pulp testing"
             fi
 
-            if [[ -z $(nova secgroup-list-rules ${SECURITY_GROUP_NAME} | grep "0.0.0.0/0") ]]; then
-                nova secgroup-add-rule $SECURITY_GROUP_NAME icmp -1 -1 0.0.0.0/0
+            if [[ -z $(nova secgroup-list-rules "${KEY_NAME}" | grep "0.0.0.0/0") ]]; then
+                nova secgroup-add-rule "${KEY_NAME}" icmp -1 -1 0.0.0.0/0
                 for tcp_port in 22 80 443 5000 5646 5647 5671 8000 8140 8443 9090; do
-                    nova secgroup-add-rule $SECURITY_GROUP_NAME tcp $tcp_port $tcp_port 0.0.0.0/0
+                    nova secgroup-add-rule "${KEY_NAME}" tcp $tcp_port $tcp_port 0.0.0.0/0
                 done
                 for udp_port in 53 69; do
-                    nova secgroup-add-rule $SECURITY_GROUP_NAME udp $udp_port $udp_port 0.0.0.0/0
+                    nova secgroup-add-rule "${KEY_NAME}" udp $udp_port $udp_port 0.0.0.0/0
                 done
             fi
 
-            echo "Booting an OpenStack instance and getting its floating IP address..."
+            # Check if there is an instance running and delete it
+            if [ "$(nova list | grep ${INSTANCE_NAME})" ]; then
+                nova delete "${INSTANCE_NAME}"
+                while [ "$(nova list | grep ${INSTANCE_NAME})" ]; do
+                    sleep 5
+                done
+            fi
+
+            FLOATING_IP="$(nova floating-ip-list | grep '| -' | awk '{ print $4 }' | head -n 1)"
+            INSTANCE_HOSTNAME="host-$(echo ${FLOATING_IP} | cut -d. -f 2- | sed 's/\./-/g')"
+            INSTANCE_FQDN="${INSTANCE_HOSTNAME}.host.centralci.eng.rdu2.redhat.com"
+            cat > cloud-config.txt << EOF
+            #cloud-config
+            fqdn: ${INSTANCE_FQDN}
+            hostname: ${INSTANCE_HOSTNAME}
+            manage_etc_hosts: true
+            EOF
+
             nova boot --flavor 'm4.xlarge' \
-                --image $IMAGE_ID \
+                --image "${IMAGE_ID}" \
                 --key-name $KEY_NAME \
-                --security-groups $SECURITY_GROUP_NAME \
-                $INSTANCE_NAME
-            INSTANCE_IP=""
+                --security-groups "${KEY_NAME}" \
+                --user-data cloud-config.txt \
+                "${INSTANCE_NAME}"
             COUNTER=1
-            while [[ -z "${INSTANCE_IP}" ]]; do
+            while [[ -z "$(nova list | grep -e ACTIVE -e Running | grep ${INSTANCE_NAME})" ]]; do
                 echo "The network is not yet ready ${COUNTER} times..."
                 let COUNTER+=1
-                if [[ ${COUNTER} -gt 50 ]]; then
+                if [[ ${COUNTER} -gt 60 ]]; then
                     echo "The OpenStack instance was failed to create..."
                     exit 1
                 fi
                 sleep 1
-                INSTANCE_IP="$(nova list | grep ${INSTANCE_NAME} | awk {' print $13 '} | head -1)"
             done
-            echo "The network is ready! The floating-IP of this instance is: ${INSTANCE_IP}"
-            # Sleep 10 seconds until the instance is fully ready.
-            sleep 10
-
+            INSTANCE_IP="$(nova list | grep -e ACTIVE -e Running | grep ${INSTANCE_NAME} | awk '{ print $12 }' | head -1 | grep -E -o '([0-9]+\.?){4}')"
             INSTANCE_ID="$(nova list | grep ${INSTANCE_NAME} | awk {' print $2 '} | head -1)"
 
+            # Associate the floating IP
+            nova floating-ip-associate "${INSTANCE_ID}" "${FLOATING_IP}"
+
             # Inject environment variables.
-            echo "Injecting environment variables..."
             echo "KEY_NAME=${KEY_NAME}" > jenkins_openstack.properties
-            echo "INSTANCE_IP=${INSTANCE_IP}" >> jenkins_openstack.properties
+            echo "INSTANCE_IP=${FLOATING_IP}" >> jenkins_openstack.properties
             echo "INSTANCE_ID=${INSTANCE_ID}" >> jenkins_openstack.properties
             echo "SECURITY_GROUP_NAME=${SECURITY_GROUP_NAME}" >> jenkins_openstack.properties
             echo "REMOTE_JENKINS_USERNAME=${REMOTE_JENKINS_USERNAME}" >> jenkins_openstack.properties
@@ -234,7 +248,7 @@
             while true; do
                 ssh -o ConnectTimeout=5 \
                     -o StrictHostKeyChecking=no \
-                    cloud-user@${INSTANCE_IP} echo testing
+                    "cloud-user@${INSTANCE_IP}" echo testing
                 if [[ $? = 0 ]]; then
                     break
                 fi
@@ -263,10 +277,8 @@
             SATELLITE_RELEASE: ""
             SATELLITE_VERSION: ""
         - shell: |
-            echo ${REMOTE_JENKINS_USERNAME}
-            source sat-pulp/bin/activate
-            source ${OPENSTACK_CREDENTIALS}
+            source satellite-pulp/bin/activate
+            source "${OPENSTACK_CREDENTIALS}"
             if [[ ! -z "$(nova list | grep ${INSTANCE_ID})" ]]; then
-               nova delete $INSTANCE_ID
+               nova delete "${INSTANCE_ID}"
             fi
-
