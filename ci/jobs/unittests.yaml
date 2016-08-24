@@ -50,6 +50,7 @@
             - 2.8-release
             - 2.9-dev
             - 2.9-release
+            - 2.10-dev
     builders:
         - shell: |
             #!/bin/bash
