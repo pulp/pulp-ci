@@ -59,7 +59,7 @@
                     .format(remote_job_name),
                     auth=(JENKINS_USERNAME, JENKINS_API_TOKEN),
                     data={{
-                        'SERVER_HOSTNAME': os.environ.get('INSTANCE_IP'),
+                        'SERVER_HOSTNAME': os.environ.get('INSTANCE_FQDN'),
                         'DISTRIBUTION': "{DISTRIBUTION}",
                         'SATELLITE_RELEASE': "{SATELLITE_RELEASE}",
                         'SATELLITE_VERSION': "{SATELLITE_VERSION}",
@@ -233,6 +233,8 @@
             # Inject environment variables.
             echo "KEY_NAME=${KEY_NAME}" > jenkins_openstack.properties
             echo "INSTANCE_IP=${FLOATING_IP}" >> jenkins_openstack.properties
+            echo "INSTANCE_HOSTNAME=${INSTANCE_HOSTNAME}" >> jenkins_openstack.properties
+            echo "INSTANCE_FQDN=${INSTANCE_FQDN}" >> jenkins_openstack.properties
             echo "INSTANCE_ID=${INSTANCE_ID}" >> jenkins_openstack.properties
             echo "SECURITY_GROUP_NAME=${SECURITY_GROUP_NAME}" >> jenkins_openstack.properties
             echo "REMOTE_JENKINS_USERNAME=${REMOTE_JENKINS_USERNAME}" >> jenkins_openstack.properties
