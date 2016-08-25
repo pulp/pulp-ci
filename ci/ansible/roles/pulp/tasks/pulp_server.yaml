@@ -88,6 +88,10 @@
     - Restart Pulp resource manager service
   when: not db_init.stat.exists
 
+- name: Enable pulp_manage_rsync SELinux boolean
+  shell: sudo semanage boolean --modify --on pulp_manage_rsync
+  when: pulp_version | version_compare('2.10', '>=')`
+
 - name: Ensure Apache server is running
   service:
     name: httpd
