@@ -81,6 +81,8 @@
         - 2.8-beta
         - 2.8-nightly
         - 2.9-beta
+        - 2.9-nightly
+        - 2.10-beta
     exclude:
         - os: f23
           pulp_version: 2.7-stable
