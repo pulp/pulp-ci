@@ -90,7 +90,7 @@
 
 - name: Enable pulp_manage_rsync SELinux boolean
   shell: sudo semanage boolean --modify --on pulp_manage_rsync
-  when: pulp_version | version_compare('2.10', '>=')`
+  when: pulp_version | version_compare('2.10', '>=')
 
 - name: Ensure Apache server is running
   service:
