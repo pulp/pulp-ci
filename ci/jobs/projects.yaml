@@ -75,17 +75,20 @@
         - rhel6
         - rhel7
     pulp_version:
-        - 2.7-stable
         - 2.8-stable
+        - 2.9-stable
     upgrade_pulp_version:
         - 2.8-beta
         - 2.8-nightly
         - 2.9-beta
         - 2.9-nightly
         - 2.10-beta
+        - 2.10-nightly
     exclude:
-        - os: f23
-          pulp_version: 2.7-stable
+        - pulp_version: 2.9-stable
+          upgrade_pulp_version: 2.8-beta
+        - pulp_version: 2.9-stable
+          upgrade_pulp_version: 2.8-nightly
     jobs:
         - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-{os}'
 
