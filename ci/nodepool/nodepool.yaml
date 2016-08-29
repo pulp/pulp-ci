@@ -78,65 +78,65 @@ providers:
     images:
       - name: f22-np
         base-image: Fedora-Cloud-Base-22-20150521.x86_64
-        user: jenkins
+        username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
       - name: f22-vanilla-np
         base-image: Fedora-Cloud-Base-22-20150521.x86_64
-        user: jenkins
+        username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
       - name: f23-np
         base-image: Fedora-Cloud-Base-23-20151113-py27.x86_64
-        user: jenkins
+        username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
       - name: f23-vanilla-np
         base-image: Fedora-Cloud-Base-23-20151113-py27.x86_64
-        user: jenkins
+        username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
       - name: f23-docker-np
         base-image: Fedora-Cloud-Base-23-20151113-py27.x86_64
-        user: jenkins
+        username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
       - name: rhel5-np
         base-image: rhel-5.11-server-x86_64-released
-        user: jenkins
+        username: jenkins
         password: redhat
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
       - name: rhel6-np
         base-image: rhel-6.8-server-x86_64-released
-        user: jenkins
+        username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
         name-filter: m3.medium
       - name: rhel6-vanilla-np
         base-image: rhel-6.8-server-x86_64-released
-        user: jenkins
+        username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
         name-filter: m3.medium
       - name: rhel7-np
         base-image: rhel-7.2-server-x86_64-released
-        user: jenkins
+        username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
         name-filter: m3.medium
       - name: rhel7-vanilla-np
         base-image: rhel-7.2-server-x86_64-released
-        user: jenkins
+        username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
