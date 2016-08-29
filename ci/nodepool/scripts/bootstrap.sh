@@ -4,29 +4,43 @@
 # dependencies installed.
 set -ex
 
-# This file doesn't exist on el5, but we don't test on el5 anymore,
-# so that's probably(?) fine. If needed, we could add special handling for el5
-. /etc/os-release
+# Use /etc/os-release if available or fallback to Python in order to collect
+# the DISTRIBUTION and DISTRIBUTION_MAJOR_VERSION information.
+if [ -f /etc/os-release ]; then
+    source /etc/os-release
 
-if [ -z $ID ] || [ -z $VERSION_ID ]; then
-   echo "ID and VERSION_ID not set in /etc/os-release"
-   return 1
-fi
+    if [ -z "${ID}" ] || [ -z "${VERSION_ID}" ]; then
+        echo "ID and VERSION_ID not set in /etc/os-release"
+        return 1
+    fi
 
-# set DISTRIBUTION based on ID: If it's rhel or centos,
-# make it the common "redhat". Otherwise, use ID directly.
-# For our purposes, this means it should either be "redhat" or "fedora".
-if [[ $ID == 'centos' ]] || [[ $ID == 'rhel' ]]; then
-  DISTRIBUTION=redhat
+    # set DISTRIBUTION based on ID: If it's rhel or centos,
+    # make it the common "redhat". Otherwise, use ID directly.
+    # For our purposes, this means it should either be "redhat" or "fedora".
+    if [[ $ID == 'centos' ]] || [[ $ID == 'rhel' ]]; then
+        DISTRIBUTION=redhat
+    else
+        DISTRIBUTION="$ID"
+    fi
+
+    # We only care about the major version, so split on the dots
+    # and only take the first field (7.1 and 7 are stored as 7).
+    DISTRIBUTION_MAJOR_VERSION=$(echo "${VERSION_ID}"|cut -d . -f 1)
 else
-  DISTRIBUTION="$ID"
+    # Using Python to get the distribution information is more general but it
+    # does not work on Fedora 24. That said, fallback to Python if the
+    # /etc/os-release file is not present, this will cover old OS versions like
+    # RHEL 6.
+    DISTRIBUTION=$(python -c "import platform, sys
+sys.stdout.write(platform.dist()[0])")
+    DISTRIBUTION_MAJOR_VERSION=$(python -c "import platform, sys
+sys.stdout.write(platform.dist()[1].split('.')[0])")
 fi
 
-# We only care about the major version, so split on the dots
-# and only take the first field (7.1 and 7 are stored as 7).
-DISTRIBUTION_MAJOR_VERSION=`echo "$VERSION_ID"|cut -d . -f 1`
+export DISTRIBUTION
+export DISTRIBUTION_MAJOR_VERSION
 
-echo Bootstrapping jenkins for $DISTRIBUTION $DISTRIBUTION_MAJOR_VERSION
+echo "Bootstrapping jenkins for ${DISTRIBUTION} ${DISTRIBUTION_MAJOR_VERSION}"
 
 # use dnf if you can, otherwise use yum
 if dnf --version; then
