@@ -13,6 +13,9 @@
       # to download the meeting logs prior to uploading them to repos.fedorapeople
       - shell: |
           rm -rf *
-          rsync -rv jenkins@10.8.180.47:/srv/supybot/meetings/pulp-dev/ pulp_dev
-          rsync -rv pulp_dev/ pulpadmin@repos.fedorapeople.org:public_html/triage
+          # only sync the pulp-dev channel
+          # this leaves out meetings in other channels, like the ones in
+          # ##pulpbot-firingrange that are all for testing
+          rsync -rv jenkins@10.8.180.47:/srv/supybot/meetings/pulp-dev/ pulp-dev
+          rsync -rv pulp-dev/ pulpadmin@repos.fedorapeople.org:public_html/triage/pulp-dev
     # One of the few jobs that can run on the jenkins master, no need to mark offline
