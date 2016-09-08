@@ -129,7 +129,7 @@
     properties:
         - copyartifact:
             projects: pulp-*-dev-*
-    node: f23-np
+    node: pulp-smash-np
     parameters:
         - string:
             name: BASE_URL

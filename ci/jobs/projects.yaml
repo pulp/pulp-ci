@@ -46,6 +46,7 @@
 - project:
     name: pulp-dev
     os:
+        - 'f24'
         - 'f23'
         - 'rhel6'
         - 'rhel7'

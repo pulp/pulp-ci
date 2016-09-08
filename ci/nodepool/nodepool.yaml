@@ -1,67 +1,88 @@
 script-dir: /home/pulp/pulp_packaging/ci/nodepool/scripts/
 
+# empty dir, stops nodepool from throwing a traceback on start
+images-dir: /etc/nodepool/images
+
 dburi: 'postgresql:///nodepool'
 
 zmq-publishers:
-  - tcp://<jenkins-master-hostname>:8881
+  - tcp://pulp-jenkins.rhev-ci-vms.eng.rdu2.redhat.com:8881
+
+cron:
+  # try to get images updated before nightlies run
+  image-update: '0 21 * * *'
 
 labels:
+  - name: pulp-smash-np
+    image: f23-np
+    # these nodes are used by the pulp smashrunner, it's good to have at least one on standby
+    min-ready: 1
+    providers:
+      - name: cios
+    ready-script: fix_hostname.sh
   - name: f22-np
     image: f22-np
-    min-ready: 2
+    min-ready: 0
     providers:
       - name: cios
     ready-script: fix_hostname.sh
   - name: f22-vanilla-np
     image: f22-vanilla-np
-    min-ready: 1
+    min-ready: 0
     providers:
       - name: cios
     ready-script: fix_hostname.sh
   - name: f23-np
     image: f23-np
-    min-ready: 1
+    min-ready: 0
     providers:
       - name: cios
     ready-script: fix_hostname.sh
   - name: f23-vanilla-np
     image: f23-vanilla-np
-    min-ready: 1
+    min-ready: 0
     providers:
       - name: cios
     ready-script: fix_hostname.sh
   - name: f23-docker-np
     image: f23-docker-np
-    min-ready: 1
+    min-ready: 0
     providers:
       - name: cios
     ready-script: fix_hostname.sh
-  - name: rhel5-np
-    image: rhel5-np
-    min-ready: 1
+  - name: f24-np
+    image: f24-np
+    min-ready: 0
     providers:
       - name: cios
+    ready-script: fix_hostname.sh
+  - name: f24-vanilla-np
+    image: f24-vanilla-np
+    min-ready: 0
+    providers:
+      - name: cios
+    ready-script: fix_hostname.sh
   - name: rhel6-np
     image: rhel6-np
-    min-ready: 1
+    min-ready: 0
     providers:
       - name: cios
     ready-script: fix_hostname.sh
   - name: rhel6-vanilla-np
     image: rhel6-vanilla-np
-    min-ready: 1
+    min-ready: 0
     providers:
       - name: cios
     ready-script: fix_hostname.sh
   - name: rhel7-np
     image: rhel7-np
-    min-ready: 1
+    min-ready: 0
     providers:
       - name: cios
     ready-script: fix_hostname.sh
   - name: rhel7-vanilla-np
     image: rhel7-vanilla-np
-    min-ready: 1
+    min-ready: 0
     providers:
       - name: cios
     ready-script: fix_hostname.sh
@@ -75,6 +96,7 @@ providers:
     boot-timeout: 240
     launch-timeout: 900
     pool: "10.8.180.0/22"
+    clean-floating-ips: true
     images:
       - name: f22-np
         base-image: Fedora-Cloud-Base-22-20150521.x86_64
@@ -106,40 +128,45 @@ providers:
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
-      - name: rhel5-np
-        base-image: rhel-5.11-server-x86_64-released
+      - name: f24-np
+        base-image: Fedora-Cloud-Base-24-1.2.x86_64
         username: jenkins
-        password: redhat
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
-        min-ram: 4096
+        min-ram: 3072
+      - name: f24-vanilla-np
+        base-image: Fedora-Cloud-Base-24-1.2.x86_64
+        username: jenkins
+        setup: prepare_node.sh
+        private-key: /etc/nodepool/pulp_rsa
+        min-ram: 3072
+        # rhel6 images need the t2.medium image type because
+        # their initrd explodes on the ephemeral volumes
       - name: rhel6-np
         base-image: rhel-6.8-server-x86_64-released
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
-        name-filter: m3.medium
+        name-filter: t2.medium
       - name: rhel6-vanilla-np
         base-image: rhel-6.8-server-x86_64-released
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
-        name-filter: m3.medium
+        name-filter: t2.medium
       - name: rhel7-np
         base-image: rhel-7.2-server-x86_64-released
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
-        name-filter: m3.medium
       - name: rhel7-vanilla-np
         base-image: rhel-7.2-server-x86_64-released
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
-        name-filter: m3.medium
 targets:
   - name: pulp-jenkins
