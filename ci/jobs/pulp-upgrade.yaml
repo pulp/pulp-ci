@@ -54,6 +54,18 @@
             pulp-admin login -u "${{PULP_USER}}" -p "${{PULP_PASSWORD}}"
 
             pulp-admin rpm repo create \
+                --feed https://repos.fedorapeople.org/pulp/pulp/fixtures/drpm-unsigned/ \
+                --relative-url drpm \
+                --repo-id drpm
+            pulp-admin rpm repo sync run --repo-id drpm
+
+            pulp-admin rpm repo create \
+                --feed https://repos.fedorapeople.org/pulp/pulp/fixtures/srpm/ \
+                --relative-url srpm \
+                --repo-id srpm
+            pulp-admin rpm repo sync run --repo-id srpm
+
+            pulp-admin rpm repo create \
                 --feed https://cdn.redhat.com/content/dist/rhel/rhui/server/6/6.7/x86_64/kickstart/ \
                 --feed-ca-cert cdn/cdn.redhat.com-chain.crt \
                 --feed-cert cdn/914f702153514b06c1ef279db9dcadce.crt \
@@ -156,6 +168,8 @@
         - shell: |
             pulp-admin login -u "${{PULP_USER}}" -p "${{PULP_PASSWORD}}"
 
+            pulp-admin rpm repo list --repo-id drpm
+            pulp-admin rpm repo list --repo-id srpm
             pulp-admin rpm repo list --repo-id rhel6
             pulp-admin rpm repo list --repo-id centos5
             pulp-admin rpm repo list --repo-id zoo
