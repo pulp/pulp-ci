@@ -163,7 +163,7 @@
             sudo update-ca-trust
 
             sudo yum -y install python-pip python-virtualenv
-            virtualenv venv
+            virtualenv -p /usr/bin/python3 venv
             source venv/bin/activate
             git clone http://github.com/PulpQE/pulp-smash.git
             cd pulp-smash
