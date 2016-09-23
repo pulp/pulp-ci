@@ -87,21 +87,7 @@
         #     steps:
         #         - sonar:
         #             sonar-name: 'Sonar Test Server'
-        - shell: |
-            rm -rf logs
-            mkdir logs
-            if [ "$(which journalctl 2>/dev/null)" ]; then
-                sudo journalctl > logs/syslog
-            elif [ -f /var/log/messages ]; then
-                sudo cat /var/log/messages > logs/syslog
-            else
-                echo "Failed to get syslogs: neither journalctl nor " \
-                "/var/log/messages were found." > logs/syslogs
-            fi
-            [ -e /var/log/httpd ] && sudo cp -R /var/log/httpd logs
-            [ -e /var/log/squid ] && sudo cp -R /var/log/squid logs
-            sudo chown -R "${{USER}}":"${{USER}}" logs
-            tar -zcf logs.tar.gz logs
+        - capture-logs
     publishers:
         - junit:
             results: nose2-junit.xml

@@ -5,6 +5,27 @@
 # they're easy to find.
 ###
 
+# Capture system, httpd and squid logs into logs directory. Also create a
+# tarball called logs.tar.gz of the logs.
+- builder:
+    name: capture-logs
+    builders:
+        - shell: |
+            rm -rf logs
+            mkdir logs
+            if [ "$(which journalctl 2>/dev/null)" ]; then
+                sudo journalctl > logs/syslog
+            elif [ -f /var/log/messages ]; then
+                sudo cat /var/log/messages > logs/syslog
+            else
+                echo "Failed to get syslogs: neither journalctl nor " \
+                "/var/log/messages were found." > logs/syslogs
+            fi
+            [ -e /var/log/httpd ] && sudo cp -R /var/log/httpd logs
+            [ -e /var/log/squid ] && sudo cp -R /var/log/squid logs
+            sudo chown -R "${{USER}}":"${{USER}}" logs
+            tar -zcf logs.tar.gz logs
+
 # Inject the PYTHONUNBUFFERED env var into builds using a parameter. This needs to be a string
 # param, not a bool, because any value turns on unbuffered mode, including "false".
 - parameter:
