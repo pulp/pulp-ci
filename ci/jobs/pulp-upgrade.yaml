@@ -218,7 +218,11 @@
                 sudo subscription-manager unregister
                 sudo subscription-manager clean
             fi
+        - capture-logs
     publishers:
+      - archive:
+          artifacts: "*.tar.gz"
+          allow-empty: true
       - junit:
           results: nose2-junit.xml
       - email-notify-owners
