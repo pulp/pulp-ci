@@ -79,6 +79,7 @@
     pulp_version:
         - 2.8-stable
         - 2.9-stable
+        - 2.10-stable
     upgrade_pulp_version:
         - 2.8-beta
         - 2.8-nightly
@@ -88,10 +89,30 @@
         - 2.10-nightly
         - 2.11-nightly
     exclude:
+        - pulp_version: 2.8-stable
+          upgrade_pulp_version: 2.8-beta
+        - pulp_version: 2.8-stable
+          upgrade_pulp_version: 2.8-nightly
+        - pulp_version: 2.8-stable
+          upgrade_pulp_version: 2.9-beta
+        - pulp_version: 2.8-stable
+          upgrade_pulp_version: 2.9-nightly
         - pulp_version: 2.9-stable
           upgrade_pulp_version: 2.8-beta
         - pulp_version: 2.9-stable
           upgrade_pulp_version: 2.8-nightly
+        - pulp_version: 2.9-stable
+          upgrade_pulp_version: 2.9-beta
+        - pulp_version: 2.9-stable
+          upgrade_pulp_version: 2.9-nightly
+        - pulp_version: 2.10-stable
+          upgrade_pulp_version: 2.8-beta
+        - pulp_version: 2.10-stable
+          upgrade_pulp_version: 2.8-nightly
+        - pulp_version: 2.10-stable
+          upgrade_pulp_version: 2.9-beta
+        - pulp_version: 2.10-stable
+          upgrade_pulp_version: 2.9-nightly
     jobs:
         - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-{os}'
 
