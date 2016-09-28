@@ -20,6 +20,8 @@
         - shell: |
             sudo dnf -y install createrepo make patch rpm-sign gpg
             make fixtures
+            sed -i 's|http://localhost:8000|https://repos.fedorapeople.org/repos/pulp/pulp|g' \
+                fixtures/rpm-mirrorlist*
             rsync -arvze "ssh -o StrictHostKeyChecking=no" --delete \
                 fixtures/* \
                 pulpadmin@repos.fedorapeople.org:/srv/repos/pulp/pulp/fixtures
