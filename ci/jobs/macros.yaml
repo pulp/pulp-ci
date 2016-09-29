@@ -23,7 +23,7 @@
             fi
             [ -e /var/log/httpd ] && sudo cp -R /var/log/httpd logs
             [ -e /var/log/squid ] && sudo cp -R /var/log/squid logs
-            sudo chown -R "${{USER}}":"${{USER}}" logs
+            sudo chown -R "${USER}":"${USER}" logs
             tar -zcf logs.tar.gz logs
 
 # Inject the PYTHONUNBUFFERED env var into builds using a parameter. This needs to be a string
