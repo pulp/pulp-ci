@@ -144,7 +144,13 @@
     name: mark-node-offline
     publishers:
       - groovy-postbuild:
-          script: "manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)"
+          # An NPE happens when the slave we're trying to mark offline is null,
+          # meaning we don't need to mark it offline, because it's already gone.
+          # http://javadoc.jenkins-ci.org/hudson/model/AbstractBuild.html#getBuiltOn()
+          script: |
+            try {
+                manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)
+            } catch(NullPointerException ex) {}
 
 - scm:
     name: pulp-packaging-github
