@@ -1,0 +1,8 @@
+[job_builder]
+include_path=ci/jobs/scripts
+allow_duplicates=False
+
+# [jenkins]
+# user=
+# password=
+# url=

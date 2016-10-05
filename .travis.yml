@@ -4,4 +4,4 @@ install:
   - pip install ansible jenkins-job-builder
 script:
   - ansible-playbook --syntax-check ci/ansible/*.yaml
-  - jenkins-jobs test -r -o /tmp/jobs ci/jobs
+  - jenkins-jobs --conf ci/jobs/jenkins_jobs.ini.example test -r -o /tmp/jobs ci/jobs
