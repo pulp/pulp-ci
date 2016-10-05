@@ -122,6 +122,25 @@
      - redmine-bugzilla-automation
 
 - project:
+    name: satellite6-upgrade-pulp
+    jobs:
+        - '{stream}-satellite6-upgrade-pulp'
+    instance_name: '{stream}-satellite6-upgrade-pulp'
+    robottelo_branch: 'master'
+    stream:
+        - downstream:
+            satellite_distribution: 'INTERNAL'
+            satellite_version: '6.2'
+            robottelo_branch: '6.2.z'
+            pulp_upgrade_repo_url:
+                'https://repos.fedorapeople.org/pulp/pulp/beta/2.8/7Server/x86_64/'
+        - upstream:
+            satellite_distribution: 'UPSTREAM'
+            satellite_version: 'nightly'
+            pulp_upgrade_repo_url:
+                'https://repos.fedorapeople.org/pulp/pulp/stable/2.10/7Server/x86_64/'
+
+- project:
     name: sync
     jobs:
      - sync-triage-logs
@@ -189,9 +208,3 @@
             - f23-np
             - rhel6-np
             - rhel7-np
-
-- project:
-    name: satellite6-pulp-automation
-    jobs:
-        - satellite6-pulp-automation
-        - satellite6-pulp-upgrade
