@@ -266,11 +266,21 @@
             SATELLITE_RELEASE: "GA"
             SATELLITE_VERSION: "6.2"
             SATELLITE_TEST_TYPE: ""
-        - trigger-builds:
-            - project: "satellite6-pulp-upgrade"
-              block: true
-              predefined-parameters: |
-                  INSTANCE_IP=${INSTANCE_IP}
+        - shell: |
+            echo "Start upgrading Pulp on ${INSTANCE_IP}..."
+            alias SSH_CLI="ssh -t -o StrictHostKeyChecking=no cloud-user@${INSTANCE_IP}"
+            SSH_CLI "exit"
+            SSH_CLI "sudo katello-service stop"
+            SSH_CLI "rpm -qa | grep pulp"
+            SSH_CLI "sudo yum-config-manager --add-repo https://repos.fedorapeople.org/pulp/pulp/beta/2.8/7Server/x86_64/"
+            SSH_CLI "sudo yum repolist enabled | grep pulp"
+            SSH_CLI "sudo yum update -y --nogpgcheck pulp-*"
+            SSH_CLI "rpm -qa | grep pulp"
+            SSH_CLI "sudo katello-service restart"
+            SSH_CLI "sudo -u apache pulp-manage-db"
+            UPDATE_PULP_VERSION="$(SSH_CLI rpm -qa | grep pulp-server)"
+            UPDATE_PULP_VERSION="$(echo ${UPDATE_PULP_VERSION} | awk -F'-' '{ print $3 }')"
+            echo "Pulp upgraded to ${UPDATE_PULP_VERSION} version."
         - satellite6-pulp-macro:
             # Generic macro call for satellite6-standalone-automation
             TRIGGER_TYPE: "robottelo"
