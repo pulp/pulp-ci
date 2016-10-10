@@ -243,7 +243,7 @@
               sudo dnf -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\*
             fi
             if [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION"  \< "7" ]; then
-              rpmquery --specfile *.spec --queryformat '[%{{REQUIRENEVRS}}\n]' | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq | xargs -d "\n" sudo yum -y install --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel
+              rpmquery --specfile *.spec --queryformat '[%{{REQUIRENAME}}\n]' | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq | xargs -d "\n" sudo yum -y install --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel
               sudo yum -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\*
             fi
             if [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION"  \> "6" ]; then
