@@ -43,6 +43,8 @@
         - ownership:
             owner: bbouters
             co-owners:
+                - asmacdo
+                - semyers
                 - ttereshc
 
 # Ownership that indicates developers are the primary contact for the job
