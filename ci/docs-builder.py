@@ -32,7 +32,7 @@ def load_config(config_name):
     config_file = os.path.join(os.path.dirname(__file__),
                                'config', 'releases', '%s.yaml' % config_name)
     if not os.path.exists(config_file):
-        print "Error: %s not found. " % config_file
+        print("Error: %s not found. " % config_file)
         sys.exit(1)
     with open(config_file, 'r') as config_handle:
         config = yaml.safe_load(config_handle)
@@ -111,7 +111,7 @@ def main():
     copyfile('docs/layout.html', layout_html_path)
 
     # build the docs via the Pulp project itself
-    print "Building the docs"
+    print("Building the docs")
     docs_directory = os.sep.join([WORKING_DIR, 'pulp', 'docs'])
     make_command = ['make', 'html', 'SPHINXOPTS=-Wn']
     exit_code = subprocess.call(make_command, cwd=docs_directory)
@@ -122,7 +122,8 @@ def main():
     if build_type == 'ga' and x_y_version == LATEST:
         local_path_arg = os.sep.join([docs_directory, '_build', 'html']) + os.sep
         remote_path_arg = '%s@%s:%s' % (USERNAME, HOSTNAME, SITE_ROOT)
-        rsync_command = ['rsync', '-avzh', '--delete', '--exclude', 'en', local_path_arg, remote_path_arg]
+        rsync_command = ['rsync', '-avzh', '--delete', '--exclude', 'en',
+                         local_path_arg, remote_path_arg]
         exit_code = subprocess.call(rsync_command, cwd=docs_directory)
         if exit_code != 0:
             raise RuntimeError('An error occurred while pushing docs to OpenShift.')
@@ -133,10 +134,13 @@ def main():
     if build_type != 'ga':
         remote_path_arg += build_type + '/'
         path_option_arg = 'mkdir -p %sen/%s/%s/ && rsync' % (SITE_ROOT, x_y_version, build_type)
-        rsync_command = ['rsync', '-avzh', '--rsync-path', path_option_arg, '--delete', local_path_arg, remote_path_arg]
+        rsync_command = ['rsync', '-avzh', '--rsync-path', path_option_arg, '--delete',
+                         local_path_arg, remote_path_arg]
     else:
         path_option_arg = 'mkdir -p %sen/%s/ && rsync' % (SITE_ROOT, x_y_version)
-        rsync_command = ['rsync', '-avzh', '--rsync-path', path_option_arg, '--delete', '--exclude', 'nightly', '--exclude', 'testing', local_path_arg, remote_path_arg]
+        rsync_command = ['rsync', '-avzh', '--rsync-path', path_option_arg, '--delete',
+                         '--exclude', 'nightly', '--exclude', 'testing',
+                         local_path_arg, remote_path_arg]
     exit_code = subprocess.call(rsync_command, cwd=docs_directory)
     if exit_code != 0:
         raise RuntimeError('An error occurred while pushing docs to OpenShift.')
@@ -165,8 +169,8 @@ def main():
     ]
     exit_code = subprocess.call(symlink_cmd)
     if exit_code != 0:
-        raise RuntimeError("An error occurred while creating the 'latest' symlink testrubyserver.rb to OpenShift.")
-
+        raise RuntimeError("An error occurred while creating the 'latest' symlink "
+                           "testrubyserver.rb to OpenShift.")
 
 if __name__ == "__main__":
     main()
