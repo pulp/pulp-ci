@@ -38,6 +38,15 @@ def load_config(config_name):
         config = yaml.safe_load(config_handle)
     return config
 
+
+def update_version(config_name):
+    script_dir = os.path.abspath(os.path.dirname(__file__))
+    # script does not push to github, but it does check out all the repos we want and
+    # makes sure their version reflect the versions in the build config being used
+    script = os.path.join(script_dir, 'update-version-and-merge-forward.py')
+    subprocess.check_call([script, config_name])
+
+
 def main():
     # Parse the args
     parser = argparse.ArgumentParser()
@@ -67,16 +76,8 @@ def main():
 
     builder.ensure_dir(WORKING_DIR, clean=True)
 
-    print "Getting git repos"
-    for component in get_components(configuration):
-        #clone the repos
-        branch_name = component['git_branch']
-        print "Cloning from github: %s" % component.get('git_url')
-        print "Switching to branch %s" % branch_name
-        clone_command = ['git', 'clone', component.get('git_url'), '--branch', branch_name]
-        exit_code = subprocess.call(clone_command, cwd=WORKING_DIR)
-        if exit_code != 0:
-            raise RuntimeError('An error occurred while cloning the repo.')
+    # use the version update scripts to check out git repos and ensure correct versions
+    update_version(opts.release)
 
     plugins_dir = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'plugins'])
     builder.ensure_dir(plugins_dir)
