@@ -118,13 +118,15 @@ for component in get_components(configuration):
 for spec in builder.find_all_spec_files(working_dir):
     spec_nvr = builder.get_package_nvr_from_spec(spec)
     package_dists = builder.get_dists_for_spec(spec)
-    print "%s %s" % (spec_nvr, package_dists)
     for package_nevra in builder.get_package_nevra(spec_nvr, package_dists):
         info = builder.mysession.getBuild(package_nevra)
-        if info:
+        # state 1 is "complete"
+        if info and info.get('state') == 1:
             download_list.extend(builder.get_urls_for_build(builder.mysession, package_nevra, rpmsig=rpm_signature))
+            print "Downloading %s" % package_nevra
         else:
             build_list.append((spec, builder.get_dist_from_koji_build_name(package_nevra)))
+            print "Building %s" % package_nevra
 
 # If we are doing a version check, exit here
 if opts.show_versions:
