@@ -42,7 +42,7 @@
             export ANSIBLE_HOST_KEY_CHECKING=False
             echo 'localhost' > hosts
             source "${{RHN_CREDENTIALS}}"
-            ansible-playbook --private-key pulp_server_key -i hosts ci/ansible/pulp_server.yaml \
+            ansible-playbook --connection local -i hosts ci/ansible/pulp_server.yaml \
                 -e pulp_build=${{PULP_BUILD}} \
                 -e pulp_version=${{PULP_VERSION}} \
                 -e "rhn_username=${{RHN_USERNAME}}" \
