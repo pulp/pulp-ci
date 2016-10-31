@@ -127,7 +127,19 @@ def main():
                          local_path_arg, remote_path_arg]
         exit_code = subprocess.call(rsync_command, cwd=docs_directory)
         if exit_code != 0:
-            raise RuntimeError('An error occurred while pushing docs to OpenShift.')
+            raise RuntimeError('An error occurred while pushing latest docs to OpenShift.')
+
+    # rsync the nightly "master" docs to an unversioned "nightly" dir for
+    # easy linking to in-development docs: /en/nightly/
+    if build_type == 'nightly' and opts.release == 'master':
+        local_path_arg = os.sep.join([docs_directory, '_build', 'html']) + os.sep
+        remote_path_arg = '%s@%s:%sen/%s/' % (USERNAME, HOSTNAME, SITE_ROOT, build_type)
+        path_option_arg = 'mkdir -p %sen/%s/ && rsync' % (SITE_ROOT, build_type)
+        rsync_command = ['rsync', '-avzh', '--rsync-path', path_option_arg, '--delete',
+                         local_path_arg, remote_path_arg]
+        exit_code = subprocess.call(rsync_command, cwd=docs_directory)
+        if exit_code != 0:
+            raise RuntimeError('An error occurred while pushing nightly docs to OpenShift.')
 
     # rsync the docs to OpenShift
     local_path_arg = os.sep.join([docs_directory, '_build', 'html']) + os.sep
