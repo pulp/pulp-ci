@@ -54,23 +54,24 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
     # get the branch list
     raw_branch_list = subprocess.check_output('git branch -r|sort -V', cwd=git_directory,
                                               shell=True)
-
     lines = raw_branch_list.splitlines()
 
-    target_branch_versions = set()
-    all_branches = set()
+    # the order of items in these matters, so we start with list()
+    target_branch_versions = list()
+    all_branches = list()
 
     for line in lines:
         line = line.strip()
         # print line
         match = re.search(branch_regex, line)
         if match:
-            all_branches.add(match.group(0))
+            all_branches.append(match.group(0))
             branch_version = match.group(1)
             branch_major, branch_minor = map(int, branch_version.split('.'))
             # this check only includes changes from the same major version
-            if branch_major == source_branch_major and branch_minor > source_branch_minor:
-                target_branch_versions.add(branch_version)
+            if (branch_major == source_branch_major and branch_minor > source_branch_minor and
+                    branch_version not in target_branch_versions):
+                target_branch_versions.append(branch_version)
     result_list = [git_branch]
     if source_branch_stream == 'release':
         result_list.append("%s-dev" % source_branch_version)
@@ -79,13 +80,18 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
                         for branch_version in target_branch_versions])
 
     # Do this check before adding master since we explicitly won't match master in the above regex
-    if not set(result_list).issubset(all_branches):
-        missing_branches = set(result_list).difference(all_branches)
+    if not set(result_list).issubset(set(all_branches)):
+        missing_branches = set(result_list).difference(set(all_branches))
         print "Error creating git branch promotion list.  The following branches are missing: "
         print missing_branches
         sys.exit(1)
 
-    result_list.append('master')
+    # For the moment, do not merge branches other than pulp 2 to master
+    if result_list[-1].startswith('2'):
+        result_list.append('master')
+
+    raise SystemExit(str(result_list))
+
     if parent_branch:
         result_list.insert(0, actual_branch)
     result_list = ["%s/%s" % (upstream_name, item) for item in result_list]
