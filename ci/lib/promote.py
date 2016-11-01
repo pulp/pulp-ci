@@ -90,10 +90,12 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
     if result_list[-1].startswith('2'):
         result_list.append('master')
 
-    raise SystemExit(str(result_list))
-
     if parent_branch:
         result_list.insert(0, actual_branch)
+
+    print "Branch promotion chain:"
+    print " -> ".join(result_list)
+
     result_list = ["%s/%s" % (upstream_name, item) for item in result_list]
     return result_list
 
