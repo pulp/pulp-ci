@@ -7,7 +7,7 @@ pulp_install_prerequisites: true
 pulp_install_server: true
 
 # Pulp version to install
-pulp_version: 2.9
+pulp_version: 2.11
 
 # Pulp build to install, the choices are: beta, nightly and stable
 pulp_build: nightly
