@@ -34,8 +34,8 @@
     builders:
         - shell: |
             #!/bin/bash
-
-            sudo dnf install graphviz plantuml python-sphinx PyYAML python-sphinx_rtd_theme -y
+            # install packages deps required to build docs
+            sudo dnf install graphviz plantuml python-virtualenv postgresql-devel python3-devel gcc -y
 
             git config --global user.email "pulp-infra@redhat.com"
             git config --global user.name "pulpbot"
@@ -48,9 +48,15 @@
 
             chmod 644 /home/jenkins/.ssh/known_hosts
 
+            # create a virtualenv in which to install packages needed to build docs
+            virtualenv -p /usr/bin/python3 --system-site-packages ~/docs_ve
+            source ~/docs_ve/bin/activate
+            pip install sphinx sphinx-rtd-theme pyyaml virtualenv
+
             # clone and build the docs
             cd pulp_packaging/ci/
             export PYTHONUNBUFFERED=1
+            export DJANGO_SETTINGS_MODULE='pulp.app.settings'
             python docs-builder.py --release {release_config}
     publishers:
       - email-notify-owners
