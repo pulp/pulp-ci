@@ -62,7 +62,7 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
 
     for line in lines:
         line = line.strip()
-        # print line
+        # print(line)
         match = re.search(branch_regex, line)
         if match:
             all_branches.append(match.group(0))
@@ -82,8 +82,8 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
     # Do this check before adding master since we explicitly won't match master in the above regex
     if not set(result_list).issubset(set(all_branches)):
         missing_branches = set(result_list).difference(set(all_branches))
-        print "Error creating git branch promotion list.  The following branches are missing: "
-        print missing_branches
+        print("Error creating git branch promotion list.  The following branches are missing: ")
+        print(missing_branches)
         sys.exit(1)
 
     # For the moment, do not merge branches other than pulp 2 to master
@@ -93,8 +93,8 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
     if parent_branch:
         result_list.insert(0, actual_branch)
 
-    print "Branch promotion chain:"
-    print " -> ".join(result_list)
+    print("Branch promotion chain:")
+    print(" -> ".join(result_list))
 
     result_list = ["%s/%s" % (upstream_name, item) for item in result_list]
     return result_list
@@ -123,13 +123,13 @@ def check_merge_forward(git_directory, promotion_chain):
     :type promotion_chain: list of str
     """
     for pair in generate_promotion_pairs(promotion_chain):
-        print "checking log comparision of %s -> %s" % (pair[0], pair[1])
+        print("checking log comparision of %s -> %s" % (pair[0], pair[1]))
         output = subprocess.check_output(['git', 'log', "^%s" % pair[1], pair[0]],
                                          cwd=git_directory)
         if output:
-            print "ERROR: in %s: branch %s has not been merged into %s" % \
-                  (git_directory, pair[0], pair[1])
-            print "Run 'git log ^%s %s' to view the differences." % (pair[1], pair[0])
+            print("ERROR: in %s: branch %s has not been merged into %s" %
+                  (git_directory, pair[0], pair[1]))
+            print("Run 'git log ^%s %s' to view the differences." % (pair[1], pair[0]))
             sys.exit(1)
 
 
@@ -202,8 +202,8 @@ def checkout_branch(git_directory, branch_name, remote_name='origin'):
     # validate that the upstream branch is what we expect it to be
     upstream_branch = get_current_git_upstream_branch(git_directory)
     if upstream_branch != full_name:
-        print "Error checking out %s in %s" % (full_name, git_directory)
-        print "The upstream branch was already set to %s" % upstream_branch
+        print("Error checking out %s in %s" % (full_name, git_directory))
+        print("The upstream branch was already set to %s" % upstream_branch)
         sys.exit(1)
 
     subprocess.check_call(['git', 'pull'], cwd=git_directory)
@@ -226,7 +226,7 @@ def merge_forward(git_directory, push=False, parent_branch=None):
         checkout_branch(git_directory, source_branch)
         checkout_branch(git_directory, target_branch)
         local_source_branch = source_branch[source_branch.find('/')+1:]
-        print "Merging %s into %s" % (local_source_branch, target_branch)
+        print("Merging %s into %s" % (local_source_branch, target_branch))
         subprocess.check_call(['git', 'merge', '-s', 'ours', local_source_branch, '--no-edit'],
                               cwd=git_directory)
         if push:

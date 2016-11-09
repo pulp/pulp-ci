@@ -1,5 +1,4 @@
 #!/usr/bin/env python2
-
 import fnmatch
 import glob
 import json
@@ -11,10 +10,14 @@ import subprocess
 import time
 import uuid
 
-import koji
 import requests
 import yaml
 
+try:
+    import koji
+except ImportError:
+    print("koji package is unavailable, attempts to build in koji will fail.")
+    koji = None
 
 home_directory = os.path.expanduser('~')
 mysession = None
@@ -114,7 +117,7 @@ def get_nvr_from_spec_file_in_directory(directory_path):
     """
     spec_files = glob.glob(os.path.join(directory_path, '*.spec'))
     if not spec_files:
-        print "Error, unable to find spec file in %s " % directory_path
+        print("Error, unable to find spec file in %s " % directory_path)
         sys.exit(1)
 
     spec_file = spec_files[0]
@@ -130,7 +133,7 @@ def find_all_spec_files(root_directory):
     :return: list of canonical paths to spec files
     :rtype: list of str
     """
-    print "Finding all spec files in %s" % root_directory
+    print("Finding all spec files in %s" % root_directory)
     return find_files_matching_pattern(root_directory, '*.spec')
 
 
@@ -256,7 +259,7 @@ def get_dist_from_koji_build_name(koji_build_name):
     return koji_build_name[koji_build_name.rfind('.')+1:]
 
 
-def get_built_dependencies(dependency_dir):
+def get_built_dependencies(dependency_dir, dists=None):
     """
     Generator to yield the nevra of all deps that should be prebuilt in koji.
     The string yielded by this generator can be used to lookup a particular koji build
@@ -295,7 +298,7 @@ def get_dists_for_spec(spec_file):
             line = line.strip()
             dists_from_dep = line.split(' ')
     except IOError:
-        print "dist_list.txt file not found for %s." % dep_directory
+        print("dist_list.txt file not found for %s." % dep_directory)
     return dists_from_dep
 
 
@@ -328,7 +331,7 @@ def get_urls_for_build(koji_session, build_name, rpmsig=None):
 
         fname = koji.pathinfo.rpm(rpm_listing)
         location_on_koji = "%s%s%s" % (koji_url, koji_dir, fname )
-        # print location_on_koji
+        # print(location_on_koji)
         # calculate the relative directory for the download
         rpm_nvr = rpm_listing['nvr']
         rpm_dist = rpm_nvr[rpm_nvr.rfind('.')+1:]
@@ -376,7 +379,7 @@ def download_builds(target_dir, url_generator):
     :type url_generator: get_urls_for_build generator
     """
     for url_to_download, target in url_generator:
-        print "Downloading %s from %s" % (target, url_to_download)
+        print("Downloading %s from %s" % (target, url_to_download))
         local_file_name = os.path.join(target_dir, os.path.basename(target))
 
         base_dir = os.path.dirname(local_file_name)
@@ -463,7 +466,7 @@ def ensure_dir(target_dir, clean=True):
         pass
 
 
-def build_srpm_from_spec(spec_dir, output_dir, testing=True, tag=None, dist=None):
+def build_srpm_from_spec(spec_dir, output_dir, testing=True, tag=None, dists=None):
     """
     Build the srpms required for a given spec directory and distribution list
 
@@ -482,9 +485,10 @@ def build_srpm_from_spec(spec_dir, output_dir, testing=True, tag=None, dist=None
     :type dist: str
     """
     spec_glob = os.path.join(spec_dir, '*.spec')
-    distributions = []
-    if dist:
-        distributions.extend([dist])
+    if not isinstance(dists, list):
+        distributions = [dists]
+    elif dists:
+        distributions = dists
     else:
         distributions = get_dists_for_spec(glob.glob(spec_glob)[0])
 
@@ -492,7 +496,7 @@ def build_srpm_from_spec(spec_dir, output_dir, testing=True, tag=None, dist=None
         tito_path = os.path.join(output_dir, dist)
         ensure_dir(tito_path, clean=False)
         distribution = ".%s" % dist
-        print "Building %s Srpm for %s" % (spec_dir, distribution)
+        print("Building %s Srpm for %s" % (spec_dir, distribution))
         command = ['tito', 'build', '--offline', '--srpm', '--output', tito_path,
                    '--dist', distribution]
         if testing:
@@ -541,12 +545,12 @@ def build_with_koji(build_tag_prefix, srpm_dir, scratch=False):
                     mysession.packageListAdd(build_target, package_name, 'jenkins')
 
                 # upload the file
-                print "Uploading %s" % dir_file
+                print("Uploading %s" % dir_file)
                 mysession.uploadWrapper(full_path, upload_prefix)
                 # Start the koji build
                 source = "%s/%s" % (upload_prefix, dir_file)
                 task_id = int(mysession.build(source, build_target, {'scratch': scratch}))
-                print "Created Build Task: %i" % task_id
+                print("Created Build Task: %i" % task_id)
                 builds.append(task_id)
     return builds
 
@@ -563,7 +567,7 @@ def wait_for_completion(build_ids):
                 msg = "Task %s: %i" % (state, task_id)
                 raise Exception(msg)
             elif state in ['CLOSED']:
-                print "Task %s: %i" % (state, task_id)
+                print("Task %s: %i" % (state, task_id))
                 break
             time.sleep(5)
 
@@ -620,7 +624,7 @@ def download_rpms_from_task_to_dir(task_id, output_directory):
     output_list = mysession.listTaskOutput(int(task_id))
     for file_name in output_list:
         if file_name.endswith('.rpm'):
-            print 'Downloading %s to %s' % (file_name, output_directory)
+            print('Downloading %s to %s' % (file_name, output_directory))
             result = mysession.downloadTaskOutput(int(task_id), file_name)
             target_location = os.path.join(output_directory, file_name)
             with open(target_location, 'w+') as file_writer:
@@ -642,7 +646,7 @@ def download_rpms_from_scratch_tasks(output_directory, task_list):
     for parent_task_id in task_list:
         descendants = mysession.getTaskDescendents(int(parent_task_id))
         for task_id in descendants:
-            print 'Downloading %s to %s' % (task_id, output_directory)
+            print('Downloading %s to %s' % (task_id, output_directory))
             download_rpms_from_task_to_dir(task_id, output_directory)
 
 
@@ -678,7 +682,7 @@ def get_supported_dists_for_dep(dep_directory):
             line = line.strip()
             dists_from_dep = line.split(' ')
     except IOError:
-        print "dist_list.txt file not found for %s." % dep_directory
+        print("dist_list.txt file not found for %s." % dep_directory)
         sys.exit(1)
 
     return set(dists_from_dep)
@@ -723,7 +727,7 @@ def load_config(config_name):
     config_file = os.path.join(os.path.dirname(__file__), '..',
                                'config', 'releases', '%s.yaml' % config_name)
     if not os.path.exists(config_file):
-        print "Error: %s not found. " % config_file
+        print("Error: %s not found. " % config_file)
         sys.exit(1)
     with open(config_file, 'r') as config_handle:
         config = yaml.safe_load(config_handle)
