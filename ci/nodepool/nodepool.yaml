@@ -11,12 +11,12 @@ zmq-publishers:
 cron:
   # try to get images updated before nightlies run
   image-update: '0 21 * * *'
+  cleanup: '*/1 * * * *'
 
 labels:
   - name: pulp-smash-np
     image: f23-np
-    # these nodes are used by the pulp smashrunner, it's good to have at least one on standby
-    min-ready: 1
+    min-ready: 0
     providers:
       - name: cios
     ready-script: fix_hostname.sh
@@ -90,9 +90,11 @@ labels:
 providers:
   - name: cios
     cloud: cios
-    # The current quota allows for 40 VCPUs. The nodepool VM itself uses 2 of those,
-    # leaving 38. Each slave uses 2 VCPUs, which gives us a max of 19 nodepool slaves.
-    max-servers: 19
+    # The current quota allows for 40 VCPUs. The nodepool VM itself uses 2 of
+    # those, leaving 38. Each slave uses 2 VCPUs, which gives us a max of 19
+    # nodepool slaves. Then, subtract 1 so there's always room for nodepool to
+    # build an image if needed.
+    max-servers: 18
     boot-timeout: 240
     launch-timeout: 900
     pool: "10.8.180.0/22"
@@ -140,8 +142,8 @@ providers:
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
-        # rhel6 images need the t2.medium image type because
-        # their initrd explodes on the ephemeral volumes
+        # rhel6 images need the t2.medium image type because their initrd
+        # explodes on the ephemeral volumes
       - name: rhel6-np
         base-image: rhel-6.8-server-x86_64-released
         username: jenkins
@@ -157,13 +159,13 @@ providers:
         min-ram: 4096
         name-filter: t2.medium
       - name: rhel7-np
-        base-image: rhel-7.2-server-x86_64-released
+        base-image: rhel-7.3-server-x86_64-released
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
       - name: rhel7-vanilla-np
-        base-image: rhel-7.2-server-x86_64-released
+        base-image: rhel-7.3-server-x86_64-released
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa

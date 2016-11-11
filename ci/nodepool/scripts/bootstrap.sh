@@ -69,7 +69,9 @@ sudo chown -R jenkins:jenkins /home/jenkins/.ssh
 
 # Setup repositories
 if [ "${DISTRIBUTION}" = "redhat" ]; then
-    sudo rm /etc/yum.repos.d/*
+    # Use -f to make sure rm will not fail if there's no repo file inside the
+    # /etc/yum.repos.d/ directory
+    sudo rm -f /etc/yum.repos.d/*
     sudo cp "rhel${DISTRIBUTION_MAJOR_VERSION}-rcm-internal.repo" \
         /etc/yum.repos.d/
 fi
