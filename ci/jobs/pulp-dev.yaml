@@ -134,12 +134,16 @@
     builders:
         - shell: |
             # Setup ssh config and private key
+            mkdir ~/.ssh/controlmasters
             cat > ~/.ssh/config <<EOF
             Host $(echo ${BASE_URL} | cut -d/ -f3)
                 User jenkins
                 StrictHostKeyChecking no
                 UserKnownHostsFile /dev/null
                 IdentityFile ${PWD}/PRIVATE_KEY
+                ControlMaster auto
+                ControlPersist 5m
+                ControlPath ~/.ssh/controlmasters/%C
             EOF
             chmod 600 PRIVATE_KEY ~/.ssh/config
 
