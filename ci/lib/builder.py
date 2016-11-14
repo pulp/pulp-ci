@@ -466,7 +466,7 @@ def ensure_dir(target_dir, clean=True):
         pass
 
 
-def build_srpm_from_spec(spec_dir, output_dir, testing=True, tag=None, dists=None):
+def build_srpm_from_spec(spec_dir, output_dir, testing=True, tag=None, dist=None):
     """
     Build the srpms required for a given spec directory and distribution list
 
@@ -485,10 +485,10 @@ def build_srpm_from_spec(spec_dir, output_dir, testing=True, tag=None, dists=Non
     :type dist: str
     """
     spec_glob = os.path.join(spec_dir, '*.spec')
-    if not isinstance(dists, list):
-        distributions = [dists]
+    if not isinstance(dist, list):
+        distributions = [dist]
     elif dists:
-        distributions = dists
+        distributions = dist
     else:
         distributions = get_dists_for_spec(glob.glob(spec_glob)[0])
 
