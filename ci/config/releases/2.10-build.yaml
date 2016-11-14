@@ -7,7 +7,7 @@ repositories:
     git_url: git@github.com:pulp/pulp.git
     git_branch: 2.10.2-hotfix
     parent_branch: 2.10-dev
-    version: 2.10.2-0.1.beta
+    version: 2.10.2-0.2.beta
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
     parent_branch: 2.10-dev
