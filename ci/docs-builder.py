@@ -19,6 +19,12 @@ HOSTNAME = 'docs-pulp.rhcloud.com'
 
 SITE_ROOT = '~/app-root/repo/diy/'
 
+# dict of {git repo: [list of package dirs containing setup.py]} that need to be installed
+# for apidoc generation to work; only used for pulp 3+
+APIDOC_PACKAGES = {
+    'pulp': ['app', 'common', 'exceptions', 'plugin', 'tasking']
+}
+
 
 def get_components(configuration):
     # Get the components from the yaml file
@@ -58,7 +64,7 @@ def main():
     # Get platform build version
     repo_list = configuration['repositories']
     try:
-        pulp_dict = filter(lambda x: x['name'] == 'pulp', repo_list)[0]
+        pulp_dict = list(filter(lambda x: x['name'] == 'pulp', repo_list))[0]
     except IndexError:
         raise RuntimeError("config file does not have an entry for 'pulp'")
     version = pulp_dict['version']
@@ -78,6 +84,14 @@ def main():
 
     # use the version update scripts to check out git repos and ensure correct versions
     update_version(opts.release)
+
+    # install any apidoc dependencies that exist for pulp 3 docs
+    if opts.release.startswith('3'):
+        for repo, packages in APIDOC_PACKAGES.items():
+            for package in packages:
+                package_dir = os.path.join(WORKING_DIR, repo, package)
+                if os.path.exists(package_dir):
+                    subprocess.check_call(['python', 'setup.py', 'develop'], cwd=package_dir)
 
     plugins_dir = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'plugins'])
     builder.ensure_dir(plugins_dir)
@@ -114,7 +128,7 @@ def main():
     # build the docs via the Pulp project itself
     print("Building the docs")
     docs_directory = os.sep.join([WORKING_DIR, 'pulp', 'docs'])
-    make_command = ['make', 'html', 'SPHINXOPTS=-Wn']
+    make_command = ['make', 'html']
     exit_code = subprocess.call(make_command, cwd=docs_directory)
     if exit_code != 0:
         raise RuntimeError('An error occurred while building the docs.')

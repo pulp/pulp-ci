@@ -29,7 +29,8 @@ Content
    plugins/index
    dev-guide/index
    dev-guide/contributing/index
-
+   api/pulp/app/index
+   api/pulp/plugin
 
 Index and Search
 ================
