@@ -53,7 +53,7 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
 
     # get the branch list
     raw_branch_list = subprocess.check_output('git branch -r|sort -V', cwd=git_directory,
-                                              shell=True)
+                                              shell=True).decode('utf8')
     lines = raw_branch_list.splitlines()
 
     # the order of items in these matters, so we start with list()
@@ -125,7 +125,7 @@ def check_merge_forward(git_directory, promotion_chain):
     for pair in generate_promotion_pairs(promotion_chain):
         print("checking log comparision of %s -> %s" % (pair[0], pair[1]))
         output = subprocess.check_output(['git', 'log', "^%s" % pair[1], pair[0]],
-                                         cwd=git_directory)
+                                         cwd=git_directory).decode('utf8')
         if output:
             print("ERROR: in %s: branch %s has not been merged into %s" %
                   (git_directory, pair[0], pair[1]))
@@ -144,7 +144,7 @@ def get_current_git_upstream_branch(git_directory):
     """
     command = 'git rev-parse --abbrev-ref --symbolic-full-name @{u}'
     command = command.split(' ')
-    return subprocess.check_output(command, cwd=git_directory).strip()
+    return subprocess.check_output(command, cwd=git_directory).decode('utf8').strip()
 
 
 def get_current_git_branch(git_directory):
@@ -158,13 +158,13 @@ def get_current_git_branch(git_directory):
     """
     command = 'git rev-parse --abbrev-ref HEAD'
     command = command.split(' ')
-    return subprocess.check_output(command, cwd=git_directory).strip()
+    return subprocess.check_output(command, cwd=git_directory).decode('utf8').strip()
 
 
 def get_local_git_branches(git_directory):
     command = "git for-each-ref --format %(refname:short) refs/heads/"
     command = command.split(' ')
-    lines = subprocess.check_output(command, cwd=git_directory)
+    lines = subprocess.check_output(command, cwd=git_directory).decode('utf8')
     results = [item.strip() for item in lines.splitlines()]
     return set(results)
 
