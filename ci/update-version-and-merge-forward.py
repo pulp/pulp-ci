@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 import argparse
 import yaml
@@ -28,7 +28,7 @@ def load_config(config_name):
     config_file = os.path.join(os.path.dirname(__file__),
                                'config', 'releases', '%s.yaml' % config_name)
     if not os.path.exists(config_file):
-        print "Error: %s not found. " % config_file
+        print("Error: %s not found. " % config_file)
         sys.exit(1)
     with open(config_file, 'r') as config_handle:
         config = yaml.safe_load(config_handle)
@@ -41,13 +41,13 @@ def get_components(configuration):
 
 # Build our working_dir
 working_dir = WORKING_DIR
-print working_dir
+print(working_dir)
 # Load the config file
 configuration = load_config(opts.config)
 
-print "Getting git repos"
+print("Getting git repos")
 for component in get_components(configuration):
-    print "Cloning from github: %s" % component.get('git_url')
+    print("Cloning from github: %s" % component.get('git_url'))
     branch_name = component['git_branch']
     parent_branch = component.get('parent_branch', None)
     command = ['git', 'clone', component.get('git_url'), '--branch', branch_name]
@@ -67,5 +67,5 @@ for component in get_components(configuration):
             command = ['git', 'push', '-v']
             subprocess.call(command, cwd=project_dir)
     else:
-        print "Skipping version update, only merging branches forward."
+        print("Skipping version update, only merging branches forward.")
     promote.merge_forward(project_dir, push=push_to_github, parent_branch=parent_branch) 

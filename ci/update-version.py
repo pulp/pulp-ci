@@ -1,14 +1,18 @@
-#!/usr/bin/env python2
-
+#!/usr/bin/env python
+import argparse
 import glob
 import os
 import re
 import shutil
-from StringIO import StringIO
 import sys
 
+try:
+    #py2
+    from StringIO import StringIO
+except ImportError:
+    #py3
+    from io import StringIO
 
-import argparse
 from lib import builder
 
 VERSION_REGEX = "(\s*)(version)(\s*)(=)(\s*)(['\"])(.*)(['\"])(.*)"
@@ -60,7 +64,7 @@ def set_spec_version(spec_file, version, release):
     in_f.close()
     out_f.close()
     shutil.move(spec_file + ".new", spec_file)
-    print "updated %s to %s-%s" % (spec_file, version, release)
+    print("updated %s to %s-%s" % (spec_file, version, release))
 
 
 def replace_version(line, new_version, regex):
@@ -95,7 +99,7 @@ def find_replace_in_files(root_directory, file_mask, new_version, version_regex)
         for line in f.readlines():
             new_line = replace_version(line, new_version, version_regex)
             if new_line != line:
-                print "updated %s: to %s" % (file_name, new_version)
+                print("updated %s: to %s" % (file_name, new_version))
             buf.write(new_line)
         f.close()
 
@@ -127,7 +131,7 @@ opts = parser.parse_args()
 # Find the spec
 spec_files = glob.glob(os.path.join(opts.directory, '*.spec'))
 if not spec_files:
-    print "Error, unable to find spec file in %s " % opts.directory
+    print("Error, unable to find spec file in %s " % opts.directory)
     sys.exit(1)
 
 spec_file = spec_files[0]
@@ -140,8 +144,8 @@ else:
     # user specified version so get it from there
     full_version, full_release = opts.version.split('-')
 
-# print full_version
-# print full_release
+# print(full_version)
+# print(full_release)
 
 
 major_version, minor_version, patch_version = parse_version(full_version)
@@ -151,7 +155,7 @@ update_type = None
 if opts.update_type:
     update_type = opts.update_type
 
-# print [major_release, major_release, stage]
+# print([major_release, major_release, stage])
 
 if update_type == 'major':
     major_version += 1
@@ -199,7 +203,7 @@ elif update_type == 'stage':
 calculated_version = "%s.%s.%s" % (major_version, minor_version, patch_version)
 
 calculated_release = "%s" % major_release
-# print [major_release, minor_release, stage]
+# print([major_release, minor_release, stage])
 if minor_release is not None:
     calculated_release += '.%s' % minor_release
 if stage is not None:
