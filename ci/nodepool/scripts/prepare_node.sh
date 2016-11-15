@@ -14,6 +14,9 @@ source bootstrap.sh
 echo "Performaing a general update"
 sudo "${PKG_MGR}" update -y
 
+echo "Installing redhat-lsb-core and gcc"
+sudo "${PKG_MGR}" install -y redhat-lsb-core gcc
+
 echo "Installing Puppet"
 if [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "5" ]; then
     sudo "${PKG_MGR}" install -y yum-security
