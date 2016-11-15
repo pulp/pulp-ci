@@ -58,6 +58,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--release", required=True, help="Build the docs for a given release.")
     opts = parser.parse_args()
+    is_pulp3 = opts.release.startswith('3')
 
     configuration = load_config(opts.release)
 
@@ -86,7 +87,7 @@ def main():
     update_version(opts.release)
 
     # install any apidoc dependencies that exist for pulp 3 docs
-    if opts.release.startswith('3'):
+    if is_pulp3:
         for repo, packages in APIDOC_PACKAGES.items():
             for package in packages:
                 package_dir = os.path.join(WORKING_DIR, repo, package)
@@ -105,7 +106,10 @@ def main():
         os.symlink(src, dst)
 
     # copy in the pulp_index.rst file
-    src_path = 'docs/pulp_index.rst'
+    if is_pulp3:
+        src_path = 'docs/pulp_index_pulp3.rst'
+    else:
+        src_path = 'docs/pulp_index.rst'
     pulp_index_rst = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'index.rst'])
     copyfile(src_path, pulp_index_rst)
 
@@ -115,7 +119,10 @@ def main():
 
     # copy in the all_content_index.rst file
     all_content_index_rst = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'all_content_index.rst'])
-    copyfile('docs/all_content_index.rst', all_content_index_rst)
+    if is_pulp3:
+        copyfile('docs/all_content_index_pulp3.rst', all_content_index_rst)
+    else:
+        copyfile('docs/all_content_index.rst', all_content_index_rst)
 
     # make the _templates dir
     layout_dir = os.sep.join([WORKING_DIR, 'pulp', 'docs', '_templates'])

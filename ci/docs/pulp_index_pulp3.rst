@@ -14,7 +14,7 @@ Using Pulp you can:
 * manage content from multiple sources in one place
 * Promote content through different repos in an organized way
 
-Pulp has a :doc:`REST API <dev-guide/integration/index>` and command line interface for management.
+Pulp has a :doc:`REST API <integration_guide/index>` and command line interface for management.
 
 Pulp is completely free and open-source!
 
@@ -24,11 +24,13 @@ Content
 .. toctree::
    :maxdepth: 1
 
-   user-guide/installation/index
-   user-guide/index
+   cli_guide/index
+   integration_guide/index
+   contributing/index
+   release_notes/index
+   getting_help/index
    plugins/index
-   dev-guide/index
-   dev-guide/contributing/index
+   glossary
 
 Index and Search
 ================
