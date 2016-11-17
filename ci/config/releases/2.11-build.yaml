@@ -6,15 +6,15 @@ repositories:
     external_deps: deps/external_deps.json
     git_url: git@github.com:pulp/pulp.git
     git_branch: 2.11-dev
-    version: 2.11.0-0.2.beta
+    version: 2.11.0-0.3.beta
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
     git_branch: 2.11-dev
-    version: 2.11.0-0.2.beta
+    version: 2.11.0-0.3.beta
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
     git_branch: 2.11-dev
-    version: 2.11.0-0.2.beta
+    version: 2.11.0-0.3.beta
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
     git_branch: pulp-docker-2.2.0-releasenotes

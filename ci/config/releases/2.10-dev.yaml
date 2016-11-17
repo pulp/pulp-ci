@@ -6,15 +6,15 @@ repositories:
     external_deps: deps/external_deps.json
     git_url: git@github.com:pulp/pulp.git
     git_branch: 2.10-dev
-    version: 2.10.2-0.1.alpha
+    version: 2.10.3-0.1.alpha
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
     git_branch: 2.10-dev
-    version: 2.10.2-0.1.alpha
+    version: 2.10.3-0.1.alpha
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
     git_branch: 2.10-dev
-    version: 2.10.2-0.1.alpha
+    version: 2.10.3-0.1.alpha
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
     git_branch: 2.1-dev
