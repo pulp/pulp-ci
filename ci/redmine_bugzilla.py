@@ -171,7 +171,7 @@ def main():
                                 else:
                                     transition_to_post.append(False)
                             downstream_POST_plus = ['POST', 'MODIFIED', 'ON_QA', 'VERIFIED',
-                                                    'RELEASE_PENDING', 'CLOSED']
+                                                    'RELEASE_PENDING']
                             upstream_POST_minus = ['NEW', 'ASSIGNED', 'POST']
                             if bug.status in downstream_POST_plus and \
                                             issue.status.name in upstream_POST_minus:
