@@ -17,9 +17,15 @@ the Bugzilla bug. If they are not present add them. REQUIRED_CC is a list
 of Bugzilla user emails stored as a constant in this module.
 
 Requirements:
+There are a few pip installable requirements:
+
+    $ pip install requests python-bugzilla python-redmine urllib3 pyopenssl
+
 The Redmine and Bugzilla credentials are expected from to be read from a
 file in ini format. See the example below. The location of this file is set
 by the REDMINE_BUGZILLA_CONF environment variable.
+
+For example `export REDMINE_BUGZILLA_CONF=~/Documents/redmine_bugzilla.ini`
 
 <SNIP>
 [bugzilla]
@@ -112,6 +118,8 @@ def main():
 
     links_issues_record = ''
     ext_bug_record = ''
+    downstream_state_issue_record = ''
+    downstream_changes = ''
 
     for issue in redmine_issues:
         for custom_field in issue.custom_fields.resources:
@@ -128,7 +136,11 @@ def main():
                             continue
                         else:
                             raise
+                    transition_to_post = []
                     for external_bug in bug.external_bugs:
+                        if external_bug['type']['description'] == 'Foreman Issue Tracker':
+                            # If the bug has an external foreman issue, don't transition the BZ
+                            transition_to_post.append(False)
                         if external_bug['type']['description'] == 'Pulp Redmine' and \
                                         external_bug['ext_bz_bug_id'] == str(issue.id):
                             add_cc_list_to_bugzilla_bug(bug)
@@ -140,22 +152,40 @@ def main():
                             if external_bug['ext_priority'] != issue.priority.name:
                                 ext_params['ext_priority'] = issue.priority.name
                             if len(ext_params.keys()) > 0:
-                                ext_bug_record += 'Bugzilla bug %s updated from upstream bug %s with ' \
-                                                  '%s\n' % (bug.id, issue.id, ext_params)
+                                ext_bug_record += 'Bugzilla bug %s updated from upstream bug %s ' \
+                                                  'with %s\n' % (bug.id, issue.id, ext_params)
                                 ext_params['ids'] = external_bug['id']
                                 BZ.update_external_tracker(**ext_params)
                                 if 'ext_status' in ext_params:
                                     bug.addcomment(
-                                        'The Pulp upstream bug status is at %s. Updating the external '
-                                        'tracker on this bug.' % issue.status.name)
+                                        'The Pulp upstream bug status is at %s. Updating the '
+                                        'external tracker on this bug.' % issue.status.name)
                                 if 'ext_priority' in ext_params:
                                     bug.addcomment(
                                         'The Pulp upstream bug priority is at %s. Updating the '
                                         'external tracker on this bug.' % issue.priority.name)
+                            if bug.status in ['NEW', 'ASSIGNED']:
+                                if issue.status.name in ['MODIFIED', 'ON_QA', 'VERIFIED',
+                                                         'CLOSED - CURRENTRELEASE']:
+                                    transition_to_post.append(True)
+                                else:
+                                    transition_to_post.append(False)
+                            downstream_POST_plus = ['POST', 'MODIFIED', 'ON_QA', 'VERIFIED',
+                                                    'RELEASE_PENDING', 'CLOSED']
+                            upstream_POST_minus = ['NEW', 'ASSIGNED', 'POST']
+                            if bug.status in downstream_POST_plus and \
+                                            issue.status.name in upstream_POST_minus:
+                                msg = 'The downstream bug %s is at POST+ but the upstream bug %s ' \
+                                      'at POST-.\n' % (bug.id, issue.id)
+                                downstream_state_issue_record += msg
                             links_back = True
                     if not links_back:
-                        links_issues_record += 'Redmine #%s -> Bugzilla %s, but Bugzilla %s does not ' \
-                                           'link back\n' % (issue.id, bug.id, bug.id)
+                        links_issues_record += 'Redmine #%s -> Bugzilla %s, but Bugzilla %s does ' \
+                                               'not link back\n' % (issue.id, bug.id, bug.id)
+                    if len(transition_to_post) > 0 and all(transition_to_post):
+                        msg = 'All upstream Pulp bugs are at MODIFIED+. Moving this bug to POST.'
+                        bug.setstatus('POST', msg)
+                        downstream_changes += 'Bugzilla %s was transitioned to POST\n' % bug.id
 
     for bug in bugzilla_bugs:
         for external_bug in bug.external_bugs:
@@ -166,12 +196,13 @@ def main():
                     links_back = False
                     for custom_field in issue.custom_fields.resources:
                         if custom_field['name'] == 'Bugzillas' and custom_field['value']:
-                            for bug_id in [int(id_str) for id_str in custom_field['value'].split(',')]:
+                            bug_list = [int(id_str) for id_str in custom_field['value'].split(',')]
+                            for bug_id in bug_list:
                                 try:
                                     if bug_id == bug.id:
                                         links_back = True
                                 except KeyError:
-                                    # If value isn't present this field is not linking back so continue
+                                    # If value isn't present this field is not linking back
                                     continue
                                 except ValueError:
                                     # If value is present but empty this field is not linking back
@@ -185,12 +216,24 @@ def main():
         print '------------------------------'
         print ext_bug_record
 
+    if downstream_changes != '':
+        print '\nBugzilla Transitions to POST'
+        print '----------------------------'
+        print downstream_changes
+
     if links_issues_record != '':
         print '\nLink Issues'
         print '-----------'
         print links_issues_record
+
+    if downstream_state_issue_record != '':
+        print '\nDownstream State Issues'
+        print '-----------------------'
+        print downstream_state_issue_record
+
+    if links_issues_record != '' or downstream_state_issue_record != '':
         # Raise an exception so the job fails and Jenkins will send e-mail
-        raise RuntimeError('Upstream/Downstream Link issues are detected')
+        raise RuntimeError('We need a human here')
 
 
 if __name__ == '__main__':
