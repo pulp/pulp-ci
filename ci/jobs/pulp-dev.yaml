@@ -131,6 +131,11 @@
         - qe-ownership
     scm:
         - pulp-packaging-github
+    wrappers:
+        - timeout:
+            # pulp-smash usually takes about an hour, so time it out after two
+            timeout: 120
+            abort: true
     builders:
         - shell: |
             # Setup ssh config and private key
