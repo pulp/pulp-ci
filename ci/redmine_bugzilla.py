@@ -38,6 +38,7 @@ import os
 from bugzilla.rhbugzilla import RHBugzilla
 from redmine import Redmine
 import urllib3.contrib.pyopenssl
+import xmlrpclib
 
 # Here due to InsecurePlatformWarning
 # https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning
@@ -119,7 +120,14 @@ def main():
                     continue
                 for bug_id in [int(id_str) for id_str in custom_field['value'].split(',')]:
                     links_back = False
-                    bug = BZ.getbug(bug_id)
+                    try:
+                        bug = BZ.getbug(bug_id)
+                    except xmlrpclib.Fault as e:
+                        if e.faultCode == 102:
+                            print 'Bugzilla %s could not be accessed.' % bug_id
+                            continue
+                        else:
+                            raise
                     for external_bug in bug.external_bugs:
                         if external_bug['type']['description'] == 'Pulp Redmine' and \
                                         external_bug['ext_bz_bug_id'] == str(issue.id):
