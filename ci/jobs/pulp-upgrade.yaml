@@ -154,15 +154,25 @@
                 rpm -q python-semantic-version >/dev/null && \
                     sudo rpm -e --nodeps python-semantic-version
             fi
+
+            if [ "$(which systemctl 2>/dev/null)" ]; then
+                sudo systemctl daemon-reload
+                sudo systemctl stop httpd pulp_workers pulp_celerybeat pulp_resource_manager
+            else
+                for service in httpd pulp_workers pulp_celerybeat pulp_resource_manager; do
+                    sudo service "${{service}}" stop
+                done
+            fi
+
             sudo yum -y update
             sudo -u apache pulp-manage-db
 
             if [ "$(which systemctl 2>/dev/null)" ]; then
                 sudo systemctl daemon-reload
-                sudo systemctl restart httpd pulp_workers pulp_celerybeat pulp_resource_manager
+                sudo systemctl start httpd pulp_workers pulp_celerybeat pulp_resource_manager
             else
                 for service in httpd pulp_workers pulp_celerybeat pulp_resource_manager; do
-                    sudo service "${{service}}" restart
+                    sudo service "${{service}}" start
                 done
             fi
         - shell: |
