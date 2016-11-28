@@ -21,8 +21,9 @@
                 echo "Failed to get syslogs: neither journalctl nor " \
                 "/var/log/messages were found." > logs/syslogs
             fi
-            [ -e /var/log/httpd ] && sudo cp -R /var/log/httpd logs
-            [ -e /var/log/squid ] && sudo cp -R /var/log/squid logs
+            for log in audit httpd squid; do
+                [ -e "/var/log/${log}" ] && sudo cp -R "/var/log/${log}" logs
+            done
             sudo chown -R "${USER}":"${USER}" logs
             tar -zcf logs.tar.gz logs
 
