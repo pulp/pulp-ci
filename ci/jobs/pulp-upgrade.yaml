@@ -135,46 +135,11 @@
 
             pulp-admin logout
         - shell: |
-            cat /etc/yum.repos.d/pulp.repo
-            if [ "${{PULP_BUILD}}" = "nightly" ]; then
-                from_url="testing/automation/${{PULP_VERSION}}/stage/"
-            else
-                from_url="${{PULP_BUILD}}/${{PULP_VERSION}}/"
-            fi
-            if [ "${{UPGRADE_PULP_BUILD}}" = "nightly" ]; then
-                to_url="testing/automation/${{UPGRADE_PULP_VERSION}}/stage/"
-            else
-                to_url="${{UPGRADE_PULP_BUILD}}/${{UPGRADE_PULP_VERSION}}/"
-            fi
-            sudo sed -i "s|${{from_url}}|${{to_url}}|" /etc/yum.repos.d/pulp.repo
-            cat /etc/yum.repos.d/pulp.repo
-            sudo yum repolist
-            if [ "${{OS}}" = "f22" ]; then
-                # Check https://pulp.plan.io/issues/1987 for more information
-                rpm -q python-semantic-version >/dev/null && \
-                    sudo rpm -e --nodeps python-semantic-version
-            fi
-
-            if [ "$(which systemctl 2>/dev/null)" ]; then
-                sudo systemctl daemon-reload
-                sudo systemctl stop httpd pulp_workers pulp_celerybeat pulp_resource_manager
-            else
-                for service in httpd pulp_workers pulp_celerybeat pulp_resource_manager; do
-                    sudo service "${{service}}" stop
-                done
-            fi
-
-            sudo yum -y update
-            sudo -u apache pulp-manage-db
-
-            if [ "$(which systemctl 2>/dev/null)" ]; then
-                sudo systemctl daemon-reload
-                sudo systemctl start httpd pulp_workers pulp_celerybeat pulp_resource_manager
-            else
-                for service in httpd pulp_workers pulp_celerybeat pulp_resource_manager; do
-                    sudo service "${{service}}" start
-                done
-            fi
+            ansible-playbook --connection local -i hosts ci/ansible/pulp_server_upgrade.yaml \
+                -e "pulp_build=${{PULP_BUILD}}" \
+                -e "pulp_version=${{PULP_VERSION}}" \
+                -e "upgrade_pulp_build=${{UPGRADE_PULP_BUILD}}" \
+                -e "upgrade_pulp_version=${{UPGRADE_PULP_VERSION}}"
         - shell: |
             pulp-admin login -u "${{PULP_USER}}" -p "${{PULP_PASSWORD}}"
 
