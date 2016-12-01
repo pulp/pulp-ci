@@ -1,0 +1,6 @@
+---
+
+- hosts: all
+  roles:
+    - role: pulp-upgrade
+  sudo: true

@@ -1,0 +1,65 @@
+- name: Ensure expected distribution
+  assert:
+    that: ansible_os_family == "RedHat"
+
+- name: Ensure expected variables
+  assert:
+    that:
+      - pulp_build
+      - pulp_version
+      - upgrade_pulp_build
+      - upgrade_pulp_version
+    msg: "pulp_build, pulp_version, upgrade_pulp_build and upgrade_pulp_version must be defined"
+
+- name: Nightly from_url
+  set_fact:
+    from_url: "testing/automation/{{ pulp_version }}/stage/"
+  when: pulp_build == "nightly"
+
+- name: Beta/Stable from_url
+  set_fact:
+    from_url: "{{ pulp_build }}/{{ pulp_version }}/"
+  when: pulp_build != "nightly"
+
+- name: Nightly to_url
+  set_fact:
+    to_url: "testing/automation/{{ upgrade_pulp_version }}/stage/"
+  when: upgrade_pulp_build == "nightly"
+
+- name: Beta/Stable to_url
+  set_fact:
+    to_url: "{{ upgrade_pulp_build }}/{{ upgrade_pulp_version }}/"
+  when: upgrade_pulp_build != "nightly"
+
+- name: Edit repository file
+  shell: "sed -i s|{{ from_url }}|{{ to_url }}| /etc/yum.repos.d/pulp.repo"
+
+- name: Stop services
+  service: "name={{ item }} state=stopped"
+  with_items:
+    - httpd
+    - pulp_workers
+    - pulp_celerybeat
+    - pulp_resource_manager
+
+- name: Update packages
+  shell: yum -y update
+
+- name: Run pulp-manage-db
+  shell: sudo -u apache pulp-manage-db
+
+- name: Reload services
+  service: "name={{ item }} state=reloaded"
+  with_items:
+    - httpd
+    - pulp_workers
+    - pulp_celerybeat
+    - pulp_resource_manager
+
+- name: Start services
+  service: "name={{ item }} state=started"
+  with_items:
+    - httpd
+    - pulp_workers
+    - pulp_celerybeat
+    - pulp_resource_manager
