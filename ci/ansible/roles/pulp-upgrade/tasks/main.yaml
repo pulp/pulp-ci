@@ -5,10 +5,10 @@
 - name: Ensure expected variables
   assert:
     that:
-      - pulp_build
-      - pulp_version
-      - upgrade_pulp_build
-      - upgrade_pulp_version
+      - pulp_build is defined
+      - pulp_version is defined
+      - upgrade_pulp_build is defined
+      - upgrade_pulp_version is defined
     msg: "pulp_build, pulp_version, upgrade_pulp_build and upgrade_pulp_version must be defined"
 
 - name: Nightly from_url
