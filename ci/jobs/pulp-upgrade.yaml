@@ -136,8 +136,6 @@
             pulp-admin logout
         - shell: |
             ansible-playbook --connection local -i hosts ci/ansible/pulp_server_upgrade.yaml \
-                -e "pulp_build=${{PULP_BUILD}}" \
-                -e "pulp_version=${{PULP_VERSION}}" \
                 -e "upgrade_pulp_build=${{UPGRADE_PULP_BUILD}}" \
                 -e "upgrade_pulp_version=${{UPGRADE_PULP_VERSION}}"
         - shell: |

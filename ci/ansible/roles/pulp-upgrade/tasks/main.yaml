@@ -5,21 +5,12 @@
 - name: Ensure expected variables
   assert:
     that:
-      - pulp_build is defined
-      - pulp_version is defined
       - upgrade_pulp_build is defined
       - upgrade_pulp_version is defined
-    msg: "pulp_build, pulp_version, upgrade_pulp_build and upgrade_pulp_version must be defined"
-
-- name: Nightly from_url
-  set_fact:
-    from_url: "testing/automation/{{ pulp_version }}/stage/"
-  when: pulp_build == "nightly"
-
-- name: Beta/Stable from_url
-  set_fact:
-    from_url: "{{ pulp_build }}/{{ pulp_version }}/"
-  when: pulp_build != "nightly"
+      - upgrade_pulp_build in ['beta', 'nightly', 'stable']
+    msg: |
+      upgrade_pulp_build and upgrade_pulp_version must be defined.
+      Also upgrade_pulp_build must be one of beta, nightly and stable.
 
 - name: Nightly to_url
   set_fact:
@@ -31,8 +22,11 @@
     to_url: "{{ upgrade_pulp_build }}/{{ upgrade_pulp_version }}/"
   when: upgrade_pulp_build != "nightly"
 
-- name: Edit repository file
-  shell: "sed -i s|{{ from_url }}|{{ to_url }}| /etc/yum.repos.d/pulp.repo"
+- name: Update the repository baseurl
+  lineinfile:
+    dest: /etc/yum.repos.d/pulp.repo
+    regexp: '^baseurl='
+    line: 'baseurl=https://repos.fedorapeople.org/pulp/pulp/{{ to_url }}{% if ansible_distribution == "Fedora" %}fedora-{% endif %}$releasever/$basearch/'
 
 - name: Stop services
   service: "name={{ item }} state=stopped"
@@ -42,8 +36,11 @@
     - pulp_celerybeat
     - pulp_resource_manager
 
+- name: Clean all package cache
+  shell: "{{ ansible_pkg_mgr }} clean all"
+
 - name: Update packages
-  shell: yum -y update
+  shell: "{{ ansible_pkg_mgr }} -y update"
 
 - name: Run pulp-manage-db
   shell: sudo -u apache pulp-manage-db
