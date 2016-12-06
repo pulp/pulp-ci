@@ -5,19 +5,22 @@ repositories:
   - name: pulp
     external_deps: deps/external_deps.json
     git_url: git@github.com:pulp/pulp.git
-    git_branch: 2.10.2-hotfix
     parent_branch: 2.10-dev
-    version: 2.10.2-2
+    git_branch: pulp-2.10.3-0.2.beta
+    version: 2.10.3-1
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
     parent_branch: 2.10-dev
-    git_branch: pulp-puppet-2.10.1-1
-    version: 2.10.2-1
+    # the 2.10.3 beta 1 tag for puppet didn't get created, but
+    # there were no changes since 2.10.2, so we can use that tag instead
+    git_branch: pulp-puppet-2.10.2-1
+    version: 2.10.3-1
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
-    parent_branch: 2.10-dev
-    git_branch: pulp-rpm-2.10.1-1
-    version: 2.10.2-1
+    # same problem as puppet, no tag. The current tip of 2.10-dev is the 2.10.4 alpha
+    # version bump, which I made immedately after releasing beta 1. This is no fun. :(
+    git_branch: 2.10-dev
+    version: 2.10.3-1
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
     git_branch: 2.1-release
