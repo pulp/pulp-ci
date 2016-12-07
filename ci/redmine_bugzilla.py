@@ -136,11 +136,7 @@ def main():
                             continue
                         else:
                             raise
-                    transition_to_post = []
                     for external_bug in bug.external_bugs:
-                        if external_bug['type']['description'] == 'Foreman Issue Tracker':
-                            # If the bug has an external foreman issue, don't transition the BZ
-                            transition_to_post.append(False)
                         if external_bug['type']['description'] == 'Pulp Redmine' and \
                                         external_bug['ext_bz_bug_id'] == str(issue.id):
                             add_cc_list_to_bugzilla_bug(bug)
@@ -164,12 +160,6 @@ def main():
                                     bug.addcomment(
                                         'The Pulp upstream bug priority is at %s. Updating the '
                                         'external tracker on this bug.' % issue.priority.name)
-                            if bug.status in ['NEW', 'ASSIGNED']:
-                                if issue.status.name in ['MODIFIED', 'ON_QA', 'VERIFIED',
-                                                         'CLOSED - CURRENTRELEASE']:
-                                    transition_to_post.append(True)
-                                else:
-                                    transition_to_post.append(False)
                             downstream_POST_plus = ['POST', 'MODIFIED', 'ON_QA', 'VERIFIED',
                                                     'RELEASE_PENDING', 'CLOSED']
                             upstream_POST_minus = ['NEW', 'ASSIGNED', 'POST']
@@ -179,6 +169,18 @@ def main():
                                       'at POST-.\n' % (bug.id, issue.id)
                                 downstream_state_issue_record += msg
                             links_back = True
+                    transition_to_post = []
+                    for external_bug in bug.external_bugs:
+                        if external_bug['type']['description'] == 'Foreman Issue Tracker':
+                            # If the bug has an external foreman issue, don't transition the BZ
+                            transition_to_post.append(False)
+                        if external_bug['type']['description'] == 'Pulp Redmine':
+                            if bug.status in ['NEW', 'ASSIGNED']:
+                                if external_bug['ext_status'] in ['MODIFIED', 'ON_QA', 'VERIFIED',
+                                                         'CLOSED - CURRENTRELEASE']:
+                                    transition_to_post.append(True)
+                                else:
+                                    transition_to_post.append(False)
                     if not links_back:
                         links_issues_record += 'Redmine #%s -> Bugzilla %s, but Bugzilla %s does ' \
                                                'not link back\n' % (issue.id, bug.id, bug.id)
