@@ -9,7 +9,7 @@
     scm:
         - pulp-packaging-github
     triggers:
-        - timed: '@weekly'
+        - timed: 'H H * * 1,4'
     wrappers:
         - ansicolor
         - config-file-provider:
