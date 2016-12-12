@@ -45,13 +45,9 @@
 - name: Run pulp-manage-db
   shell: sudo -u apache pulp-manage-db
 
-- name: Reload services
-  service: "name={{ item }} state=reloaded"
-  with_items:
-    - httpd
-    - pulp_workers
-    - pulp_celerybeat
-    - pulp_resource_manager
+- name: Run daemon reload
+  shell: "systemctl daemon-reload"
+  when: ansible_distribution_major_version|int > 6
 
 - name: Start services
   service: "name={{ item }} state=started"
