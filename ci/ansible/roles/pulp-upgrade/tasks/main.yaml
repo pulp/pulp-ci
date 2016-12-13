@@ -32,9 +32,10 @@
   service: "name={{ item }} state=stopped"
   with_items:
     - httpd
-    - pulp_workers
     - pulp_celerybeat
     - pulp_resource_manager
+    - pulp_streamer
+    - pulp_workers
 
 - name: Clean all package cache
   shell: "{{ ansible_pkg_mgr }} clean all"
@@ -53,6 +54,7 @@
   service: "name={{ item }} state=started"
   with_items:
     - httpd
-    - pulp_workers
     - pulp_celerybeat
     - pulp_resource_manager
+    - pulp_streamer
+    - pulp_workers
