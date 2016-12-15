@@ -156,7 +156,7 @@
             sudo cp CA_CERT /etc/pki/ca-trust/source/anchors/cacert.pem
             sudo update-ca-trust
 
-            sudo yum -y install python-pip python-virtualenv
+            sudo yum -y install python-pip python-virtualenv attr
             virtualenv -p /usr/bin/python3 venv
             source venv/bin/activate
             git clone http://github.com/PulpQE/pulp-smash.git
