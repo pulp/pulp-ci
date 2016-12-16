@@ -62,6 +62,18 @@ labels:
     providers:
       - name: cios
     ready-script: fix_hostname.sh
+  - name: f25-np
+    image: f25-np
+    min-ready: 0
+    providers:
+      - name: cios
+    ready-script: fix_hostname.sh
+  - name: f25-vanilla-np
+    image: f25-vanilla-np
+    min-ready: 0
+    providers:
+      - name: cios
+    ready-script: fix_hostname.sh
   - name: rhel6-np
     image: rhel6-np
     min-ready: 0
@@ -138,6 +150,18 @@ providers:
         min-ram: 3072
       - name: f24-vanilla-np
         base-image: Fedora-Cloud-Base-24-1.2.x86_64
+        username: jenkins
+        setup: prepare_node.sh
+        private-key: /etc/nodepool/pulp_rsa
+        min-ram: 3072
+      - name: f25-np
+        base-image: Fedora-Cloud-Base-25-compose-latest
+        username: jenkins
+        setup: prepare_node.sh
+        private-key: /etc/nodepool/pulp_rsa
+        min-ram: 3072
+      - name: f25-vanilla-np
+        base-image: Fedora-Cloud-Base-25-compose-latest
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
