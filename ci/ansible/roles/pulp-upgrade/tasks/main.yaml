@@ -31,7 +31,6 @@
 - name: Stop services
   service: "name={{ item }} state=stopped"
   with_items:
-    - goferd
     - httpd
     - pulp_celerybeat
     - pulp_resource_manager
@@ -54,7 +53,6 @@
 - name: Start services
   service: "name={{ item }} state=started"
   with_items:
-    - goferd
     - httpd
     - pulp_celerybeat
     - pulp_resource_manager
