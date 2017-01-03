@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 HOSTNAME="$1"
-VANILLA="$(grep vanilla 2>/dev/null <<< ${HOSTNAME})"
 DOCKER="$(grep docker 2>/dev/null <<< ${HOSTNAME})"
 
 echo "Disable selinux"
@@ -14,16 +13,14 @@ source bootstrap.sh
 echo "Performaing a general update"
 sudo "${PKG_MGR}" update -y
 
-echo "Installing redhat-lsb-core and gcc"
-sudo "${PKG_MGR}" install -y redhat-lsb-core gcc
+echo "Installing base packages"
+sudo "${PKG_MGR}" install -y gcc git python-devel python-pip redhat-lsb-core wget
 
-echo "Installing Puppet"
+echo "OS specific setup"
 if [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "5" ]; then
     sudo "${PKG_MGR}" install -y yum-security
     curl -O https://dl.fedoraproject.org/pub/epel/epel-release-latest-5.noarch.rpm
     sudo rpm -ivh epel-release-latest-5.noarch.rpm
-    curl -O https://yum.puppetlabs.com/puppetlabs-release-pc1-el-5.noarch.rpm
-    sudo rpm -ivh puppetlabs-release-pc1-el-5.noarch.rpm
     cat > mrg.repo <<EOF
 [mrg-el5]
 name=mrg-el5
@@ -34,11 +31,9 @@ EOF
     sudo mv mrg.repo /etc/yum.repos.d/
 elif  [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "6" ]; then
     sudo rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
-    sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-el-6.noarch.rpm
     sudo su -c "curl https://copr.fedorainfracloud.org/coprs/g/qpid/qpid/repo/epel-6/irina-qpid-epel-6.repo > /etc/yum.repos.d/copr-qpid.repo"
 elif  [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "7" ]; then
     sudo rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-    sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
     # https://bugzilla.redhat.com/show_bug.cgi?id=1173993 is similar to what we've been seeing
     # to break the rhel7 image booting. This fixes it, but it's not clear why.
     sudo sed -i '/sixteenbit=/d' /etc/grub.d/10_linux
@@ -50,29 +45,6 @@ elif  [ "${DISTRIBUTION}" == "fedora" ]; then
     sudo sed -i 's/clean_requirements_on_remove=true/clean_requirements_on_remove=false/g' /etc/dnf/dnf.conf
     # "which" isn't installed in fedora 22+ by default?
     sudo "${PKG_MGR}" install -y python2 python-dnf which
-    sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-fedora-${DISTRIBUTION_MAJOR_VERSION}.noarch.rpm
-fi
-
-PUPPET="/opt/puppetlabs/bin/puppet"
-sudo "${PKG_MGR}" install -y puppet-agent
-
-echo "Installing git"
-sudo "${PKG_MGR}" install -y git
-
-echo "Installing packaging repository"
-git clone https://github.com/pulp/pulp_packaging.git
-
-echo "Installing required puppet modules"
-sudo "${PUPPET}" module install --verbose --force puppetlabs-stdlib
-sudo "${PUPPET}" module install --verbose --force saz-sudo
-
-if [ ! "${VANILLA}" ] && [ ! "${DOCKER}" ]; then
-    sudo "${PUPPET}" module install --verbose --force puppetlabs-mongodb
-    sudo "${PUPPET}" module install --verbose --force ripienaar-module_data
-    sudo "${PUPPET}" module install --verbose --force katello-qpid
-
-    echo "Configuring pulp-unittest"
-    sudo "${PUPPET}" apply pulp_packaging/ci/deploy/utils/puppet/pulp-unittest.pp
 fi
 
 echo "Disable ttysudo requirement"
