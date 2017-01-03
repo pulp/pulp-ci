@@ -13,8 +13,8 @@ source bootstrap.sh
 echo "Performaing a general update"
 sudo "${PKG_MGR}" update -y
 
-echo "Installing base packages"
-sudo "${PKG_MGR}" install -y gcc git python-devel python-pip redhat-lsb-core wget
+echo "Installing base packages and compiler requirements"
+sudo "${PKG_MGR}" install -y gcc git python-devel python-pip redhat-lsb-core wget redhat-rpm-config libffi-devel openssl-devel
 
 echo "OS specific setup"
 if [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "5" ]; then
