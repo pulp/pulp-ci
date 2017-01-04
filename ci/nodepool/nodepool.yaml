@@ -20,18 +20,6 @@ labels:
     providers:
       - name: cios
     ready-script: fix_hostname.sh
-  - name: f22-np
-    image: f22-np
-    min-ready: 0
-    providers:
-      - name: cios
-    ready-script: fix_hostname.sh
-  - name: f22-vanilla-np
-    image: f22-vanilla-np
-    min-ready: 0
-    providers:
-      - name: cios
-    ready-script: fix_hostname.sh
   - name: f23-np
     image: f23-np
     min-ready: 0
@@ -112,18 +100,6 @@ providers:
     pool: "10.8.180.0/22"
     clean-floating-ips: true
     images:
-      - name: f22-np
-        base-image: Fedora-Cloud-Base-22-20150521.x86_64
-        username: jenkins
-        setup: prepare_node.sh
-        private-key: /etc/nodepool/pulp_rsa
-        min-ram: 3072
-      - name: f22-vanilla-np
-        base-image: Fedora-Cloud-Base-22-20150521.x86_64
-        username: jenkins
-        setup: prepare_node.sh
-        private-key: /etc/nodepool/pulp_rsa
-        min-ram: 3072
       - name: f23-np
         base-image: Fedora-Cloud-Base-23-20151113-py27.x86_64
         username: jenkins
