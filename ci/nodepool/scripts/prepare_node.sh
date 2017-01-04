@@ -34,13 +34,6 @@ elif  [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == 
     sudo su -c "curl https://copr.fedorainfracloud.org/coprs/g/qpid/qpid/repo/epel-6/irina-qpid-epel-6.repo > /etc/yum.repos.d/copr-qpid.repo"
 elif  [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "7" ]; then
     sudo rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-    # https://bugzilla.redhat.com/show_bug.cgi?id=1173993 is similar to what we've been seeing
-    # to break the rhel7 image booting. This fixes it, but it's not clear why.
-    sudo sed -i '/sixteenbit=/d' /etc/grub.d/10_linux
-    # after fixing that ^, the rhel7-vanilla images occasional kernel panic starting the apic timer
-    # simple solution: don't use apic?
-    sudo sed -i 's/GRUB_CMDLINE_LINUX="/GRUB_CMDLINE_LINUX="apic=verbose /' /etc/default/grub
-    sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 elif  [ "${DISTRIBUTION}" == "fedora" ]; then
     sudo sed -i 's/clean_requirements_on_remove=true/clean_requirements_on_remove=false/g' /etc/dnf/dnf.conf
     # "which" isn't installed in fedora 22+ by default?

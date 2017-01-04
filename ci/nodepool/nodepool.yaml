@@ -166,30 +166,32 @@ providers:
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
+        # for rhel images, the "updated" images should require less updating
+        # than the "released" images: https://mojo.redhat.com/docs/DOC-1081665
         # rhel6 images need the t2.medium image type because their initrd
         # explodes on the ephemeral volumes
       - name: rhel6-np
-        base-image: rhel-6.8-server-x86_64-released
+        base-image: rhel-6.8-server-x86_64-updated
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
         name-filter: t2.medium
       - name: rhel6-vanilla-np
-        base-image: rhel-6.8-server-x86_64-released
+        base-image: rhel-6.8-server-x86_64-updated
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
         name-filter: t2.medium
       - name: rhel7-np
-        base-image: rhel-7.3-server-x86_64-released
+        base-image: rhel-7.3-server-x86_64-updated
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
       - name: rhel7-vanilla-np
-        base-image: rhel-7.3-server-x86_64-released
+        base-image: rhel-7.3-server-x86_64-updated
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
