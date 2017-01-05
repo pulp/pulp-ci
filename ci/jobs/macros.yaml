@@ -36,7 +36,7 @@
         - shell: |
             sudo yum install -y mongodb-server qpid-cpp-server qpid-cpp-server-linearstore \
                 python-virtualenvwrapper rpm-build python-paste python-lxml
-            for service in mongod qpidd httpd; do
+            for service in mongod qpidd; do
                 if echo $NODE_NAME | grep -q rhel6; then
                     sudo chkconfig $service on
                     sudo service $service start
