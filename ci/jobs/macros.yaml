@@ -27,6 +27,25 @@
             sudo chown -R "${USER}":"${USER}" logs
             tar -zcf logs.tar.gz logs
 
+- builder:
+    name: pr-tester-deps
+    builders:
+        # install deps needed to run PR tester jobs;
+        # based on the packages installed by the old puppet modules:
+        # https://github.com/pulp/pulp_packaging/pull/270/files
+        - shell: |
+            sudo yum install -y mongodb-server qpid-cpp-server qpid-cpp-server-linearstore \
+                python-virtualenvwrapper rpm-build python-paste python-lxml
+            for service in mongod qpidd httpd; do
+                if echo $NODE_NAME | grep -q rhel6; then
+                    sudo chkconfig $service on
+                    sudo service $service start
+                else
+                    sudo systemctl enable $service
+                    sudo systemctl start $service
+                fi
+            done
+
 # Inject the PYTHONUNBUFFERED env var into builds using a parameter. This needs to be a string
 # param, not a bool, because any value turns on unbuffered mode, including "false".
 - parameter:

@@ -55,6 +55,7 @@
             - 2.11-release
             - master
     builders:
+        - pr-tester-deps
         - shell: |
             #!/bin/bash
             echo "Setting up after source control extract"
@@ -199,6 +200,7 @@
           # only-trigger-phrase: true
           white-list-target-branches: '{obj:unittest_branches}'
     builders:
+        - pr-tester-deps
         - shell: |
             #!/bin/bash
             # Set up and install the base pulp
