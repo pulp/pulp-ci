@@ -20,7 +20,7 @@
             result: 'success'
     builders:
         - shell: |
-            sudo yum install -y git ansible libselinux-python
+            sudo yum -y install ansible attr git libselinux-python
             ssh-keygen -t rsa -N "" -f pulp_server_key
             cat pulp_server_key.pub >> ~/.ssh/authorized_keys
             echo 'localhost' > hosts
@@ -156,7 +156,7 @@
             sudo cp CA_CERT /etc/pki/ca-trust/source/anchors/cacert.pem
             sudo update-ca-trust
 
-            sudo yum -y install python-pip python-virtualenv attr
+            sudo yum -y install python-pip python-virtualenv
             virtualenv -p /usr/bin/python3 venv
             source venv/bin/activate
             git clone http://github.com/PulpQE/pulp-smash.git
