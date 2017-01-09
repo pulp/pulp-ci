@@ -161,7 +161,7 @@ def main():
                                         'The Pulp upstream bug priority is at %s. Updating the '
                                         'external tracker on this bug.' % issue.priority.name)
                             downstream_POST_plus = ['POST', 'MODIFIED', 'ON_QA', 'VERIFIED',
-                                                    'RELEASE_PENDING', 'CLOSED']
+                                                    'RELEASE_PENDING']
                             upstream_POST_minus = ['NEW', 'ASSIGNED', 'POST']
                             if bug.status in downstream_POST_plus and \
                                             issue.status.name in upstream_POST_minus:
