@@ -127,6 +127,18 @@
             send-to:
                 - recipients
 
+# Same as email-notify-owners, but attach the build log to the email (it is not attached by default)
+- publisher:
+    name: email-notify-owners-with-log
+    publishers:
+        - email-ext:
+            attach-build-log: true
+            failure: true
+            not-built: true
+            recipients: $JOB_COOWNERS_EMAILS
+            send-to:
+                - recipients
+
 # notify the default channel with a build summary on all build states (pass/unstable/fail)
 # good for things like nightly builds since it always reports
 - publisher:

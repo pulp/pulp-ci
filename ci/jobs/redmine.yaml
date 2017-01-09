@@ -49,5 +49,5 @@
 
     publishers:
       # Take the node offline so that another build doesn't pile on
-      - email-notify-owners
+      - email-notify-owners-with-log
       - mark-node-offline
