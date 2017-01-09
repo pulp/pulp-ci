@@ -5,23 +5,19 @@ repositories:
   - name: pulp
     external_deps: deps/external_deps.json
     git_url: git@github.com:pulp/pulp.git
-    parent_branch: 2.11-dev
-    git_branch: 2.11.0-rc2
-    version: 2.11.0-1
+    git_branch: 2.11-dev
+    version: 2.11.1-0.1.beta
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
-    parent_branch: 2.11-dev
-    git_branch: pulp-puppet-2.11.0-0.5.rc
-    version: 2.11.0-1
+    git_branch: 2.11-dev
+    version: 2.11.1-0.1.beta
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
-    parent_branch: 2.11-dev
-    git_branch: pulp-rpm-2.11.0-0.5.rc
-    version: 2.11.0-1
+    git_branch: 2.11-dev
+    version: 2.11.1-0.1.beta
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
-    git_branch: pulp-docker-2.2.0-0.3.rc
-    parent_branch: 2.2-dev
+    git_branch: 2.2-release
     version: 2.2.0-1
   - name: crane
     git_url: git@github.com:pulp/crane.git
@@ -29,9 +25,8 @@ repositories:
     version: 2.0.2-1
   - name: pulp_ostree
     git_url: git@github.com:pulp/pulp_ostree.git
-    parent_branch: 1.2-dev
+    git_branch: 1.2-release
     version: 1.2.0-1
-    git_branch: pulp-ostree-1.2.0-0.4.rc
   - name: pulp_python
     git_url: git@github.com:pulp/pulp_python.git
     git_branch: 1.1-release
