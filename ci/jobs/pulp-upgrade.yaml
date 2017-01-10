@@ -36,7 +36,7 @@
         - inject:
             properties-file: pulp_version.properties
         - shell: |
-            sudo yum install -y git ansible libselinux-python
+            sudo yum -y install ansible attr git libselinux-python
             ssh-keygen -t rsa -N "" -f pulp_server_key
             cat pulp_server_key.pub >> ~/.ssh/authorized_keys
             export ANSIBLE_HOST_KEY_CHECKING=False
