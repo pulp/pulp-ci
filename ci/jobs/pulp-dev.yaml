@@ -133,8 +133,8 @@
         - pulp-packaging-github
     wrappers:
         - timeout:
-            # pulp-smash usually takes about an hour, so time it out after two
-            timeout: 120
+            # pulp-smash usually takes about an hour or two, so time it out after four
+            timeout: 240
             abort: true
     builders:
         - shell: |
