@@ -38,12 +38,18 @@ elif  [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == 
     sudo rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 elif  [ "${DISTRIBUTION}" == "fedora" ]; then
     sudo sed -i 's/clean_requirements_on_remove=true/clean_requirements_on_remove=false/g' /etc/dnf/dnf.conf
-    # "which" isn't installed in fedora 22+ by default?
-    sudo "${PKG_MGR}" install -y python2 python-dnf which
+    # "which" isn't installed in fedora 22-24 by default
+    # "iptables" isn't installed in fedora 25+ by default
+    sudo "${PKG_MGR}" install -y python2 python-dnf which iptables
 fi
 
 echo "Disable ttysudo requirement"
 sudo sed -i 's|Defaults[ ]*requiretty|#Defaults    requiretty|g' /etc/sudoers
+
+if [ -f /etc/sysconfig/network-scripts/ifcfg-eth0 ]; then
+    echo "Clean up stored MAC address for eth0, since it will change on next boot."
+    sudo sed -i '/^HWADDR/d' /etc/sysconfig/network-scripts/ifcfg-eth0
+fi
 
 if [ "${DOCKER}" ]; then
     sudo "${PKG_MGR}" install -y docker
