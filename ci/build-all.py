@@ -35,11 +35,6 @@ builder.ensure_dir(MASH_DIR, clean=True)
 builder.ensure_dir(WORKING_DIR, clean=True)
 
 
-def get_components(configuration):
-    repos = configuration['repositories']
-    for component in repos:
-        yield component
-
 def project_name_from_spec_dir(spec_dir):
     remainder = spec_dir
     while True:
@@ -67,7 +62,7 @@ component_list = []
 spec_project_map = {}
 
 print "Getting git repos"
-for component in get_components(configuration):
+for component in configuration['repositories']:
     print "Cloning from github: %s" % component.get('git_url')
     branch_name = component['git_branch']
     parent_branch = component.get('parent_branch', None)
@@ -102,7 +97,7 @@ download_list = []
 build_list = []
 
 # Check for external deps
-for component in get_components(configuration):
+for component in configuration['repositories']:
     external_deps_file = component.get('external_deps')
     if external_deps_file:
         external_deps_file = os.path.join(working_dir, component.get('name'), external_deps_file)
@@ -117,7 +112,10 @@ for component in get_components(configuration):
 # Get all spec files
 for spec in builder.find_all_spec_files(working_dir):
     spec_nvr = builder.get_package_nvr_from_spec(spec)
-    package_dists = builder.get_dists_for_spec(spec)
+    # use dists in config file if they're defined there, otherwise detect it from dist_list.txt
+    # TODO: Either document the 'dists' option in the current building docs, or (more likely) forget about it and
+    # completely overhaul the build system for python 3
+    package_dists = configuration.get('dists', builder.get_dists_for_spec(spec))
     for package_nevra in builder.get_package_nevra(spec_nvr, package_dists):
         info = builder.mysession.getBuild(package_nevra)
         # state 1 is "complete"
