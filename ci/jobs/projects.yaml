@@ -4,12 +4,12 @@
      - 'build-automation-repo-{release_config}'
      - 'build-automation-promote-{release_config}'
     release_config:
-      - 2.10-dev:
-         version: '2.10'
       - 2.11-dev:
          version: '2.11'
-      - master:
+      - 2.12-dev:
          version: '2.12'
+      - master:
+         version: '2.13'
 
 - project:
     name: ci-update-jobs
@@ -21,8 +21,8 @@
     jobs:
      - 'docs-builder-{release_config}'
     release_config:
-     - 2.10-dev
      - 2.11-dev
+     - 2.12-dev
      - master
      - 3.0-dev
     trigger_times: '@midnight'
@@ -38,6 +38,7 @@
      - 2.9-dev
      - 2.9-build
      - 2.9-release
+     - 2.10-dev
      - 2.10-build
      - 2.10-release
      - 2.11-build
@@ -52,9 +53,9 @@
         - 'rhel6'
         - 'rhel7'
     pulp_version:
-        - '2.10'
         - '2.11'
-        - '2.12':
+        - '2.12'
+        - '2.13':
             reverse_trigger: 'master'
     exclude:
         - pulp_version: '2.10'
@@ -172,6 +173,7 @@
             - 2.9-dev
             - 2.10-dev
             - 2.11-dev
+            - 2.12-dev
             - master
           unittest_platforms:
             - f24-np
@@ -197,6 +199,7 @@
             - 2.9-dev
             - 2.10-dev
             - 2.11-dev
+            - 2.12-dev
             - master
           unittest_platforms:
             - f24-np

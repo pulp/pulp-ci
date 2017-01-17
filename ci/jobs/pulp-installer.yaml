@@ -2,7 +2,7 @@
 # machines for running Pulp Smash.
 - job:
     name: 'pulp-installer'
-    node: 'f23-vanilla-np'
+    node: 'f25-vanilla-np'
     description: |
         <p>Job that installs Pulp on the machine identified by the job
         parameter.</p>
@@ -20,6 +20,7 @@
         - choice:
             name: PULP_VERSION
             choices:
+                - '2.12'
                 - '2.11'
                 - '2.10'
                 - '2.9'

@@ -53,6 +53,8 @@
             - 2.10-release
             - 2.11-dev
             - 2.11-release
+            - 2.12-dev
+            - 2.12-release
             - master
     builders:
         - pr-tester-deps
