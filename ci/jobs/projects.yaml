@@ -43,6 +43,8 @@
      - 2.10-release
      - 2.11-build
      - 2.11-release
+     - 2.12-build
+     - 2.12-release
     trigger_times: ''
 
 - project:
