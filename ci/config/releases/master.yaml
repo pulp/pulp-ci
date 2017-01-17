@@ -18,7 +18,7 @@ repositories:
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
     git_branch: master
-    version: 2.3.0-0.1.alpha
+    version: 2.4.0-0.1.alpha
   - name: crane
     git_url: git@github.com:pulp/crane.git
     git_branch: master
@@ -30,4 +30,4 @@ repositories:
   - name: pulp_python
     git_url: git@github.com:pulp/pulp_python.git
     git_branch: master
-    version: 2.0.0-0.1.alpha
+    version: 2.1.0-0.1.alpha
