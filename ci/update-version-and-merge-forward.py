@@ -8,7 +8,7 @@ import sys
 
 from lib import builder
 from lib import promote
-from lib.builder import WORKSPACE, TITO_DIR, MASH_DIR, WORKING_DIR, CI_DIR
+from lib.builder import WORKING_DIR, CI_DIR
 
 
 # Parse the args and run the program
@@ -23,6 +23,7 @@ opts = parser.parse_args()
 push_to_github = opts.push
 builder.ensure_dir(WORKING_DIR, clean=True)
 
+
 def load_config(config_name):
     # Get the config
     config_file = os.path.join(os.path.dirname(__file__),
@@ -33,6 +34,7 @@ def load_config(config_name):
     with open(config_file, 'r') as config_handle:
         config = yaml.safe_load(config_handle)
     return config
+
 
 def get_components(configuration):
     repos = configuration['repositories']
@@ -53,7 +55,24 @@ for component in get_components(configuration):
     command = ['git', 'clone', component.get('git_url'), '--branch', branch_name]
     subprocess.call(command, cwd=working_dir)
     project_dir = os.path.join(working_dir, component['name'])
-    git_branch = promote.get_current_git_upstream_branch(project_dir)
+
+    try:
+        git_branch = promote.get_current_git_upstream_branch(project_dir)
+    except subprocess.CalledProcessError:
+        # most likely, git branch is a tag. In that event, there's nothing to update or
+        # merge forward. The script was either called with the wrong release config, or is
+        # being used as an expedient to check out the git repos for a given release config.
+        # Either way, nothing can be done with this branch.
+        msg = ("Unable to determine git branch for git repo in {},"
+               " moving to next component.").format(project_dir)
+        print(msg)
+        continue
+
+    if git_branch.endswith('-release'):
+        print('Refusing to update branch {} for component {}: It is a release branch.'.format(
+            git_branch, component['name']))
+        continue
+
     if opts.update_version:
         promotion_chain = promote.get_promotion_chain(project_dir, git_branch, parent_branch=parent_branch)
         promote.check_merge_forward(project_dir, promotion_chain)
@@ -68,4 +87,4 @@ for component in get_components(configuration):
             subprocess.call(command, cwd=project_dir)
     else:
         print("Skipping version update, only merging branches forward.")
-    promote.merge_forward(project_dir, push=push_to_github, parent_branch=parent_branch) 
+    promote.merge_forward(project_dir, push=push_to_github, parent_branch=parent_branch)
