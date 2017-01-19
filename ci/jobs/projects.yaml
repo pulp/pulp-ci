@@ -141,7 +141,7 @@
             - master
           unittest_platforms:
             - f24-np
-            - f23-np
+            - f25-np
             - rhel6-np
             - rhel7-np
       - pulp_docker:
@@ -154,7 +154,7 @@
             - 2.2-dev
           unittest_platforms:
             - f24-np
-            - f23-np
+            - f25-np
             - rhel6-np
             - rhel7-np
       - pulp_ostree:
@@ -166,7 +166,7 @@
             - 1.22dev
           unittest_platforms:
             - f24-np
-            - f23-np
+            - f25-np
             - rhel7-np
       - pulp_puppet:
           min_coverage: 95
@@ -179,7 +179,7 @@
             - master
           unittest_platforms:
             - f24-np
-            - f23-np
+            - f25-np
             - rhel6-np
             - rhel7-np
       - pulp_python:
@@ -191,7 +191,7 @@
             - master
           unittest_platforms:
             - f24-np
-            - f23-np
+            - f25-np
             - rhel6-np
             - rhel7-np
       - pulp_rpm:
@@ -205,6 +205,6 @@
             - master
           unittest_platforms:
             - f24-np
-            - f23-np
+            - f25-np
             - rhel6-np
             - rhel7-np

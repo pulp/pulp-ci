@@ -1,6 +1,6 @@
 - job-template:
     name: 'pulp-{pulp_version}-dev-{os}'
-    node: '{os}-vanilla-np'
+    node: '{os}-np'
     properties:
         - qe-ownership
     scm:

@@ -8,7 +8,7 @@
           type: label-expression
           name: node-type
           values:
-            - f23-np
+            - f25-np
             - rhel6-np
             - rhel7-np
     parameters:

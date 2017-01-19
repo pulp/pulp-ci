@@ -14,26 +14,25 @@ cron:
   cleanup: '*/1 * * * *'
 
 labels:
+  # unversioned labels used to abstract the distribution version from the job,
+  # useful where the job just wants the latest available fedora, not a specific version.
+  # pulp-smash gets its own label to help nodepool's node launch calculations keep smash
+  # nodes available when they're needed
   - name: pulp-smash-np
-    image: f23-np
+    image: f25-np
     min-ready: 0
     providers:
       - name: cios
     ready-script: fix_hostname.sh
-  - name: f23-np
-    image: f23-np
+  - name: fedora-np
+    image: f25-np
     min-ready: 0
     providers:
       - name: cios
     ready-script: fix_hostname.sh
-  - name: f23-vanilla-np
-    image: f23-vanilla-np
-    min-ready: 0
-    providers:
-      - name: cios
-    ready-script: fix_hostname.sh
-  - name: f23-docker-np
-    image: f23-docker-np
+  # unversioned docker image, similar to fedora-np, but with docker installed
+  - name: docker-np
+    image: docker-np
     min-ready: 0
     providers:
       - name: cios
@@ -44,20 +43,8 @@ labels:
     providers:
       - name: cios
     ready-script: fix_hostname.sh
-  - name: f24-vanilla-np
-    image: f24-vanilla-np
-    min-ready: 0
-    providers:
-      - name: cios
-    ready-script: fix_hostname.sh
   - name: f25-np
     image: f25-np
-    min-ready: 0
-    providers:
-      - name: cios
-    ready-script: fix_hostname.sh
-  - name: f25-vanilla-np
-    image: f25-vanilla-np
     min-ready: 0
     providers:
       - name: cios
@@ -68,20 +55,8 @@ labels:
     providers:
       - name: cios
     ready-script: fix_hostname.sh
-  - name: rhel6-vanilla-np
-    image: rhel6-vanilla-np
-    min-ready: 0
-    providers:
-      - name: cios
-    ready-script: fix_hostname.sh
   - name: rhel7-np
     image: rhel7-np
-    min-ready: 0
-    providers:
-      - name: cios
-    ready-script: fix_hostname.sh
-  - name: rhel7-vanilla-np
-    image: rhel7-vanilla-np
     min-ready: 0
     providers:
       - name: cios
@@ -100,43 +75,19 @@ providers:
     pool: "10.8.180.0/22"
     clean-floating-ips: true
     images:
-      - name: f23-np
-        base-image: Fedora-Cloud-Base-23-20151113-py27.x86_64
-        username: jenkins
-        setup: prepare_node.sh
-        private-key: /etc/nodepool/pulp_rsa
-        min-ram: 3072
-      - name: f23-vanilla-np
-        base-image: Fedora-Cloud-Base-23-20151113-py27.x86_64
-        username: jenkins
-        setup: prepare_node.sh
-        private-key: /etc/nodepool/pulp_rsa
-        min-ram: 3072
-      - name: f23-docker-np
-        base-image: Fedora-Cloud-Base-23-20151113-py27.x86_64
-        username: jenkins
-        setup: prepare_node.sh
-        private-key: /etc/nodepool/pulp_rsa
-        min-ram: 3072
-      - name: f24-np
-        base-image: Fedora-Cloud-Base-24-1.2.x86_64
-        username: jenkins
-        setup: prepare_node.sh
-        private-key: /etc/nodepool/pulp_rsa
-        min-ram: 3072
-      - name: f24-vanilla-np
-        base-image: Fedora-Cloud-Base-24-1.2.x86_64
-        username: jenkins
-        setup: prepare_node.sh
-        private-key: /etc/nodepool/pulp_rsa
-        min-ram: 3072
-      - name: f25-np
+      - name: docker-np
         base-image: Fedora-Cloud-Base-25-compose-latest
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
-      - name: f25-vanilla-np
+      - name: f24-np
+        base-image: Fedora-Cloud-Base-24-compose-latest
+        username: jenkins
+        setup: prepare_node.sh
+        private-key: /etc/nodepool/pulp_rsa
+        min-ram: 3072
+      - name: f25-np
         base-image: Fedora-Cloud-Base-25-compose-latest
         username: jenkins
         setup: prepare_node.sh
@@ -153,20 +104,7 @@ providers:
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 4096
         name-filter: t2.medium
-      - name: rhel6-vanilla-np
-        base-image: rhel-6.8-server-x86_64-updated
-        username: jenkins
-        setup: prepare_node.sh
-        private-key: /etc/nodepool/pulp_rsa
-        min-ram: 4096
-        name-filter: t2.medium
       - name: rhel7-np
-        base-image: rhel-7.3-server-x86_64-updated
-        username: jenkins
-        setup: prepare_node.sh
-        private-key: /etc/nodepool/pulp_rsa
-        min-ram: 4096
-      - name: rhel7-vanilla-np
         base-image: rhel-7.3-server-x86_64-updated
         username: jenkins
         setup: prepare_node.sh

@@ -1,7 +1,7 @@
 # This job updates all the jenkins jobs with the latest contents of the JJB definitions.
 - job:
     name: ci-update-jobs
-    node: f23-np
+    node: fedora-np
     properties:
         - qe-ownership
     scm:

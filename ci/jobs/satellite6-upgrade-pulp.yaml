@@ -72,7 +72,7 @@
 #
 - job-template:
     name: '{stream}-satellite6-upgrade-pulp'
-    node: f23-vanilla-np
+    node: fedora-np
     properties:
         - qe-ownership
     wrappers:
