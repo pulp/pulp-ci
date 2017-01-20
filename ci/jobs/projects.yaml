@@ -92,6 +92,8 @@
         - 2.10-nightly
         - 2.11-beta
         - 2.11-nightly
+        - 2.12-beta
+        - 2.12-nightly
     exclude:
         - pulp_version: 2.11-stable
           upgrade_pulp_version: 2.10-beta
