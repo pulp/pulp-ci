@@ -6,6 +6,7 @@ repositories:
     external_deps: deps/external_deps.json
     git_url: git@github.com:pulp/pulp.git
     git_branch: 2.12.0-build
+    parent_branch: 2.12-dev
     version: 2.12.0-0.1.beta
   - name: pulp_puppet
     git_url: git@github.com:pulp/pulp_puppet.git
