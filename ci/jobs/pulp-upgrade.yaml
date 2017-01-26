@@ -97,7 +97,7 @@
           artifacts: "*.tar.gz"
           allow-empty: true
       - junit:
-          results: nose2-junit.xml
+          results: junit-report.xml
       - email-notify-owners
       - irc-notify-all-summary
       - mark-node-offline

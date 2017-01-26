@@ -89,7 +89,7 @@
         - capture-logs
     publishers:
         - junit:
-            results: nose2-junit.xml
+            results: junit-report.xml
         - cobertura:
             report-file: "coverage.xml"
             targets:
@@ -162,7 +162,7 @@
             git clone http://github.com/PulpQE/pulp-smash.git
             cd pulp-smash
             pip install -U setuptools
-            pip install -r requirements.txt nose2
+            pip install -r requirements.txt pytest
 
             mkdir -p pulp_smash
             cat > pulp_smash/settings.json <<EOF
@@ -177,11 +177,11 @@
             }
             EOF
             set +e
-            XDG_CONFIG_DIRS=. nose2 -v --plugin nose2.plugins.junitxml -X --junit-xml pulp_smash.tests
+            XDG_CONFIG_DIRS=. py.test -v --junit-xml=junit-report.xml pulp_smash/tests
             set -e
-            test -f nose2-junit.xml
+            test -f junit-report.xml
     publishers:
         - archive:
-            artifacts: 'pulp-smash/nose2-junit.xml'
+            artifacts: 'pulp-smash/junit-report.xml'
         - email-notify-owners
         - mark-node-offline
