@@ -41,6 +41,7 @@ def get_components(configuration):
     for component in repos:
         yield component
 
+
 # Build our working_dir
 working_dir = WORKING_DIR
 print(working_dir)
@@ -63,28 +64,29 @@ for component in get_components(configuration):
         # merge forward. The script was either called with the wrong release config, or is
         # being used as an expedient to check out the git repos for a given release config.
         # Either way, nothing can be done with this branch.
-        msg = ("Unable to determine git branch for git repo in {},"
-               " moving to next component.").format(project_dir)
-        print(msg)
-        continue
-
-    if git_branch.endswith('-release'):
-        print('Refusing to update branch {} for component {}: It is a release branch.'.format(
-            git_branch, component['name']))
+        print(("Unable to determine git branch for git repo in {}, HEAD is probably a tag."
+               " Moving to next component.").format(project_dir))
         continue
 
     if opts.update_version:
-        promotion_chain = promote.get_promotion_chain(project_dir, git_branch, parent_branch=parent_branch)
-        promote.check_merge_forward(project_dir, promotion_chain)
-        update_version = os.path.join(CI_DIR, 'update-version.py')
-        # Update the version to the one specified in the config
-        command = ['./update-version.py', '--version', component['version'], project_dir]
-        subprocess.call(command, cwd=CI_DIR)
-        command = ['git', 'commit', '-a', '-m', 'Bumping version to %s' % component['version']]
-        subprocess.call(command, cwd=project_dir)
-        if push_to_github:
-            command = ['git', 'push', '-v']
+        if git_branch.endswith('-release'):
+            # Even if update_version was requested, the only way versions should get updated on an
+            # x.y-release branch is through the merging of a released tag.
+            print("Not updating version on release branch, only merging branches forward.")
+        else:
+            promotion_chain = promote.get_promotion_chain(project_dir, git_branch,
+                                                          parent_branch=parent_branch)
+            promote.check_merge_forward(project_dir, promotion_chain)
+            update_version = os.path.join(CI_DIR, 'update-version.py')
+            # Update the version to the one specified in the config
+            command = ['./update-version.py', '--version', component['version'], project_dir]
+            subprocess.call(command, cwd=CI_DIR)
+            command = ['git', 'commit', '-a', '-m', 'Bumping version to %s' % component['version']]
             subprocess.call(command, cwd=project_dir)
+            if push_to_github:
+                command = ['git', 'push', '-v']
+                subprocess.call(command, cwd=project_dir)
     else:
         print("Skipping version update, only merging branches forward.")
+
     promote.merge_forward(project_dir, push=push_to_github, parent_branch=parent_branch)
