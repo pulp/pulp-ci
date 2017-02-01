@@ -12,7 +12,7 @@ from lib import builder
 from lib.builder import WORKING_DIR
 
 
-LATEST = '2.11'
+LATEST = '2.12'
 
 USERNAME = '57600fb10c1e664383000229'
 HOSTNAME = 'docs-pulp.rhcloud.com'
