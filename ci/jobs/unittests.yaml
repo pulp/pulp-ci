@@ -69,8 +69,8 @@
 
             set -x
 
-            # get the base pulp version
-            PULP_VERSION=$(grep -Po "(^[\d]+\.[\d]+)" pulp/rel-eng/packages/pulp)
+            # get the base pulp version from the server setup.py
+            PULP_VERSION=$(python2 pulp/server/setup.py --version | grep -Po "([\d]+\.[\d]+)")
             echo "PULP BASE VERSION: ${PULP_VERSION}"
 
             if [ "$OS_NAME" == "RedHatEnterpriseServer" ]; then
