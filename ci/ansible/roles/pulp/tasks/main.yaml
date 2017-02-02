@@ -71,14 +71,14 @@
     action: insert
     chain: INPUT
     ctstate: NEW
-    protocol: tcp
-    destination_port: "{{ item }}"
+    protocol: "{{ item.protocol }}"
+    destination_port: "{{ item.port }}"
     jump: ACCEPT
   with_items:
-    - 80
-    - 443
-    - 5672
-    - 5671
+    - { port: 'http', protocol: 'tcp' }
+    - { port: 'https', protocol: 'tcp' }
+    - { port: 'amqps', protocol: 'tcp' }
+    - { port: 'amqp', protocol: 'tcp' }
   when:
     - pulp_install_prerequisites
     - ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6
@@ -97,15 +97,19 @@
 
   - name: Open firewall ports (firewalld)
     firewalld:
-      port: "{{ item }}/tcp"
+      port: "{{ item }}"
       state: enabled
       permanent: true
       immediate: true
     with_items:
-      - 80
-      - 443
-      - 5672
-      - 5671
+      # As of this writing, firewalld knows about a miniscule number of services
+      # out of the box. `firewall-cmd --get-services | wc -w` returns "103", and
+      # the list of services doesn't include amqp or amqps, among many others.
+      # Thus, we have to explicitly write out port/transport pairs here.
+      - "80/tcp"   # http
+      - "443/tcp"  # https
+      - "5671/tcp" # amqps
+      - "5672/tcp" # amqp
 
   when:
     - pulp_install_prerequisites
