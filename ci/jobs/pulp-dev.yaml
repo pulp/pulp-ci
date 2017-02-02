@@ -138,6 +138,7 @@
     scm:
         - pulp-packaging-github
     wrappers:
+        - ansicolor
         - timeout:
             # pulp-smash usually takes about an hour or two, so time it out after four
             timeout: 240
