@@ -45,6 +45,14 @@ echo "Bootstrapping jenkins for ${DISTRIBUTION} ${DISTRIBUTION_MAJOR_VERSION}"
 # use dnf if you can, otherwise use yum
 if dnf --version; then
     PKG_MGR=dnf
+
+    # If we're using fedora and dnf, dnf-plugins-core should be installed. use that to flip on the
+    # fastestmirror option for the fedora and updates repo to prevent networking issues from
+    # breaking package updates by using fastestmirror to ensure a repository can be connected to
+    # before trying to download packages from it
+    if [ "${DISTRIBUTION}" == "fedora" ]; then
+        sudo dnf config-manager --setopt fastestmirror=1 fedora updates --save
+    fi
 else
     PKG_MGR=yum
 fi
