@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+"""
+This script, as indicated by the name, will update the versions stored in a spec file and python
+files based on the values in a release config. It is also the easiest way to clone all of the
+repositories defined in a given release configuration, including repositories configured to check
+out from a tag or branch.
+
+No changes will be made to github unless the --push flag is passed.
+"""
 
 import argparse
 import yaml
@@ -11,54 +19,26 @@ from lib import promote
 from lib.builder import WORKING_DIR, CI_DIR
 
 
-# Parse the args and run the program
-parser = argparse.ArgumentParser()
-parser.add_argument("config", help="The name of the config file to load from config/releases")
-parser.add_argument("--push", action="store_true", default=False,
-                    help="Push to GitHub")
-parser.add_argument("--merge-forward-only", action="store_false", default=True,
-                    dest="update_version", help="Don't update versions, only merge forward.")
+def parse_args():
+    # Parse the args and run the program
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("config", help="The name of the config file to load from config/releases")
+    parser.add_argument("--push", action="store_true", default=False,
+                        help="Push to GitHub")
+    parser.add_argument("--merge-forward-only", action="store_false", default=True,
+                        dest="update_version", help="Don't update versions, only merge forward.")
+    parser.add_argument("--working-dir", default=WORKING_DIR,
+                       help="Working directory, where git clones will be updated.")
 
-opts = parser.parse_args()
-push_to_github = opts.push
-builder.ensure_dir(WORKING_DIR, clean=True)
-
-
-def load_config(config_name):
-    # Get the config
-    config_file = os.path.join(os.path.dirname(__file__),
-                               'config', 'releases', '%s.yaml' % config_name)
-    if not os.path.exists(config_file):
-        print("Error: %s not found. " % config_file)
-        sys.exit(1)
-    with open(config_file, 'r') as config_handle:
-        config = yaml.safe_load(config_handle)
-    return config
+    return parser.parse_args()
 
 
-def get_components(configuration):
-    repos = configuration['repositories']
-    for component in repos:
-        yield component
-
-
-# Build our working_dir
-working_dir = WORKING_DIR
-print(working_dir)
-# Load the config file
-configuration = load_config(opts.config)
-
-print("Getting git repos")
-for component in get_components(configuration):
-    print("Cloning from github: %s" % component.get('git_url'))
-    branch_name = component['git_branch']
-    parent_branch = component.get('parent_branch', None)
-    command = ['git', 'clone', component.get('git_url'), '--branch', branch_name]
-    subprocess.call(command, cwd=working_dir)
-    project_dir = os.path.join(working_dir, component['name'])
+def update_version_and_merge_for_component(component, opts):
+    project_dir = builder.clone_branch(component)
 
     try:
         git_branch = promote.get_current_git_upstream_branch(project_dir)
+        parent_branch = component.get('parent_branch')
     except subprocess.CalledProcessError:
         # most likely, git branch is a tag. In that event, there's nothing to update or
         # merge forward. The script was either called with the wrong release config, or is
@@ -66,7 +46,7 @@ for component in get_components(configuration):
         # Either way, nothing can be done with this branch.
         print(("Unable to determine git branch for git repo in {}, HEAD is probably a tag."
                " Moving to next component.").format(project_dir))
-        continue
+        return
 
     if opts.update_version:
         if git_branch.endswith('-release'):
@@ -83,10 +63,27 @@ for component in get_components(configuration):
             subprocess.call(command, cwd=CI_DIR)
             command = ['git', 'commit', '-a', '-m', 'Bumping version to %s' % component['version']]
             subprocess.call(command, cwd=project_dir)
-            if push_to_github:
+            if opts.push:
                 command = ['git', 'push', '-v']
                 subprocess.call(command, cwd=project_dir)
     else:
         print("Skipping version update, only merging branches forward.")
+    promote.merge_forward(project_dir, push=opts.push, parent_branch=parent_branch)
 
-    promote.merge_forward(project_dir, push=push_to_github, parent_branch=parent_branch)
+
+def main():
+    opts = parse_args()
+
+    # Load the config file
+    configuration = builder.load_config(opts.config)
+
+    # Ensure the working dir exists
+    builder.ensure_dir(WORKING_DIR, clean=True)
+
+    print("Getting git repos")
+    for component in builder.components(configuration):
+        update_version_and_merge_for_component(component, opts)
+
+
+if __name__ == '__main__':
+    main()

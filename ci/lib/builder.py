@@ -112,6 +112,23 @@ MASH_DIR = os.path.join(WORKSPACE, 'mash')
 TITO_DIR = os.path.join(WORKSPACE, 'tito')
 CI_DIR = os.path.join(WORKSPACE, 'pulp_packaging', 'ci')
 
+
+def clone_branch(component):
+    """
+    Clone a git repository component into the working dir.
+
+    Assumes the working dir has already been created and cleaned, if needed, before cloning.
+
+    Returns the directory into which the branch was cloned.
+    """
+    print("Cloning from github: %s" % component['git_url'])
+    # --branch will let you check out tags as a detached head
+    command = ['git', 'clone', component['git_url'], '--branch',
+               component['git_branch'], component['name']]
+    subprocess.call(command, cwd=WORKING_DIR)
+    return os.path.join(WORKING_DIR, component['name'])
+
+
 def get_nvr_from_spec_file_in_directory(directory_path):
     """
     Find the first spec file in a directory and return the pacakge NVR from it
@@ -738,3 +755,7 @@ def load_config(config_name):
     with open(config_file, 'r') as config_handle:
         config = yaml.safe_load(config_handle)
     return config
+
+
+def components(configuration):
+    return configuration['repositories']

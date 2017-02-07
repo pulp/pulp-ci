@@ -62,15 +62,11 @@ component_list = []
 spec_project_map = {}
 
 print "Getting git repos"
-for component in configuration['repositories']:
-    print "Cloning from github: %s" % component.get('git_url')
+for component in builder.components(configuration):
+    project_dir = builder.clone_branch(component)
     branch_name = component['git_branch']
     parent_branch = component.get('parent_branch', None)
-    command = ['git', 'clone', component.get('git_url'), '--branch', branch_name]
-    subprocess.call(command, cwd=working_dir)
-    parent_branch = component.get('parent_branch', None)
     parent_branches['origin/%s' % branch_name] = parent_branch
-    project_dir = os.path.join(working_dir, component['name'])
 
     # Check if this is a branch or a tag
     tag_exists = builder.does_git_tag_exist(branch_name, project_dir)
@@ -97,7 +93,7 @@ download_list = []
 build_list = []
 
 # Check for external deps
-for component in configuration['repositories']:
+for component in builder.components(configuration):
     external_deps_file = component.get('external_deps')
     if external_deps_file:
         external_deps_file = os.path.join(working_dir, component.get('name'), external_deps_file)

@@ -2,13 +2,10 @@
 
 import argparse
 import subprocess
-import sys
 import os
 from shutil import copyfile
 
-import yaml
-
-from lib import builder
+from lib import builder, promote
 from lib.builder import WORKING_DIR
 
 
@@ -26,33 +23,6 @@ APIDOC_PACKAGES = {
 }
 
 
-def get_components(configuration):
-    # Get the components from the yaml file
-    repos = configuration['repositories']
-    for component in repos:
-        yield component
-
-
-def load_config(config_name):
-    # Get the config
-    config_file = os.path.join(os.path.dirname(__file__),
-                               'config', 'releases', '%s.yaml' % config_name)
-    if not os.path.exists(config_file):
-        print("Error: %s not found. " % config_file)
-        sys.exit(1)
-    with open(config_file, 'r') as config_handle:
-        config = yaml.safe_load(config_handle)
-    return config
-
-
-def update_version(config_name):
-    script_dir = os.path.abspath(os.path.dirname(__file__))
-    # script does not push to github, but it does check out all the repos we want and
-    # makes sure their version reflect the versions in the build config being used
-    script = os.path.join(script_dir, 'update-version-and-merge-forward.py')
-    subprocess.check_call([script, config_name])
-
-
 def main():
     # Parse the args
     parser = argparse.ArgumentParser()
@@ -60,10 +30,10 @@ def main():
     opts = parser.parse_args()
     is_pulp3 = opts.release.startswith('3')
 
-    configuration = load_config(opts.release)
+    configuration = builder.load_config(opts.release)
 
     # Get platform build version
-    repo_list = configuration['repositories']
+    repo_list = builder.components(configuration)
     try:
         pulp_dict = list(filter(lambda x: x['name'] == 'pulp', repo_list))[0]
     except IndexError:
@@ -84,7 +54,8 @@ def main():
     builder.ensure_dir(WORKING_DIR, clean=True)
 
     # use the version update scripts to check out git repos and ensure correct versions
-    update_version(opts.release)
+    for component in repo_list:
+        builder.clone_branch(component)
 
     # install any apidoc dependencies that exist for pulp 3 docs
     if is_pulp3:
@@ -97,8 +68,10 @@ def main():
     plugins_dir = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'plugins'])
     builder.ensure_dir(plugins_dir)
 
-    for component in get_components(configuration):
+    for component in repo_list:
         if component['name'] == 'pulp':
+            spec_file = promote.find_spec(os.path.join(WORKING_DIR, 'pulp'))
+            promote.update_versions(spec_file, *version.split('-'))
             continue
 
         src = os.sep.join([WORKING_DIR, component['name'], 'docs'])
@@ -205,6 +178,7 @@ def main():
     if exit_code != 0:
         raise RuntimeError("An error occurred while creating the 'latest' symlink "
                            "testrubyserver.rb to OpenShift.")
+
 
 if __name__ == "__main__":
     main()
