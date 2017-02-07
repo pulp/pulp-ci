@@ -1,6 +1,19 @@
+import glob
 import re
+import os
+import shutil
 import subprocess
 import sys
+
+try:
+    # py2
+    from StringIO import StringIO
+except ImportError:
+    # py3
+    from io import StringIO
+
+VERSION_REGEX = "(\s*)(version)(\s*)(=)(\s*)(['\"])(.*)(['\"])(.*)"
+RELEASE_REGEX = "(\s*)(release)(\s*)(=)(\s*)(['\"])(.*)(['\"])(.*)"
 
 
 def get_promotion_chain(git_directory, git_branch, upstream_name='origin', parent_branch=None):
@@ -234,3 +247,215 @@ def merge_forward(git_directory, push=False, parent_branch=None):
 
     # Set the branch back tot he one we started on
     checkout_branch(git_directory, starting_branch)
+
+
+def parse_version(version):
+    version_components = version.split('.')
+    major_version = 0
+    minor_version = 0
+    patch_version = 0
+    try:
+        major_version = int(version_components.pop(0))
+        minor_version = int(version_components.pop(0))
+        patch_version = int(version_components.pop(0))
+    except IndexError:
+        pass
+    return major_version, minor_version, patch_version
+
+
+def parse_release(release):
+    release_components = release.split('.')
+    major_release = 0
+    minor_release = None
+    stage = None
+    try:
+        major_release = int(release_components.pop(0))
+        minor_release = int(release_components.pop(0))
+        stage = release_components.pop(0)
+    except IndexError:
+        pass
+    return major_release, minor_release, stage
+
+
+def set_spec_version(spec_file, version, release):
+    version_regex = re.compile("^(version:\s*)(.+)$", re.IGNORECASE)
+    release_regex = re.compile("^(release:\s*)(.+)$", re.IGNORECASE)
+    in_f = open(spec_file, 'r')
+    out_f = open(spec_file + ".new", 'w')
+    for line in in_f.readlines():
+        match = re.match(version_regex, line)
+        if match:
+            line = "".join((match.group(1), version, "\n"))
+        match = re.match(release_regex, line)
+        if match:
+            line = "".join((match.group(1), release, "%{?dist}\n"))
+
+        out_f.write(line)
+
+    in_f.close()
+    out_f.close()
+    shutil.move(spec_file + ".new", spec_file)
+    print("updated %s to %s-%s" % (spec_file, version, release))
+
+
+def replace_version(line, new_version, regex):
+    """
+    COPIED FROM TITO
+
+    Attempts to replace common setup.py version formats in the given line,
+    and return the modified line. If no version is present the line is
+    returned as is.
+
+    Looking for things like version="x.y.z" with configurable case,
+    whitespace, and optional use of single/double quotes.
+    """
+    # Mmmmm pretty regex!
+    ver_regex = re.compile(regex, re.IGNORECASE)
+    m = ver_regex.match(line)
+    if m:
+        result_tuple = list(m.group(1, 2, 3, 4, 5, 6))
+        result_tuple.append(new_version)
+        result_tuple.extend(list(m.group(8, 9)))
+        new_line = "%s%s%s%s%s%s%s%s%s\n" % tuple(result_tuple)
+        return new_line
+    else:
+        return line
+
+
+def find_replace_in_files(root_directory, file_mask, new_version, version_regex):
+    from builder import find_files_matching_pattern
+    # We also have to check the __init__.py files since that is the more pythonic place to put it
+    for file_name in find_files_matching_pattern(root_directory, file_mask):
+        f = open(file_name, 'r')
+        buf = StringIO()
+        for line in f.readlines():
+            new_line = replace_version(line, new_version, version_regex)
+            if new_line != line:
+                print("updated %s: to %s" % (file_name, new_version))
+            buf.write(new_line)
+        f.close()
+
+        # Write out the new setup.py file contents:
+        f = open(file_name, 'w')
+        f.write(buf.getvalue())
+        f.close()
+        buf.close()
+
+
+def find_spec(directory):
+    # Find the spec
+    spec_files = glob.glob(os.path.join(directory, '*.spec'))
+    if not spec_files:
+        print("Error, unable to find spec file in %s " % directory)
+        sys.exit(1)
+
+    if len(spec_files) > 1:
+        sys.stderr.write('Multiple spec files in repository root!')
+        sys.exit(1)
+
+    try:
+        return spec_files[0]
+    except IndexError:
+        sys.stderr.write('spec file not found in repository root!')
+        sys.exit(1)
+
+
+def calculate_version(full_version, full_release, update_type):
+    """
+    Given a version, release, and update type, increment the version/release based on that type
+    """
+    major_version, minor_version, patch_version = parse_version(full_version)
+    major_release, minor_release, stage = parse_release(full_release)
+
+    if update_type == 'major':
+        major_version += 1
+        minor_version = 0
+        patch_version = 0
+        major_release = 0
+        minor_release = 1
+        stage = 'alpha'
+    elif update_type == 'minor':
+        minor_version += 1
+        patch_version = 0
+        major_release = 0
+        minor_release = 1
+        stage = 'alpha'
+    elif update_type == 'patch':
+        patch_version += 1
+        major_release = 0
+        minor_release = 1
+        stage = 'alpha'
+    elif update_type == 'release':
+        if minor_release is None:
+            major_release += 1
+            minor_release = 1
+            stage = 'alpha'
+        else:
+            minor_release += 1
+    elif update_type == 'stage':
+        if stage is None:
+            patch_version += 1
+            major_release += 1
+            minor_release = 1
+            stage = 'alpha'
+        elif stage == 'alpha':
+            stage = 'beta'
+            minor_release += 1
+        elif stage == 'beta':
+            stage = 'rc'
+            minor_release += 1
+        elif stage == 'rc':
+            stage = None
+            minor_release = None
+            major_release += 1
+
+    calculated_version = "%s.%s.%s" % (major_version, minor_version, patch_version)
+
+    calculated_release = "%s" % major_release
+    if minor_release is not None:
+        calculated_release += '.%s' % minor_release
+    if stage is not None:
+        calculated_release += '.%s' % stage
+
+    return calculated_version, calculated_release
+
+
+def to_python_version(version, release):
+    """
+    convert an rpm-style version and release into a python version string
+    """
+    major_version, minor_version, patch_version = parse_version(version)
+    major_release, minor_release, stage = parse_release(release)
+
+    if patch_version > 0:
+        # Can use the x.y.z component directory if not patch version 0
+        python_version = version
+    else:
+        python_version = "%d.%d" % (major_version, minor_version)
+    if stage in ('alpha', 'beta', 'rc'):
+        if stage == 'alpha':
+            python_version += 'a'
+        elif stage == 'beta':
+            python_version += 'b'
+        elif stage == 'rc':
+            python_version += 'c'
+        python_version += '%s' % minor_release
+
+    return python_version
+
+
+def update_versions(spec_file, version, release):
+    """
+    Update the versions contained in files located in the same dir (or subdirs) of a spec file.
+
+    In addition to the spec file itself, this includes python setup.py files, __init__.py, and
+    the sphinx conf.py
+    """
+    # Update the all the files
+    set_spec_version(spec_file, version, release)
+    python_version = to_python_version(version, release)
+    find_replace_in_files(os.path.dirname(spec_file), 'setup.py', python_version, VERSION_REGEX)
+    find_replace_in_files(os.path.dirname(spec_file), '__init__.py', python_version, VERSION_REGEX)
+
+    find_replace_in_files(os.path.dirname(spec_file), 'conf.py', python_version, VERSION_REGEX)
+    find_replace_in_files(os.path.dirname(spec_file), 'conf.py', python_version, RELEASE_REGEX)
