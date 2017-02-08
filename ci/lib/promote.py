@@ -346,18 +346,15 @@ def find_spec(directory):
     # Find the spec
     spec_files = glob.glob(os.path.join(directory, '*.spec'))
     if not spec_files:
-        print("Error, unable to find spec file in %s " % directory)
-        sys.exit(1)
+        raise RuntimeError("Error, unable to find spec file in %s " % directory)
 
     if len(spec_files) > 1:
-        sys.stderr.write('Multiple spec files in repository root!')
-        sys.exit(1)
+        raise RuntimeError('Multiple spec files in repository root!')
 
     try:
         return spec_files[0]
     except IndexError:
-        sys.stderr.write('spec file not found in repository root!')
-        sys.exit(1)
+        raise RuntimeError('spec file not found in repository root!')
 
 
 def calculate_version(full_version, full_release, update_type):
@@ -444,7 +441,7 @@ def to_python_version(version, release):
     return python_version
 
 
-def update_versions(spec_file, version, release):
+def update_versions(project_dir, version, release):
     """
     Update the versions contained in files located in the same dir (or subdirs) of a spec file.
 
@@ -452,10 +449,14 @@ def update_versions(spec_file, version, release):
     the sphinx conf.py
     """
     # Update the all the files
-    set_spec_version(spec_file, version, release)
+    try:
+        spec_file = find_spec(project_dir)
+        set_spec_version(spec_file, version, release)
+    except RuntimeError:
+        # spec not found, most likely a pulp 3 project
+        pass
     python_version = to_python_version(version, release)
-    find_replace_in_files(os.path.dirname(spec_file), 'setup.py', python_version, VERSION_REGEX)
-    find_replace_in_files(os.path.dirname(spec_file), '__init__.py', python_version, VERSION_REGEX)
-
-    find_replace_in_files(os.path.dirname(spec_file), 'conf.py', python_version, VERSION_REGEX)
-    find_replace_in_files(os.path.dirname(spec_file), 'conf.py', python_version, RELEASE_REGEX)
+    find_replace_in_files(project_dir, 'setup.py', python_version, VERSION_REGEX)
+    find_replace_in_files(project_dir, '__init__.py', python_version, VERSION_REGEX)
+    find_replace_in_files(project_dir, 'conf.py', python_version, VERSION_REGEX)
+    find_replace_in_files(project_dir, 'conf.py', python_version, RELEASE_REGEX)

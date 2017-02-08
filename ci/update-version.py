@@ -6,7 +6,7 @@ import sys
 from lib import builder, promote
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(epilog='This script is only usable on Pulp 2 projects.')
     parser.add_argument("directory", help="The directory to search for spec files")
     group = parser.add_mutually_exclusive_group(required=True)
     help_text = ("Specify which part of the version is being updated. "
@@ -40,4 +40,4 @@ if __name__ == '__main__':
         spec_release = builder.get_release_from_spec(spec_file)
         version, release = promote.calculate_version(spec_version, spec_release, opts.update_type)
 
-    promote.update_versions(spec_file, version, release)
+    promote.update_versions(opts.directory, version, release)

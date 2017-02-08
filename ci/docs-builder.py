@@ -70,8 +70,7 @@ def main():
 
     for component in repo_list:
         if component['name'] == 'pulp':
-            spec_file = promote.find_spec(os.path.join(WORKING_DIR, 'pulp'))
-            promote.update_versions(spec_file, *version.split('-'))
+            promote.update_versions(os.path.join(WORKING_DIR, 'pulp'), *version.split('-'))
             continue
 
         src = os.sep.join([WORKING_DIR, component['name'], 'docs'])
