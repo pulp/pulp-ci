@@ -206,7 +206,7 @@ def checkout_branch(git_directory, branch_name, remote_name='origin'):
 
     full_name = '%s/%s' % (remote_name, local_branch)
 
-    if not local_branch in get_local_git_branches(git_directory):
+    if local_branch not in get_local_git_branches(git_directory):
         subprocess.check_call(['git', 'checkout', '-b', local_branch, full_name],
                               cwd=git_directory)
 
@@ -323,7 +323,7 @@ def replace_version(line, new_version, regex):
 
 
 def find_replace_in_files(root_directory, file_mask, new_version, version_regex):
-    from builder import find_files_matching_pattern
+    from .builder import find_files_matching_pattern
     # We also have to check the __init__.py files since that is the more pythonic place to put it
     for file_name in find_files_matching_pattern(root_directory, file_mask):
         f = open(file_name, 'r')
