@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # if one is not set, the other must be
     if opts.version:
         # user specified version so get it from there
-        version, release = opts.version.split('-')
+        version, release = promote.split_version(opts.version)
     else:
         # otherwise, pull it from the spec and update according to update type
         spec_version = builder.get_version_from_spec(spec_file)

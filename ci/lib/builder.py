@@ -105,6 +105,8 @@ DISTRIBUTION_INFO = {
     },
 }
 
+SUPPORTED_DISTRIBUTIONS = ['el7', 'fc24', 'fc25']
+
 DIST_LIST = DISTRIBUTION_INFO.keys()
 WORKSPACE = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 WORKING_DIR = os.path.join(WORKSPACE, 'working')
@@ -302,7 +304,7 @@ def get_built_dependencies(dependency_dir, dists=None):
         get_build_names_from_external_deps_file(deps_file)
 
 
-def get_dists_for_spec(spec_file):
+def get_dists_for_spec(spec_file, include_unsupported=False):
     """
     read the dist_list.txt file to get the distributions for which the spec file should be built
 
@@ -322,6 +324,8 @@ def get_dists_for_spec(spec_file):
             dists_from_dep = line.split(' ')
     except IOError:
         print("dist_list.txt file not found for %s." % dep_directory)
+    if not include_unsupported:
+        dists_from_dep = list(filter(lambda dist: dist in SUPPORTED_DISTRIBUTIONS, dists_from_dep))
     return dists_from_dep
 
 
@@ -595,7 +599,7 @@ def wait_for_completion(build_ids):
             time.sleep(5)
 
 
-def download_rpms_from_tag(tag, output_directory):
+def download_rpms_from_tag(tag, output_directory, rpmsig=None):
     """
     For a given tag download all the latest contents of that tag to the given output directory.
     This will create subdirectories for each arch in the tag (noarch, i686, x86_64,
@@ -618,14 +622,14 @@ def download_rpms_from_tag(tag, output_directory):
     for package in rpms[1]:
         koji_dir = "/packages/%(name)s/%(version)s/%(release)s/" % package
         # append the signature to download URL if needed
-        if opts.rpmsig:
-            koji_dir = koji_dir + "data/signed/%s/" % opts.rpmsig
+        if rpmsig:
+            koji_dir = koji_dir + "data/signed/%s/" % rpmsig
         data_dir = "/packages/%(name)s/%(version)s/%(release)s/data" % package
         koji_url = "http://koji.katello.org"
         location_on_koji = "%s%s" % (koji_url, koji_dir)
         # the wget commands are slightly different depending on if we are
         # downloading signed RPMs or not.
-        if opts.rpmsig:
+        if rpmsig:
             command = "wget -r -np -nH --cut-dirs=7 -R index.htm*  %s" % \
                       (location_on_koji)
         else:
@@ -711,9 +715,10 @@ def get_supported_dists_for_dep(dep_directory):
     return set(dists_from_dep)
 
 
-def get_build_names_from_external_deps_file(external_deps):
+def get_build_names_from_external_deps_file(external_deps, include_unsupported=False):
     """
-    Get the dictionary of all the external package deps
+    Get the dictionary of all the external package deps. Befault, the returned deps
+    filter out unsupported dists.
 
     :return: Full path/filename of the external deps file
     :rtype: str
@@ -722,6 +727,8 @@ def get_build_names_from_external_deps_file(external_deps):
             deps_list = json.load(file_handle)
             for dep_info in deps_list:
                 for dist in dep_info[u'platform']:
+                    if not include_unsupported and dist not in SUPPORTED_DISTRIBUTIONS:
+                        continue
                     package_nevra = "%s-%s.%s" % (dep_info['name'], dep_info[u'version'], dist)
                     yield package_nevra
 
