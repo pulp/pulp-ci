@@ -103,17 +103,17 @@ for component in builder.components(configuration):
         # conditional to also include el6
         spec_file = os.path.join(project_dir, 'pulp.spec')
 
-        find_str = '%if 0%{?rhel} <= 6'
+        find_str = '%if 0%{?rhel} == 5 || 0%{?rhel} == 6'
         replace_str = '%if 0%{?rhel} == 5'
 
         # intentionally specific sed command to avoid unintended side-effects,
         # only replace the conditional found on line 4...
-        command = "sed -i '4s/{}/{}/' {}".format(find_str, replace_str, spec_file)
+        command = "sed -i '5s/{}/{}/' {}".format(find_str, replace_str, spec_file)
         subprocess.call(command, cwd=project_dir, shell=True)
-        # ...and assert that the spec contains our expected change on line 4, failing if not
+        # ...and assert that the spec contains our expected change on line 5, failing if not
         # so we (really, you, if you're reading this) can fix it.
         for i, line in enumerate(open(spec_file).readlines()):
-            if i == 3:
+            if i == 4:
                 assert line.strip() == replace_str
                 break
 
