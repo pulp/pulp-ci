@@ -4,7 +4,7 @@ rsync-tested-dir: 2.12/dev
 repositories:
   - name: pulp
     external_deps: deps/external_deps.json
-    git_url: git@github.com:pulp/pulp.git
+    git_url: git@github.com:seandst/pulp.git
     git_branch: 2.12-dev
     version: 2.12.1-0.1.alpha
   - name: pulp_puppet
