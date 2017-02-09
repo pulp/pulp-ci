@@ -65,7 +65,9 @@
             if [ $RELEASE_BUILD == true ] ; then
               ./build-all.py {release_config} --release
             else
-              ./build-all.py {release_config}
+              # include unsupported dists in nightlies; this should highlight when dist_lists need to be
+              # updated, and also provides continued testing of el6 nightly and in PRs
+              ./build-all.py {release_config} --build-unsupported
             fi
     publishers:
       - join-trigger:

@@ -249,6 +249,13 @@ def merge_forward(git_directory, push=False, parent_branch=None):
     checkout_branch(git_directory, starting_branch)
 
 
+def split_version(evr):
+    """
+    split epoch:version-release into (epoch:version, release)
+    """
+    return evr.rsplit('-', 1)
+
+
 def parse_version(version):
     version_components = version.split('.')
     major_version = 0
@@ -417,10 +424,14 @@ def calculate_version(full_version, full_release, update_type):
     return calculated_version, calculated_release
 
 
-def to_python_version(version, release):
+def to_python_version(version, release=None):
     """
     convert an rpm-style version and release into a python version string
+
+    can split a complete rpm version-release string, if release is not passed
     """
+    if release is None:
+        version, release = split_version(version)
     major_version, minor_version, patch_version = parse_version(version)
     major_release, minor_release, stage = parse_release(release)
 

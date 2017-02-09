@@ -4,10 +4,11 @@ import argparse
 import os
 import subprocess
 import sys
+from pkg_resources import parse_version
 
 from lib import builder
 from lib import promote
-from lib.builder import WORKSPACE, TITO_DIR, MASH_DIR, WORKING_DIR, CI_DIR
+from lib.builder import TITO_DIR, MASH_DIR, WORKING_DIR, CI_DIR
 
 
 # Parse the args and run the program
@@ -25,6 +26,8 @@ parser.add_argument("--rpmsig", help="The rpm signature hash to use when downloa
                                      "has not been built already.")
 parser.add_argument("--show-versions", action="store_true", default=False,
                     help="Exit after printing out the required versions of each package.")
+parser.add_argument("--build-unsupported", action="store_true", default=False,
+                    help="Build packages for el6 even in versions >= 2.12")
 
 opts = parser.parse_args()
 release_build = opts.release
@@ -45,14 +48,13 @@ def project_name_from_spec_dir(spec_dir):
         if remainder == '/':
             return None
 
+
 builder.init_koji()
 
-# Build our working_dir
-working_dir = WORKING_DIR
-print working_dir
 # Load the config file
 configuration = builder.load_config(opts.config)
 koji_prefix = configuration['koji-target-prefix']
+nightly_build = opts.config.endswith('-dev')
 
 # Source extract all the components
 
@@ -61,12 +63,21 @@ merge_forward = {}
 component_list = []
 spec_project_map = {}
 
-print "Getting git repos"
+# these get set in the "for component" loop a few lines down
+platform_version = None
+# el6 is supported when the platform version is 2.11 or lower
+el6_supported = None
+
+print("Getting git repos")
 for component in builder.components(configuration):
     project_dir = builder.clone_branch(component)
     branch_name = component['git_branch']
     parent_branch = component.get('parent_branch', None)
     parent_branches['origin/%s' % branch_name] = parent_branch
+
+    if component['name'] == 'pulp':
+        platform_version = parse_version(promote.to_python_version(component['version']))
+        el6_supported = platform_version <= parse_version('2.11')
 
     # Check if this is a branch or a tag
     tag_exists = builder.does_git_tag_exist(branch_name, project_dir)
@@ -75,10 +86,36 @@ for component in builder.components(configuration):
     if not tag_exists:
         merge_forward[component['name']] = True
         # Check if everything is merged forward
-        print "Checking that everything is merged forward."
+        print("Checking that everything is merged forward.")
         git_branch = promote.get_current_git_upstream_branch(project_dir)
-        promotion_chain = promote.get_promotion_chain(project_dir, git_branch, parent_branch=parent_branch)
+        promotion_chain = promote.get_promotion_chain(project_dir, git_branch,
+                                                      parent_branch=parent_branch)
         promote.check_merge_forward(project_dir, promotion_chain)
+
+    # Modify the pulp spec for 2.12+ to build unsupported packages when requested
+    # We do this here so that nightly builds can still test all packages on el6, but releases
+    # only contain supported packages. Matching on > 2.11 instead of >= 2.12 since 2.12a1 is less
+    # than 2.12.0.
+    if not el6_supported and component['name'] == 'pulp' and opts.build_unsupported:
+        print("Modifying pulp spec to enable unsupported builds for el6.")
+
+        # The pulp spec already supports this for el5, so we just tweak the
+        # conditional to also include el6
+        spec_file = os.path.join(project_dir, 'pulp.spec')
+
+        find_str = '%if 0%{?rhel} <= 6'
+        replace_str = '%if 0%{?rhel} == 5'
+
+        # intentionally specific sed command to avoid unintended side-effects,
+        # only replace the conditional found on line 4...
+        command = "sed -i '4s/{}/{}/' {}".format(find_str, replace_str, spec_file)
+        subprocess.call(command, cwd=project_dir, shell=True)
+        # ...and assert that the spec contains our expected change on line 4, failing if not
+        # so we (really, you, if you're reading this) can fix it.
+        for i, line in enumerate(open(spec_file).readlines()):
+            if i == 3:
+                assert line.strip() == replace_str
+                break
 
     # Update the version if one is specified in the config
     if 'version' in component:
@@ -87,7 +124,7 @@ for component in builder.components(configuration):
         command = ['git', 'commit', '-a', '-m', 'Bumping version to %s' % component['version']]
         subprocess.call(command, cwd=project_dir)
 
-print "Building list of downloads & builds"
+print("Building list of downloads & builds")
 
 download_list = []
 build_list = []
@@ -96,31 +133,50 @@ build_list = []
 for component in builder.components(configuration):
     external_deps_file = component.get('external_deps')
     if external_deps_file:
-        external_deps_file = os.path.join(working_dir, component.get('name'), external_deps_file)
-        for package_nevra in builder.get_build_names_from_external_deps_file(external_deps_file):
+        external_deps_file = os.path.join(WORKING_DIR, component.get('name'), external_deps_file)
+        for package_nevra in builder.get_build_names_from_external_deps_file(
+                external_deps_file, include_unsupported=opts.build_unsupported):
             info = builder.mysession.getBuild(package_nevra)
             if info:
-                download_list.extend(builder.get_urls_for_build(builder.mysession, package_nevra, rpmsig=rpm_signature))
+                download_list.extend(builder.get_urls_for_build(
+                    builder.mysession, package_nevra, rpmsig=rpm_signature))
             else:
-                print "External deps requires %s but it could not be found in koji" % package_nevra
+                print("External deps requires %s but it could not be found in koji" % package_nevra)
                 sys.exit(1)
 
 # Get all spec files
-for spec in builder.find_all_spec_files(working_dir):
+for spec in builder.find_all_spec_files(WORKING_DIR):
     spec_nvr = builder.get_package_nvr_from_spec(spec)
-    # use dists in config file if they're defined there, otherwise detect it from dist_list.txt
-    # TODO: Either document the 'dists' option in the current building docs, or (more likely) forget about it and
-    # completely overhaul the build system for python 3
-    package_dists = configuration.get('dists', builder.get_dists_for_spec(spec))
+    package_dists = builder.get_dists_for_spec(spec, include_unsupported=opts.build_unsupported)
+
+    # Per our support policy:
+    # - ensure the dists list include el5 and el6 for platform
+    # - always exclude el5 for plugins
+    # - exclude el6 for plugins when platform version > 2.12 and not building unsupported packages
+    if os.path.basename(spec) == 'pulp.spec':
+        if 'el6' not in package_dists:
+            package_dists = ['el6'] + package_dists
+        if 'el5' not in package_dists:
+            package_dists = ['el5'] + package_dists
+    elif not opts.build_unsupported:
+        if 'el5' in package_dists:
+            package_dists.remove('el5')
+        if 'el6' in package_dists and not el6_supported:
+            package_dists.remove('el6')
+    else:
+        # ...and never build plugins for el5
+        if 'el5' in package_dists:
+            package_dists.remove('el5')
     for package_nevra in builder.get_package_nevra(spec_nvr, package_dists):
         info = builder.mysession.getBuild(package_nevra)
         # state 1 is "complete"
         if info and info.get('state') == 1:
-            download_list.extend(builder.get_urls_for_build(builder.mysession, package_nevra, rpmsig=rpm_signature))
-            print "Downloading %s" % package_nevra
+            download_list.extend(builder.get_urls_for_build(builder.mysession, package_nevra,
+                                 rpmsig=rpm_signature))
+            print("Downloading %s" % package_nevra)
         else:
             build_list.append((spec, builder.get_dist_from_koji_build_name(package_nevra)))
-            print "Building %s" % package_nevra
+            print("Building %s" % package_nevra)
 
 # If we are doing a version check, exit here
 if opts.show_versions:
@@ -136,18 +192,17 @@ download_list = sorted(download_list, key=lambda download: download[1])
 build_ids = []
 
 if build_list:
-    #import pdb;pdb.set_trace()
     if rpm_signature:
-        print "ERROR: rpm signature specificed but the following releases have not been built."
+        print("ERROR: rpm signature specificed but the following releases have not been built.")
         for spec, dist in build_list:
-            print "%s %s" % (spec, dist)
+            print("%s %s" % (spec, dist))
         sys.exit(1)
 
     if release_build and opts.skipscratch:
         # scratch build can only be skipped for release builds
-        print "Skipping koji scratch build for release "
+        print("Skipping koji scratch build for release ")
     else:
-        print "Performing koji scratch build "
+        print("Performing koji scratch build ")
         for spec, dist in build_list:
             spec_dir = os.path.dirname(spec)
             builder.build_srpm_from_spec(spec_dir, TITO_DIR, testing=True, dist=dist)
@@ -157,7 +212,7 @@ if build_list:
         builder.wait_for_completion(build_ids)
 
     if release_build:
-        print "Performing koji release build"
+        print("Performing koji release build")
         # Clean out the tito dir first
         builder.ensure_dir(TITO_DIR)
         spec_dir_set = set()
@@ -191,20 +246,21 @@ if build_list:
             if merge_forward[project_name]:
                 # Merge the commit forward, pushing along the way
                 git_branch = promote.get_current_git_upstream_branch(spec_dir)
-                promote.merge_forward(spec_dir, push=True, parent_branch=parent_branches[git_branch])
+                promote.merge_forward(spec_dir, push=True,
+                                      parent_branch=parent_branches[git_branch])
 
-print "Downloading rpms"
+print("Downloading rpms")
 # Download all the files
 builder.download_builds(MASH_DIR, download_list)
 builder.download_rpms_from_scratch_tasks(MASH_DIR, build_ids)
 
-print "Building the repositories"
+print("Building the repositories")
 builder.normalize_directories(MASH_DIR)
-comps_file = os.path.join(working_dir, 'pulp', 'comps.xml')
+comps_file = os.path.join(WORKING_DIR, 'pulp', 'comps.xml')
 builder.build_repositories(MASH_DIR, comps_file=comps_file)
 
 if not opts.disable_push:
-    print "Uploading completed repo"
+    print("Uploading completed repo")
     # Rsync the repos to fedorapeople /srv/repos/pulp/pulp/testing/automation/<rsync-target-dir>
     automation_dir = '/srv/repos/pulp/pulp/testing/automation/'
     target_repo_dir = os.path.join(automation_dir, configuration['rsync-target-dir'])
