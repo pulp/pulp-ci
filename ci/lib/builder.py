@@ -469,10 +469,13 @@ def build_repositories(target_dir, comps_file=None):
 
         # create other symlinks
         if REPO_ALIAS in distvalue:
-            for alias_value in distvalue[REPO_ALIAS]:
-                command = 'ln -rs %s %s' % (os.path.join(target_dir, repo_dir),
-                                            os.path.join(target_dir, alias_value))
-                subprocess.check_call(command, shell=True)
+            dist_repo_dir = os.path.join(target_dir, repo_dir)
+            if os.path.exists(dist_repo_dir):
+                # only create aliases if the alias source exists
+                for alias_value in distvalue[REPO_ALIAS]:
+                    command = 'ln -rs %s %s' % (dist_repo_dir,
+                                                os.path.join(target_dir, alias_value))
+                    subprocess.check_call(command, shell=True)
 
 
 def ensure_dir(target_dir, clean=True):
