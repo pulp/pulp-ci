@@ -35,36 +35,18 @@
             echo "UPGRADE_PULP_BUILD=$(cut -d- -f2 <<< ${{UPGRADE_PULP_VERSION}})" >> pulp_version.properties
         - inject:
             properties-file: pulp_version.properties
-        - shell: |
-            sudo yum -y install ansible attr git libselinux-python
-            ssh-keygen -t rsa -N "" -f pulp_server_key
-            cat pulp_server_key.pub >> ~/.ssh/authorized_keys
-            export ANSIBLE_HOST_KEY_CHECKING=False
-            echo 'localhost' > hosts
-            source "${{RHN_CREDENTIALS}}"
-            ansible-playbook --connection local -i hosts ci/ansible/pulp_server.yaml \
-                -e pulp_build=${{PULP_BUILD}} \
-                -e pulp_version=${{PULP_VERSION}} \
-                -e "rhn_username=${{RHN_USERNAME}}" \
-                -e "rhn_password=${{RHN_PASSWORD}}" \
-                -e "rhn_pool=${{RHN_POOL}}"
         - shell:
-            !include-raw-escape: pre-upgrade.sh
+            !include-raw-escape:
+                - 'pulp-install.sh'
+                - 'pre-upgrade.sh'
         - shell: |
             ansible-playbook --connection local -i hosts ci/ansible/pulp_server_upgrade.yaml \
                 -e "upgrade_pulp_build=${{UPGRADE_PULP_BUILD}}" \
                 -e "upgrade_pulp_version=${{UPGRADE_PULP_VERSION}}"
         - shell:
-            !include-raw-escape: post-upgrade.sh
-        - shell: |
-            echo "BASE_URL=https://$(hostname --long)" > parameters.txt
-            PULP_RPM_VERSION="$(rpm -qa pulp-server | cut -d- -f3)"
-            if [ "${{UPGRADE_PULP_VERSION}}" != "$(cut -d. -f-2 <<< ${{PULP_RPM_VERSION}})" ]; then
-                echo "Pulp RPM version ${{PULP_RPM_VERSION}} is not in the ${{PULP_VERSION}} series"
-                exit 1
-            fi
-            echo "UPGRADE_PULP_VERSION=${{PULP_RPM_VERSION}}" >> parameters.txt
-            cp /etc/pki/CA/cacert.pem cacert.pem
+            !include-raw-escape:
+                - 'post-upgrade.sh'
+                - 'pulp-smash-parameters.sh'
         - inject:
             properties-file: parameters.txt
         - trigger-builds:

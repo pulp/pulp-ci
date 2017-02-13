@@ -13,34 +13,18 @@
         - inject:
             properties-content: |
                 OS={os}
+                PULP_BUILD=nightly
                 PULP_VERSION={pulp_version}
     triggers:
         - reverse:
             jobs: 'build-automation-repo-{reverse_trigger}'
             result: 'success'
     builders:
-        - shell: |
-            sudo yum -y install ansible attr git libselinux-python
-            ssh-keygen -t rsa -N "" -f pulp_server_key
-            cat pulp_server_key.pub >> ~/.ssh/authorized_keys
-            echo 'localhost' > hosts
-            source ${{RHN_CREDENTIALS}}
-            ansible-playbook --connection local -i hosts ci/ansible/pulp_server.yaml \
-                -e pulp_version={pulp_version} \
-                -e "rhn_username=${{RHN_USERNAME}}" \
-                -e "rhn_password=${{RHN_PASSWORD}}" \
-                -e "rhn_pool=${{RHN_POOL}}"
-            if [ "$(echo -e 2.8\\n${{PULP_VERSION}} | sort -V | head -n 1)" = "2.8" ] && [ "${{OS}}" != "rhel6" ]; then
-                ansible-playbook --connection local -i hosts ci/ansible/pulp_coverage.yaml
-            fi
-            echo "BASE_URL=https://$(hostname --long)" >> parameters.txt
-            PULP_RPM_VERSION="$(rpm -qa pulp-server | cut -d- -f3)"
-            if [ "${{PULP_VERSION}}" != "$(cut -d. -f-2 <<< ${{PULP_RPM_VERSION}})" ]; then
-                echo "Pulp RPM version ${{PULP_RPM_VERSION}} is not in the ${{PULP_VERSION}} series"
-                exit 1
-            fi
-            echo "PULP_VERSION=${{PULP_RPM_VERSION}}" >> parameters.txt
-            cp /etc/pki/CA/cacert.pem cacert.pem
+        - shell:
+            !include-raw-escape:
+                - 'pulp-install.sh'
+                - 'pulp-coverage-setup.sh'
+                - 'pulp-smash-parameters.sh'
         - inject:
             properties-file: parameters.txt
         - trigger-builds:
