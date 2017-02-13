@@ -5,7 +5,13 @@
     that: ansible_os_family == "RedHat"
 
 - name: Open firewall ports
-  shell: "iptables -I INPUT -m state --state NEW -p tcp --dport {{ item }} -j ACCEPT"
+  iptables:
+    action: insert
+    chain: INPUT
+    ctstate: NEW
+    protocol: tcp
+    destination_port: "{{ item }}"
+    jump: ACCEPT
   with_items:
     - 80
     - 443
