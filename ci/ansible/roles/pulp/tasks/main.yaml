@@ -19,25 +19,43 @@
     - 5671
   when: pulp_install_prerequisites
 
-- name: Subscription Manager register
-  shell: "subscription-manager register --force --user={{ rhn_username }} --password={{ rhn_password }}"
+# De-registering and then registering is equivalent to using the
+# `force_register` argument, which was added in Ansible 2.2. We use this
+# technique to preserve compatibility with RHEL 6.
+- name: subscription-manager de-register
+  redhat_subscription:
+    state: absent
   when: >
-      ansible_distribution == "RedHat" and rhn_username is defined and
-      rhn_password is defined and rhn_activation_key is undefined and
-      rhn_organization is undefined
+    ansible_distribution == "RedHat" and
+    rhn_pool is defined and
+    (rhn_username is defined and rhn_password is defined) or
+    (rhn_activation_key is defined and rhn_organization is defined)
 
-- name: Subscription Manager register by Activation Key
-  shell: >
-        subscription-manager register --force
-        --activationkey={{ rhn_activation_key }}
-        --org={{ rhn_organization }}
-  when: >
-      ansible_distribution == "RedHat" and rhn_activation_key is defined and
-      rhn_organization is defined
+- name: subscription-manager register and subscribe by username and password
+  redhat_subscription:
+    username: "{{ rhn_username }}"
+    password: "{{ rhn_password }}"
+    pool: "{{ rhn_pool }}"  # e.g. rhn_pool='^SKU Name$'
+  when:
+    - ansible_distribution == "RedHat"
+    - rhn_pool is defined
+    - rhn_username is defined
+    - rhn_password is defined
+    - rhn_activation_key is undefined
+    - rhn_organization is undefined
 
-- name: Subscription Manager subscribe
-  shell: "subscription-manager subscribe --pool={{ rhn_poolid }}"
-  when: ansible_distribution == "RedHat" and rhn_poolid is defined
+- name: subscription-manager register and subscribe by activation key
+  redhat_subscription:
+    activationkey: "{{ rhn_activation_key }}"
+    org_id: "{{ rhn_organization }}"
+    pool: "{{ rhn_pool }}"
+  when:
+    - ansible_distribution == "RedHat"
+    - rhn_pool is defined
+    - rhn_username is undefined
+    - rhn_password is undefined
+    - rhn_activation_key is defined
+    - rhn_organization is defined
 
 - name: Subscription Manager disable all repositories
   shell: "subscription-manager repos --disable \"*\""
