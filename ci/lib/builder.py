@@ -105,7 +105,7 @@ DISTRIBUTION_INFO = {
     },
 }
 
-SUPPORTED_DISTRIBUTIONS = ['el7', 'fc24', 'fc25']
+SUPPORTED_DISTRIBUTIONS = ['el6']
 
 DIST_LIST = DISTRIBUTION_INFO.keys()
 WORKSPACE = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
