@@ -92,12 +92,6 @@ for component in builder.components(configuration):
                                                       parent_branch=parent_branch)
         promote.check_merge_forward(project_dir, promotion_chain)
 
-    if component['name'] == 'pulp':
-        # hack: steal a newer pulp spec that knows to do the right thing on el6
-        # Doing it this way just saves a step, no need to pick back and merge forward the spec file changes
-        subprocess.call('wget -O /home/builder/working/pulp/pulp.spec https://raw.githubusercontent.com/pulp/pulp/718e082405fe0d87022856c3b4f3ca60b68c6a71/pulp.spec', shell=True)
-
-
     # Modify the pulp spec for 2.12+ to build unsupported packages when requested
     # We do this here so that nightly builds can still test all packages on el6, but releases
     # only contain supported packages. Matching on > 2.11 instead of >= 2.12 since 2.12a1 is less
@@ -162,6 +156,8 @@ for spec in builder.find_all_spec_files(WORKING_DIR):
     if os.path.basename(spec) == 'pulp.spec':
         if 'el6' not in package_dists:
             package_dists = ['el6'] + package_dists
+        if 'el5' not in package_dists:
+            package_dists = ['el5'] + package_dists
     elif not opts.build_unsupported:
         if 'el5' in package_dists:
             package_dists.remove('el5')
