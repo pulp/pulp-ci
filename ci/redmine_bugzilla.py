@@ -162,12 +162,15 @@ def main():
                                         'external tracker on this bug.' % issue.priority.name)
                             downstream_POST_plus = ['POST', 'MODIFIED', 'ON_QA', 'VERIFIED',
                                                     'RELEASE_PENDING', 'CLOSED']
+                            downstream_ACCEPTABLE_resolution = ['NOTABUG', 'WONTFIX', 'DEFERRED',
+                                                                'WORKSFORME']
                             upstream_POST_minus = ['NEW', 'ASSIGNED', 'POST']
                             if bug.status in downstream_POST_plus and \
                                             issue.status.name in upstream_POST_minus:
-                                msg = 'The downstream bug %s is at POST+ but the upstream bug %s ' \
-                                      'at POST-.\n' % (bug.id, issue.id)
-                                downstream_state_issue_record += msg
+                                if bug.resolution not in downstream_ACCEPTABLE_resolution:
+                                    msg = 'The downstream bug %s is at POST+ but the upstream ' \
+                                          'bug %s at POST-.\n' % (bug.id, issue.id)
+                                    downstream_state_issue_record += msg
                             links_back = True
                     transition_to_post = []
                     for external_bug in bug.external_bugs:
