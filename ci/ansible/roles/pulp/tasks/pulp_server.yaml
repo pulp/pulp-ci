@@ -22,20 +22,6 @@
   action: "{{ ansible_pkg_mgr }} name=python-saslwrapper state=latest"
   when: ansible_os_family == "RedHat"
 
-- name: Install testing qpid RHEL6 packages
-  shell: >
-      rpm -Uvh
-      https://copr-be.cloud.fedoraproject.org/results/irina/qpid/epel-6-x86_64/00464495-python-qpid/python-qpid-1.35.0-2.el6.noarch.rpm
-      https://copr-be.cloud.fedoraproject.org/results/irina/qpid/epel-6-x86_64/00464495-python-qpid/python-qpid-common-1.35.0-2.el6.noarch.rpm
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
-
-- name: Install testing qpid RHEL7 packages
-  shell: >
-      rpm -Uvh
-      https://kojipkgs.fedoraproject.org//packages/python-qpid/1.35.0/2.el7/noarch/python-qpid-common-1.35.0-2.el7.noarch.rpm
-      https://kojipkgs.fedoraproject.org//packages/python-qpid/1.35.0/2.el7/noarch/python-qpid-1.35.0-2.el7.noarch.rpm
-  when: ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 7
-
 - name: Start and enable qpid-cpp server service
   service: name=qpidd state=started enabled=yes
 
