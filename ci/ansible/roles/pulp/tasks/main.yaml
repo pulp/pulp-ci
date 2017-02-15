@@ -18,6 +18,8 @@
     - 5672
     - 5671
   when: pulp_install_prerequisites
+  notify:
+    - Save IPv4 iptables configuration
 
 # De-registering and then registering is equivalent to using the
 # `force_register` argument, which was added in Ansible 2.2. We use this
