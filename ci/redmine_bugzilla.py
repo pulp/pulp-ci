@@ -203,7 +203,7 @@ def main():
                                                                        "requestee": needinfo_email,
                                                                        "new": True}])
                                             bug.addcomment("Requesting needsinfo from upstream " \
-                                                           "developer %s because the 'FailQA' " \
+                                                           "developer %s because the 'FailedQA' " \
                                                            "flag is set." % needinfo_email)
                                             new_failed_qa_record += "%s\n" % msg
                                         print msg
