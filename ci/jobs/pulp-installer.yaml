@@ -2,6 +2,7 @@
 # machines for running Pulp Smash.
 - job:
     name: 'pulp-installer'
+    concurrent: true
     node: 'fedora-np'
     description: |
         <p>Job that installs Pulp on the machine identified by the job
