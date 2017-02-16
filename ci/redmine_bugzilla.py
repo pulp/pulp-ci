@@ -120,6 +120,8 @@ def main():
     ext_bug_record = ''
     downstream_state_issue_record = ''
     downstream_changes = ''
+    new_failed_qa_record = ''
+    failed_qa_bugzillas = []
 
     for issue in redmine_issues:
         for custom_field in issue.custom_fields.resources:
@@ -128,6 +130,8 @@ def main():
                     continue
                 for bug_id in [int(id_str) for id_str in custom_field['value'].split(',')]:
                     links_back = False
+                    if bug_id in failed_qa_bugzillas:
+                        continue
                     try:
                         bug = BZ.getbug(bug_id)
                     except xmlrpclib.Fault as e:
@@ -181,7 +185,31 @@ def main():
                             if bug.status in ['NEW', 'ASSIGNED']:
                                 if external_bug['ext_status'] in ['MODIFIED', 'ON_QA', 'VERIFIED',
                                                          'CLOSED - CURRENTRELEASE']:
-                                    transition_to_post.append(True)
+                                    if 'FailedQA' in bug.cf_verified:
+                                        needinfo = True
+                                        external_bug_id = external_bug['ext_bz_bug_id']
+                                        redmine_issue = redmine.issue.get(external_bug_id)
+                                        redmine_user_id = redmine_issue.assigned_to.id
+                                        needinfo_email = redmine.user.get(redmine_user_id).mail
+                                        msg = "Bugzilla %s failed QA. Needinfo is set for %s." % \
+                                              (bug.id, needinfo_email)
+                                        for flag in bug.flags:
+                                            if flag['name'] == 'needinfo' and \
+                                                            flag['requestee'] == needinfo_email:
+                                                needinfo = False
+                                        if needinfo:
+                                            BZ.update_flags(bug.id, [{ "name": "needinfo",
+                                                                       "status": "?",
+                                                                       "requestee": needinfo_email,
+                                                                       "new": True}])
+                                            bug.addcomment("Requesting needsinfo from upstream " \
+                                                           "developer %s because the 'FailQA' " \
+                                                           "flag is set." % needinfo_email)
+                                            new_failed_qa_record += "%s\n" % msg
+                                        print msg
+                                        failed_qa_bugzillas.append(bug.id)
+                                    else:
+                                        transition_to_post.append(True)
                                 else:
                                     transition_to_post.append(False)
                     if not links_back:
@@ -236,7 +264,12 @@ def main():
         print '-----------------------'
         print downstream_state_issue_record
 
-    if links_issues_record != '' or downstream_state_issue_record != '':
+    if new_failed_qa_record != '':
+        print '\nNew Bugzillas That Failed QA'
+        print '----------------------------'
+        print new_failed_qa_record
+
+    if links_issues_record != '' or downstream_state_issue_record != '' or new_failed_qa_record:
         # Raise an exception so the job fails and Jenkins will send e-mail
         raise RuntimeError('We need a human here')
 
