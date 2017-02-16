@@ -29,7 +29,7 @@
                 -e pulp_version={pulp_version} \
                 -e "rhn_username=${{RHN_USERNAME}}" \
                 -e "rhn_password=${{RHN_PASSWORD}}" \
-                -e "rhn_poolid=${{RHN_POOLID}}"
+                -e "rhn_pool=${{RHN_POOL}}"
             if [ "$(echo -e 2.8\\n${{PULP_VERSION}} | sort -V | head -n 1)" = "2.8" ] && [ "${{OS}}" != "rhel6" ]; then
                 ansible-playbook --connection local -i hosts ci/ansible/pulp_coverage.yaml
             fi

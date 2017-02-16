@@ -29,7 +29,7 @@
     state: absent
   when: >
     ansible_distribution == "RedHat" and
-    rhn_poolid is defined and
+    rhn_pool is defined and
     (rhn_username is defined and rhn_password is defined) or
     (rhn_activation_key is defined and rhn_organization is defined)
 
@@ -37,10 +37,10 @@
   redhat_subscription:
     username: "{{ rhn_username }}"
     password: "{{ rhn_password }}"
-    pool: "{{ rhn_poolid }}"  # e.g. rhn_poolid='^SKU Name$'
+    pool: "{{ rhn_pool }}"  # e.g. rhn_pool='^SKU Name$'
   when:
     - ansible_distribution == "RedHat"
-    - rhn_poolid is defined
+    - rhn_pool is defined
     - rhn_username is defined
     - rhn_password is defined
     - rhn_activation_key is undefined
@@ -50,10 +50,10 @@
   redhat_subscription:
     activationkey: "{{ rhn_activation_key }}"
     org_id: "{{ rhn_organization }}"
-    pool: "{{ rhn_poolid }}"
+    pool: "{{ rhn_pool }}"
   when:
     - ansible_distribution == "RedHat"
-    - rhn_poolid is defined
+    - rhn_pool is defined
     - rhn_username is undefined
     - rhn_password is undefined
     - rhn_activation_key is defined

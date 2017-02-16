@@ -60,7 +60,7 @@
                 -e "pulp_version=${PULP_VERSION}" \
                 -e "rhn_username=${RHN_USERNAME}" \
                 -e "rhn_password=${RHN_PASSWORD}" \
-                -e "rhn_poolid=${RHN_POOLID}"
+                -e "rhn_pool=${RHN_POOL}"
     publishers:
         - email-notify-owners
         - mark-node-offline
