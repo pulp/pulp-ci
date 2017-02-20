@@ -87,6 +87,7 @@
         - 2.9-stable
         - 2.10-stable
         - 2.11-stable
+        - 2.12-stable
     upgrade_pulp_version:
         - 2.10-beta
         - 2.10-nightly
@@ -99,6 +100,14 @@
           upgrade_pulp_version: 2.10-beta
         - pulp_version: 2.11-stable
           upgrade_pulp_version: 2.10-nightly
+        - pulp_version: 2.12-stable
+          upgrade_pulp_version: 2.10-nightly
+        - pulp_version: 2.12-stable
+          upgrade_pulp_version: 2.10-beta
+        - pulp_version: 2.12-stable
+          upgrade_pulp_version: 2.11-nightly
+        - pulp_version: 2.12-stable
+          upgrade_pulp_version: 2.11-beta
         - os: f24
           pulp_version: 2.8-stable
         - os: f24
