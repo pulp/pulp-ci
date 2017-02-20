@@ -37,7 +37,7 @@
 
             cd $WORKSPACE/
 
-            sudo pip install --upgrade 'python-bugzilla<2.0.0'
+            sudo pip install --upgrade python-bugzilla
             sudo pip install python-redmine
             sudo pip install certifi
 
