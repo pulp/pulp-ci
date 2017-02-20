@@ -99,8 +99,8 @@ def get_promotion_chain(git_directory, git_branch, upstream_name='origin', paren
         print(missing_branches)
         sys.exit(1)
 
-    # For the moment, do not merge branches other than pulp 2 to master
-    if result_list[-1].startswith('2'):
+    # For the moment, do not merge any branch named 3.0-dev to master
+    if not result_list[-1] == '3.0-dev':
         result_list.append('master')
 
     if parent_branch:
