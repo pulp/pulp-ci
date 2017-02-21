@@ -6,7 +6,7 @@
     defaults: ci-workflow-runtest
     node: 'fedora-np'
     properties:
-        - dev-ownership
+        - bz-redmine-ownership
     scm:
         - git:
             url: 'https://github.com/pulp/pulp_packaging.git'
