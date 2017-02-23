@@ -40,7 +40,6 @@
     os:
         - 'f24'
         - 'f25'
-        - 'rhel6'
         - 'rhel7'
     pulp_version:
         - '2.11'
@@ -145,7 +144,6 @@
           unittest_platforms:
             - f24-np
             - f25-np
-            - rhel6-np
             - rhel7-np
       - pulp_docker:
           min_coverage: 100
@@ -158,7 +156,6 @@
           unittest_platforms:
             - f24-np
             - f25-np
-            - rhel6-np
             - rhel7-np
       - pulp_ostree:
           min_coverage: 100
@@ -183,7 +180,6 @@
           unittest_platforms:
             - f24-np
             - f25-np
-            - rhel6-np
             - rhel7-np
       - pulp_python:
           min_coverage: 100
@@ -195,7 +191,6 @@
           unittest_platforms:
             - f24-np
             - f25-np
-            - rhel6-np
             - rhel7-np
       - pulp_rpm:
           min_coverage: 87
@@ -209,5 +204,4 @@
           unittest_platforms:
             - f24-np
             - f25-np
-            - rhel6-np
             - rhel7-np
