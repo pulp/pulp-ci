@@ -18,7 +18,7 @@
         - jenkins-ssh-credentials
     builders:
         - shell: |
-            sudo dnf -y install createrepo make patch rpm-sign gpg
+            sudo dnf -y install createrepo make patch puppet rpm-sign gpg
             make fixtures base_url=https://repos.fedorapeople.org/pulp/pulp
             rsync -arvze "ssh -o StrictHostKeyChecking=no" --delete \
                 fixtures/* \
