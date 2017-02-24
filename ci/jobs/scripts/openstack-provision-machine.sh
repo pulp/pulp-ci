@@ -10,7 +10,7 @@ pip install python-glanceclient python-novaclient
 # Only underscores, hyphens, and alphanumeric characters are allowed for
 # keypair names
 KEY_NAME="pulp-jenkins"
-IMAGE_ID="$(glance image-list | grep '| rhel-guest-image-7.2' | awk '{ print $2 }')"
+IMAGE_ID="$(glance image-list | grep '| rhel-7.3-server-x86_64-updated' | awk '{ print $2 }')"
 
 # Upload SSH key pair for OpenStack instance.
 if [[ -z "$(nova keypair-list | grep ${KEY_NAME} | awk '{ print $2 }')" ]]; then
