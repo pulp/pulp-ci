@@ -1,6 +1,4 @@
 sudo yum -y install ansible attr git libselinux-python
-ssh-keygen -t rsa -N "" -f pulp_server_key
-cat pulp_server_key.pub >> ~/.ssh/authorized_keys
 echo 'localhost' > hosts
 source "${RHN_CREDENTIALS}"
 ansible-playbook --connection local -i hosts ci/ansible/pulp_server.yaml \

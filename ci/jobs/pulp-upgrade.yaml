@@ -37,6 +37,7 @@
             properties-file: pulp_version.properties
         - shell:
             !include-raw-escape:
+                - 'ssh-setup.sh'
                 - 'pulp-install.sh'
                 - 'pre-upgrade.sh'
         - shell: |
