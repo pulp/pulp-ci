@@ -1,4 +1,4 @@
-sudo yum -y install ansible attr git libselinux-python
+sudo yum -y install ansible attr git libselinux-python python-firewall
 echo 'localhost' > hosts
 source "${RHN_CREDENTIALS}"
 ansible-playbook --connection local -i hosts ci/ansible/pulp_server.yaml \

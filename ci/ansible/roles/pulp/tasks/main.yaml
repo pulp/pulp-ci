@@ -4,7 +4,7 @@
   assert:
     that: ansible_os_family == "RedHat"
 
-- name: Open firewall ports
+- name: Open firewall ports (iptables)
   iptables:
     action: insert
     chain: INPUT
@@ -17,9 +17,26 @@
     - 443
     - 5672
     - 5671
-  when: pulp_install_prerequisites
+  when:
+    - pulp_install_prerequisites
+    - ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6
   notify:
     - Save IPv4 iptables configuration
+
+- name: Open firewall ports (firewalld)
+  firewalld:
+    port: "{{ item }}/tcp"
+    state: enabled
+    permanent: true
+    immediate: true
+  with_items:
+    - 80
+    - 443
+    - 5672
+    - 5671
+  when:
+    - pulp_install_prerequisites
+    - not (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
 
 # De-registering and then registering is equivalent to using the
 # `force_register` argument, which was added in Ansible 2.2. We use this
