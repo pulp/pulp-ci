@@ -163,7 +163,7 @@
             - master
             - 1.1-dev
             - 1.1-release
-            - 1.22dev
+            - 1.2-dev
           unittest_platforms:
             - f24-np
             - f25-np
