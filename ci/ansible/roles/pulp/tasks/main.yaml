@@ -4,40 +4,6 @@
   assert:
     that: ansible_os_family == "RedHat"
 
-- name: Open firewall ports (iptables)
-  iptables:
-    action: insert
-    chain: INPUT
-    ctstate: NEW
-    protocol: tcp
-    destination_port: "{{ item }}"
-    jump: ACCEPT
-  with_items:
-    - 80
-    - 443
-    - 5672
-    - 5671
-  when:
-    - pulp_install_prerequisites
-    - ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6
-  notify:
-    - Save IPv4 iptables configuration
-
-- name: Open firewall ports (firewalld)
-  firewalld:
-    port: "{{ item }}/tcp"
-    state: enabled
-    permanent: true
-    immediate: true
-  with_items:
-    - 80
-    - 443
-    - 5672
-    - 5671
-  when:
-    - pulp_install_prerequisites
-    - not (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
-
 # De-registering and then registering is equivalent to using the
 # `force_register` argument, which was added in Ansible 2.2. We use this
 # technique to preserve compatibility with RHEL 6.
@@ -99,6 +65,51 @@
 - name: Enable EPEL repository
   action: "{{ ansible_pkg_mgr }} name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
   when: ansible_distribution == "RedHat"
+
+- name: Open firewall ports (iptables)
+  iptables:
+    action: insert
+    chain: INPUT
+    ctstate: NEW
+    protocol: tcp
+    destination_port: "{{ item }}"
+    jump: ACCEPT
+  with_items:
+    - 80
+    - 443
+    - 5672
+    - 5671
+  when:
+    - pulp_install_prerequisites
+    - ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6
+  notify:
+    - Save IPv4 iptables configuration
+
+- block:
+  - name: Install firewalld and python bindings
+    action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
+    with_items:
+      - firewalld
+      - python-firewall
+
+  - name: Start and enable firewalld
+    service: name=firewalld state=started enabled=yes
+
+  - name: Open firewall ports (firewalld)
+    firewalld:
+      port: "{{ item }}/tcp"
+      state: enabled
+      permanent: true
+      immediate: true
+    with_items:
+      - 80
+      - 443
+      - 5672
+      - 5671
+
+  when:
+    - pulp_install_prerequisites
+    - not (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
 
 - include: pulp_server.yaml
   when: pulp_install_server
