@@ -200,10 +200,12 @@ def main():
                                                             flag['requestee'] == needinfo_email:
                                                 needinfo = False
                                         if needinfo:
-                                            BZ.update_flags(bug.id, [{ "name": "needinfo",
-                                                                       "status": "?",
-                                                                       "requestee": needinfo_email,
-                                                                       "new": True}])
+                                            flag = { "name": "needinfo",
+                                                     "status": "?",
+                                                     "requestee": needinfo_email,
+                                                     "new": True}
+                                            updates = BZ.build_update(status=bug.status, flags = [flag])
+                                            BZ.update_bugs(bug.id, updates)
                                             bug.addcomment("Requesting needsinfo from upstream " \
                                                            "developer %s because the 'FailedQA' " \
                                                            "flag is set." % needinfo_email)
