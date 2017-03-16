@@ -29,5 +29,9 @@ repositories:
     version: 1.3.0-0.1.alpha
   - name: pulp_python
     git_url: git@github.com:pulp/pulp_python.git
-    git_branch: master
+    # This branch should be master, but the 2.0-dev branch currently
+    # contains the next Y-release and is effectively acting as master for
+    # the python plugin. This will be corrected when 2.13 is release with
+    # pulp_python 2.0, and master can resume tracking 2.1 development.
+    git_branch: 2.0-dev
     version: 2.0.0-0.1.alpha
