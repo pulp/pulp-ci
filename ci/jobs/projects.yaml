@@ -67,6 +67,7 @@
     name: pulp-upgrade
     os:
         - f24
+        - f25
         - rhel6
         - rhel7
     pulp_version:
@@ -99,6 +100,12 @@
           pulp_version: 2.8-stable
         - os: f24
           pulp_version: 2.9-stable
+        - os: f25
+          pulp_version: 2.8-stable
+        - os: f25
+          pulp_version: 2.9-stable
+        - os: f25
+          pulp_version: 2.10-stable
     jobs:
         - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-{os}'
 
