@@ -44,6 +44,12 @@
             ansible-playbook --connection local -i hosts ci/ansible/pulp_server_upgrade.yaml \
                 -e "upgrade_pulp_build=${{UPGRADE_PULP_BUILD}}" \
                 -e "upgrade_pulp_version=${{UPGRADE_PULP_VERSION}}"
+        # Update PULP_VERSION to the UPGRADE_PULP_VERSION to be able to reuse
+        # includes from automation
+        - shell: |
+            echo "PULP_VERSION=${{UPGRADE_PULP_VERSION}}" > pulp_version.properties
+        - inject:
+            properties-file: pulp_version.properties
         - shell:
             !include-raw-escape:
                 - 'post-upgrade.sh'
