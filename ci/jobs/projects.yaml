@@ -106,6 +106,10 @@
           pulp_version: 2.9-stable
         - os: f25
           pulp_version: 2.10-stable
+        - os: rhel6
+          upgrade_pulp_version: 2.12-beta
+        - os: rhel6
+          upgrade_pulp_version: 2.12-nightly
     jobs:
         - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-{os}'
 
