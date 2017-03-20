@@ -23,6 +23,8 @@
         - shell:
             !include-raw-escape:
                 - 'ssh-setup.sh'
+        - shell:
+            !include-raw-escape:
                 - 'pulp-install.sh'
                 - 'pulp-coverage-setup.sh'
                 - 'pulp-smash-parameters.sh'
@@ -96,7 +98,6 @@
             artifacts: "*.tar.gz"
             allow-empty: true
         - email-notify-owners
-        - irc-notify-all-summary
         - mark-node-offline
 
 - job:

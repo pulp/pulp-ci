@@ -149,26 +149,6 @@
             send-to:
                 - recipients
 
-# notify the default channel with a build summary on all build states (pass/unstable/fail)
-# good for things like nightly builds since it always reports
-- publisher:
-    name: irc-notify-all-summary
-    publishers:
-      - ircbot:
-          strategy: all
-          message-type: summary
-          matrix-notifier: only-parent
-
-# notify the default channel with a build summary on new failure/fixed build states
-# good for per-commit things like PR testers since it only reports on status changes
-- publisher:
-    name: irc-notify-failedfixed-summary
-    publishers:
-      - ircbot:
-          strategy: new-failure-and-fixed
-          message-type: summary
-          matrix-notifier: only-parent
-
 # Mark this node offline so that jenkins does not assign jobs to it.
 # This avoids a race condition created by nodepool:
 #   Nodepool receives a notification that a job is finished on a node, and begins to destroy
@@ -211,15 +191,6 @@
         - ansicolor
         - timestamps
         - credentials-binding:
-            - zip-file:
-                credential-id: b3e6f337-5d44-4f57-921c-1632d796caa6
-                variable: QEOS_CONFIG_ZIP
-            # This is a zip file with the qeos credentials and my private key.
-            # This was just a temporary thing to make testing easier, and we can
-            # change it.
-            - zip-file:
-                credential-id: 560cbeac-170a-4ebe-bad0-37706307a4c8
-                variable: OS_CONFIG
             - zip-file:
                 credential-id: 9051da21-c8af-49bd-a0ac-c1dd94a6d216
                 variable: KOJI_CONFIG

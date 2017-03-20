@@ -94,5 +94,4 @@
       - junit:
           results: junit-report.xml
       - email-notify-owners
-      - irc-notify-all-summary
       - mark-node-offline

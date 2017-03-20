@@ -75,7 +75,6 @@
           # do not need to ensure that there is a promote job for every release config
           projects:
             - "build-automation-promote-{release_config}"
-      - irc-notify-all-summary
       - email-notify-owners
       - mark-node-offline
 
@@ -125,6 +124,5 @@
           script: |
             manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)
             if(manager.logContains(".*Promotion blocked.*")) {{ manager.buildUnstable() }}
-      - irc-notify-all-summary
       # - email-notify-owners
       # don't notify owners until #2022 is fixed
