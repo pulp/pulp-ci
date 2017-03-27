@@ -205,9 +205,17 @@
             timeout-var: 'BUILD_TIMEOUT'
             fail: true
 
+# ssh credentials common to multiple jobs
+# normally we would want to capture this in multiple macros, but using the ssh-agent-credentials
+# multiple times in a job does not work; all previous invocations get overriden by the last one
+# processed. For convenience, the most commonly use SSH credentials are defined here.
 - wrapper:
     name: jenkins-ssh-credentials
     wrappers:
         - ssh-agent-credentials:
             users:
+              # used by the master to connect to slaves, also allows slave to ssh into other slaves,
+              # and connect to our automation VM to retrieve logs for posting in a public place
                 - '044c0620-d67e-4172-9814-dc49e443e7b6'
+              # fedorapeople ssh key, allows jenkins to upload built packages and logs publicly
+                - '90b7ff7d-de7f-4ccb-93e7-fa27409913ec'
