@@ -7,12 +7,14 @@
           H H * * *
           31 11 * * 2,5
     wrappers:
+      - workspace-cleanup:
+          dirmatch: True
+          include: ['*']
       - jenkins-ssh-credentials
     builders:
       # requires ssh access to the box running supybot using the jenkins ssh key
       # to download the meeting logs prior to uploading them to repos.fedorapeople
       - shell: |
-          rm -rf *
           # only sync the pulp-dev channel
           # this leaves out meetings in other channels, like the ones in
           # ##pulpbot-firingrange that are all for testing

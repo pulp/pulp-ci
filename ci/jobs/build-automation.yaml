@@ -35,6 +35,7 @@
             timeout: 240
             timeout-var: 'BUILD_TIMEOUT'
             fail: true
+        - timestamps
     builders:
         - shell: |
             #!/bin/bash

@@ -170,7 +170,7 @@
             }
             EOF
             set +e
-            XDG_CONFIG_DIRS=. py.test -v --junit-xml=junit-report.xml pulp_smash/tests
+            XDG_CONFIG_DIRS=. py.test -v --color=yes --junit-xml=junit-report.xml pulp_smash/tests
             set -e
             test -f junit-report.xml
     publishers:
