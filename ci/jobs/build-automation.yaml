@@ -66,9 +66,19 @@
             if [ $RELEASE_BUILD == true ] ; then
               ./build-all.py {release_config} --release
             else
-              # include unsupported dists in nightlies; this should highlight when dist_lists need to be
-              # updated, and also provides continued testing of el6 nightly and in PRs
-              ./build-all.py {release_config} --build-unsupported
+              # el6 builds are broken on 2.13. We don't really need them to be working, but since
+              # 2.12 is still working, this is here to prevent building el6 packages on 2.13+ but
+              # continue building el6 package for 2.12. We aren't building nightlies for anything
+              # lower than 2.12, so we can get away with match 2.12 explicitly.
+              # If we fix https://pulp.plan.io/issues/2667 and get el6 nightlies working again for
+              # 2.13+, this should be removed.
+              if grep -q 2.12 <<< "{release_config}"; then
+                  # include unsupported dists in nightlies; this should highlight when dist_lists need to be
+                  # updated, and also provides continued testing of el6 nightly for 2.12.
+                  ./build-all.py {release_config} --build-unsupported
+              else
+                  ./build-all.py {release_config}
+              fi
             fi
     publishers:
       - join-trigger:
