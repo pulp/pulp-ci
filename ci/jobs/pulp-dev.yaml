@@ -126,9 +126,11 @@
     wrappers:
         - ansicolor
         - timeout:
-            # pulp-smash usually takes about an hour or two, so time it out after four
-            timeout: 240
+            # pulp-smash usually takes about an hour or two, so time it out
+            # after 7:40 hours. This gives room to some tasks time out.
+            timeout: 460
             abort: true
+        - timestamps
     builders:
         - shell: |
             # Setup ssh config and private key
