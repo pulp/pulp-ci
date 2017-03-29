@@ -56,6 +56,16 @@ configuration = builder.load_config(opts.config)
 koji_prefix = configuration['koji-target-prefix']
 nightly_build = opts.config.endswith('-dev')
 
+# specs capable of building unsupported packages. these will be modified
+# at build time, if unsupported packages are requested, to build for el5 and el6
+# mapping is {component_name: specfile_name, ...}, where the component name is
+# defined in the release config being used.
+unsupported_specs = {
+    'pulp': 'pulp.spec',
+    'pulp_puppet': 'pulp-puppet.spec',
+    'pulp_rpm': 'pulp-rpm.spec',
+}
+
 # Source extract all the components
 
 parent_branches = {}
@@ -92,30 +102,22 @@ for component in builder.components(configuration):
                                                       parent_branch=parent_branch)
         promote.check_merge_forward(project_dir, promotion_chain)
 
-    # Modify the pulp spec for 2.12+ to build unsupported packages when requested
+    # Modify the specs for 2.12+ to build unsupported packages when requested.
     # We do this here so that nightly builds can still test all packages on el6, but releases
-    # only contain supported packages. Matching on > 2.11 instead of >= 2.12 since 2.12a1 is less
-    # than 2.12.0.
-    if not el6_supported and component['name'] == 'pulp' and opts.build_unsupported:
-        print("Modifying pulp spec to enable unsupported builds for el6.")
+    # only contain supported packages.
+    if not el6_supported and component['name'] in unsupported_specs and opts.build_unsupported:
+        print("Modifying {} spec to enable unsupported builds for el6.".format(component["name"]))
 
-        # The pulp spec already supports this for el5, so we just tweak the
-        # conditional to also include el6
-        spec_file = os.path.join(project_dir, 'pulp.spec')
+        if component['name'] in unsupported_specs:
+            # "Unsupported" spec already support this for el5, so we just tweak the
+            # conditional to also include el6
+            spec_file = os.path.join(project_dir, unsupported_specs[component['name']])
 
-        find_str = '%if 0%{?rhel} == 5 || 0%{?rhel} == 6'
-        replace_str = '%if 0%{?rhel} == 5'
+            find_str = '%if 0%{?rhel} == 5 || 0%{?rhel} == 6'
+            replace_str = '%if 0%{?rhel} == 5'
 
-        # intentionally specific sed command to avoid unintended side-effects,
-        # only replace the conditional found on line 4...
-        command = "sed -i '5s/{}/{}/' {}".format(find_str, replace_str, spec_file)
-        subprocess.call(command, cwd=project_dir, shell=True)
-        # ...and assert that the spec contains our expected change on line 5, failing if not
-        # so we (really, you, if you're reading this) can fix it.
-        for i, line in enumerate(open(spec_file).readlines()):
-            if i == 4:
-                assert line.strip() == replace_str
-                break
+            command = "sed -i 's/{}/{}/' {}".format(find_str, replace_str, spec_file)
+            subprocess.check_call(command, cwd=project_dir, shell=True)
 
     # Update the version if one is specified in the config
     if 'version' in component:
@@ -150,10 +152,10 @@ for spec in builder.find_all_spec_files(WORKING_DIR):
     package_dists = builder.get_dists_for_spec(spec, include_unsupported=opts.build_unsupported)
 
     # Per our support policy:
-    # - ensure the dists list include el5 and el6 for platform
-    # - always exclude el5 for plugins
+    # - ensure the dists list include el5 and el6 for platform, puppet, and rpm
+    # - always exclude el5 for other plugins
     # - exclude el6 for plugins when platform version > 2.12 and not building unsupported packages
-    if os.path.basename(spec) == 'pulp.spec':
+    if os.path.basename(spec) in unsupported_specs.values():
         if 'el6' not in package_dists:
             package_dists = ['el6'] + package_dists
         if 'el5' not in package_dists:
