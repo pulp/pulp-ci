@@ -3,5 +3,3 @@
 - hosts: all
   roles:
     - role: pulp-upgrade
-  become: true
-  become_method: sudo

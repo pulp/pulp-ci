@@ -8,5 +8,3 @@
     - role: lazy
       when: pulp_version | version_compare('2.8', '>=')
     - role: pulp-certs
-  become: true
-  become_method: sudo

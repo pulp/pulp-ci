@@ -3,5 +3,3 @@
 - hosts: all
   roles:
     - pulp-smash
-  become: true
-  become_method: sudo

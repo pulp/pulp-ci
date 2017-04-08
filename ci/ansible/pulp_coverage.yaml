@@ -2,5 +2,3 @@
 - hosts: all
   roles:
     - role: pulp-coverage
-  become: true
-  become_method: sudo
