@@ -1,0 +1,62 @@
+---
+
+# Playbooks should conditionally include this role by placing the following
+# assertion into a `when:` statement.
+- name: Ensure expected distribution
+  assert:
+    that: ansible_distribution == "RedHat"
+
+# De-registering and then registering is equivalent to using the
+# `force_register` argument, which was added in Ansible 2.2. We use this
+# technique to preserve compatibility with RHEL 6.
+- name: subscription-manager de-register
+  redhat_subscription:
+    state: absent
+  when:
+    - rhn_pool is defined
+    - (rhn_username is defined and rhn_password is defined) or
+      (rhn_activation_key is defined and rhn_organization is defined)
+
+- name: subscription-manager register and subscribe by username and password
+  redhat_subscription:
+    username: "{{ rhn_username }}"
+    password: "{{ rhn_password }}"
+    pool: "{{ rhn_pool }}"  # e.g. rhn_pool='^SKU Name$'
+  when:
+    - rhn_pool is defined
+    - rhn_username is defined
+    - rhn_password is defined
+    - rhn_activation_key is undefined
+    - rhn_organization is undefined
+
+- name: subscription-manager register and subscribe by activation key
+  redhat_subscription:
+    activationkey: "{{ rhn_activation_key }}"
+    org_id: "{{ rhn_organization }}"
+    pool: "{{ rhn_pool }}"
+  when:
+    - rhn_pool is defined
+    - rhn_username is undefined
+    - rhn_password is undefined
+    - rhn_activation_key is defined
+    - rhn_organization is defined
+
+- name: Subscription Manager disable all repositories
+  shell: "subscription-manager repos --disable \"*\""
+
+- name: Enable main repository
+  shell: "subscription-manager repos --enable rhel-{{ ansible_distribution_major_version }}-server-rpms"
+
+- name: Enable optional repository
+  shell: "subscription-manager repos --enable rhel-{{ ansible_distribution_major_version }}-server-optional-rpms"
+
+- name: Enable extras repository
+  shell: "subscription-manager repos --enable rhel-{{ ansible_distribution_major_version }}-server-extras-rpms"
+  when: ansible_distribution_major_version|int >= 7
+
+- name: Enable atomic host repository
+  shell: "subscription-manager repos --enable rhel-atomic-host-rpms"
+  when: ansible_distribution_major_version|int >= 7
+
+- name: Enable EPEL repository
+  action: "{{ ansible_pkg_mgr }} name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
