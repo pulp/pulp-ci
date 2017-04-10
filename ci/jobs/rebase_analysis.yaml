@@ -1,12 +1,12 @@
-# This Jenkins job runs a script which performs automation related to Redmine
-# and Bugzilla. See https://github.com/pulp/pulp_packaging/ci/redmine_bugzilla.py
+# This Jenkins job runs a script which analyzes the gap between upstream and downstream by querying
+# Redmine and Bugzilla. See https://github.com/pulp/pulp_packaging/ci/redmine_bugzilla.py
 
 - job:
-    name: 'redmine-bugzilla-automation'
+    name: 'rebase-analysis'
     defaults: ci-workflow-runtest
     node: 'f25-np'
     properties:
-        - bz-redmine-ownership
+        - dev-ownership
     scm:
         - git:
             url: 'https://github.com/pulp/pulp_packaging.git'
@@ -16,7 +16,7 @@
             skip-tag: true
             wipe-workspace: false
     triggers:
-        - timed: "0,30 * * * *"
+        - timed: "@midnight"
     wrappers:
         - credentials-binding:
             - file:
@@ -24,7 +24,7 @@
                 variable: REDMINE_BUGZILLA_CONF
         - timeout:
             # Timeout in minutes
-            timeout: 30
+            timeout: 60
             timeout-var: 'BUILD_TIMEOUT'
             fail: true
     builders:
@@ -37,15 +37,9 @@
 
             cd $WORKSPACE/
 
-            sudo pip install --upgrade python-bugzilla
-            sudo pip install python-redmine
-            sudo pip install certifi
+            sudo pip install python-bugzilla python-redmine certifi
 
-            # Here due to InsecurePlatformWarning
-            # https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning
-            sudo pip install ndg-httpsclient pyasn1 pyopenssl urllib3
-
-            python pulp_packaging/ci/redmine_bugzilla.py
+            python pulp_packaging/ci/rebase_analysis.py
 
     publishers:
       - email-notify-owners-with-log
