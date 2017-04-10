@@ -21,7 +21,7 @@ a z-stream and also later y releases.
 Requirements:
 There are a few pip installable requirements:
 
-    $ pip install semantic_version
+    $ pip install semantic_version python-bugzilla python-redmine
 
 The Redmine and Bugzilla credentials are expected from to be read from a
 file in ini format. See the example below. The location of this file is set

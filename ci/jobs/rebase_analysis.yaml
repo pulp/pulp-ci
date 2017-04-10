@@ -37,7 +37,7 @@
 
             cd $WORKSPACE/
 
-            sudo pip install python-bugzilla python-redmine certifi
+            sudo pip install python-bugzilla python-redmine certifi semantic_version
 
             python pulp_packaging/ci/rebase_analysis.py
 
