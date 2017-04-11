@@ -41,6 +41,7 @@
             - pulp
           # Poll once per minute since our jenkins isn't public and web hooks aren't an option
           cron: '* * * * *'
+          status-url: 'https://pulpadmin.fedorapeople.org/jenkins/jobs/${JOB_NAME}/builds/${BUILD_ID}/'
           trigger-phrase: 'ok test'
           allow-whitelist-orgs-as-admins: true
           # only-trigger-phrase: true
@@ -58,6 +59,8 @@
             - 2.13-dev
             - 2.13-release
             - master
+    wrappers:
+        - jenkins-ssh-credentials
     builders:
         - pr-tester-deps
         - shell: |
@@ -144,6 +147,15 @@
             set -x
             python ./run-tests.py --enable-coverage --with-xunit --xunit-file ../test/pulp_test.xml --with-xcoverage --xcoverage-file ../coverage/pulp_coverage.xml
 
+            echo "Host *
+                StrictHostKeyChecking no" >> ~/.ssh/config
+            sudo chmod 400 ~/.ssh/config
+            export NODE=${{JOB_NAME##*/}}
+            export SHORT_JOB_NAME=${{JOB_NAME/\/$NODE/}}
+            curl -k -o $NODE.txt $BUILD_URL/consoleText
+            rsync -rv --rsync-path="mkdir -p ~/public_html/jenkins/jobs/${{SHORT_JOB_NAME}}/builds/${{BUILD_ID}}/ && rsync" $NODE.txt pulpadmin@repos.fedorapeople.org:public_html/jenkins/jobs/${{SHORT_JOB_NAME}}/builds/${{BUILD_ID}}/
+
+
     publishers:
       - cobertura:
           report-file: 'coverage/*.xml'
@@ -200,9 +212,12 @@
           # Poll once per minute since our jenkins isn't public and web hooks aren't an option
           cron: '* * * * *'
           trigger-phrase: 'ok test'
+          status-url: 'https://pulpadmin.fedorapeople.org/jenkins/jobs/${{JOB_NAME}}/builds/${{BUILD_ID}}/'
           allow-whitelist-orgs-as-admins: true
           # only-trigger-phrase: true
           white-list-target-branches: '{obj:unittest_branches}'
+    wrappers:
+        - jenkins-ssh-credentials
     builders:
         - pr-tester-deps
         - shell: |
@@ -291,6 +306,15 @@
             sudo chown -R jenkins:jenkins /etc/pulp
 
             python ./run-tests.py --enable-coverage --with-xunit --xunit-file ../test/pulp_test.xml --with-xcoverage --xcoverage-file ../coverage/pulp_coverage.xml
+
+            echo "Host *
+                StrictHostKeyChecking no" >> ~/.ssh/config
+            sudo chmod 400 ~/.ssh/config
+            export NODE=${{JOB_NAME##*/}}
+            export SHORT_JOB_NAME=${{JOB_NAME/\/$NODE/}}
+            curl -k -o $NODE.txt $BUILD_URL/consoleText
+            rsync -rv --rsync-path="mkdir -p ~/public_html/jenkins/jobs/${{SHORT_JOB_NAME}}/builds/${{BUILD_ID}}/ && rsync" $NODE.txt pulpadmin@repos.fedorapeople.org:public_html/jenkins/jobs/${{SHORT_JOB_NAME}}/builds/${{BUILD_ID}}/
+
 
     publishers:
       - cobertura:
