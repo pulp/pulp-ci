@@ -43,7 +43,7 @@ import ConfigParser
 import os
 
 from bugzilla.rhbugzilla import RHBugzilla
-from redmine import Redmine
+from redminelib import Redmine
 import urllib3.contrib.pyopenssl
 import xmlrpclib
 
