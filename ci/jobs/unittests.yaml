@@ -55,6 +55,8 @@
             - 2.11-release
             - 2.12-dev
             - 2.12-release
+            - 2.13-dev
+            - 2.13-release
             - master
     builders:
         - pr-tester-deps
