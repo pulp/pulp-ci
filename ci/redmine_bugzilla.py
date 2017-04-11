@@ -44,12 +44,7 @@ import os
 
 from bugzilla.rhbugzilla import RHBugzilla
 from redminelib import Redmine
-import urllib3.contrib.pyopenssl
 import xmlrpclib
-
-# Here due to InsecurePlatformWarning
-# https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning
-urllib3.contrib.pyopenssl.inject_into_urllib3()
 
 
 BUGZILLA_URL = 'https://bugzilla.redhat.com'
