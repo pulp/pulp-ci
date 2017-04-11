@@ -64,7 +64,7 @@
             owner: bbouters
             co-owners:
                 - asmacdo
-                - semyers
+                - dkliban
                 - ttereshc
 
 # Ownership that defines owners for Bugzilla/Redmine integration job
@@ -75,16 +75,15 @@
             owner: dadavis
             co-owners:
                 - dkliban
-                - jalberts
 
 # Ownership that indicates developers are the primary contact for the job
 - property:
     name: dev-ownership
     properties:
         - ownership:
-            owner: semyers
+            owner: dkliban
             co-owners:
-                - dkliban
+                - bbouters
 
 # Ownership that indicates quality engineers are the primary contact for the
 # job

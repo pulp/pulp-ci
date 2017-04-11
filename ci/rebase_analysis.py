@@ -109,18 +109,14 @@ def main():
                 upstream_issues_checked_memo[upstream_id] = u''
                 continue
 
-            for custom_field_dict in upstream_issue.custom_fields.resources:
-                if custom_field_dict[u'name'] == u'Platform Release':
+            platform_release_field = upstream_issue.custom_fields.get(4)  # 'Platform Release' field
 
-                    # Never check an upstream issue twice
-                    upstream_issues_checked_memo[upstream_id] = custom_field_dict[u'value']
+            # Never check an upstream issue twice
+            upstream_issues_checked_memo[upstream_id] = platform_release_field[u'value']
 
-                    if custom_field_dict[u'value'] != u'':
-                        upstream_fixed_versions_for_bz.append(custom_field_dict[u'value'])
-                        all_BZs.add(bug.id)
-
-                    # No need to check other custom fields since we've found what we are looking for
-                    break
+            if platform_release_field[u'value'] != u'':
+                upstream_fixed_versions_for_bz.append(platform_release_field[u'value'])
+                all_BZs.add(bug.id)
 
         if upstream_fixed_versions_for_bz != []:
             fix_in = max([semantic_version.Version(v) for v in upstream_fixed_versions_for_bz])
