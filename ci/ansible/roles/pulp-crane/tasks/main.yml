@@ -1,0 +1,30 @@
+- name: Install required packages
+  action: "{{ ansible_pkg_mgr }} name={{ item }} state=present"
+  with_items:
+    - mod_wsgi
+    - python-crane
+  notify: restart apache # for mod_wsgi
+
+- name: Install Apache configuration file
+  copy:
+    src: pulp_crane.conf
+    dest: /etc/httpd/conf.d/pulp_crane.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart apache
+
+- name: Install Crane configuration file
+  copy:
+    src: crane.conf
+    dest: /etc/crane.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Open firewall port for Crane
+  firewalld:
+    port: "5000/tcp"
+    state: enabled
+    permanent: true
+    immediate: true
