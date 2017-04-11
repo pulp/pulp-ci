@@ -122,103 +122,102 @@ def main():
     failed_qa_bugzillas = []
 
     for issue in redmine_issues:
-        for custom_field in issue.custom_fields.resources:
-            if custom_field['name'] == 'Bugzillas':
-                if custom_field['value'] == '':
+        bugzilla_field = issue.custom_fields.get(32)  # 32 is the 'Bugzillas' field
+        if bugzilla_field['value'] == '':
+            continue
+        for bug_id in [int(id_str) for id_str in bugzilla_field['value'].split(',')]:
+            links_back = False
+            if bug_id in failed_qa_bugzillas:
+                continue
+            try:
+                bug = BZ.getbug(bug_id)
+            except xmlrpclib.Fault as e:
+                if e.faultCode == 102:
+                    print 'Bugzilla %s could not be accessed.' % bug_id
                     continue
-                for bug_id in [int(id_str) for id_str in custom_field['value'].split(',')]:
-                    links_back = False
-                    if bug_id in failed_qa_bugzillas:
-                        continue
-                    try:
-                        bug = BZ.getbug(bug_id)
-                    except xmlrpclib.Fault as e:
-                        if e.faultCode == 102:
-                            print 'Bugzilla %s could not be accessed.' % bug_id
-                            continue
+                else:
+                    raise
+            for external_bug in bug.external_bugs:
+                if external_bug['type']['description'] == 'Pulp Redmine' and \
+                                external_bug['ext_bz_bug_id'] == str(issue.id):
+                    add_cc_list_to_bugzilla_bug(bug)
+                    ext_params = {}
+                    if external_bug['ext_description'] != issue.subject:
+                        ext_params['ext_description'] = issue.subject
+                    if external_bug['ext_status'] != issue.status.name:
+                        ext_params['ext_status'] = issue.status.name
+                    if external_bug['ext_priority'] != issue.priority.name:
+                        ext_params['ext_priority'] = issue.priority.name
+                    if len(ext_params.keys()) > 0:
+                        ext_bug_record += 'Bugzilla bug %s updated from upstream bug %s ' \
+                                          'with %s\n' % (bug.id, issue.id, ext_params)
+                        ext_params['ids'] = external_bug['id']
+                        BZ.update_external_tracker(**ext_params)
+                        if 'ext_status' in ext_params:
+                            bug.addcomment(
+                                'The Pulp upstream bug status is at %s. Updating the '
+                                'external tracker on this bug.' % issue.status.name)
+                        if 'ext_priority' in ext_params:
+                            bug.addcomment(
+                                'The Pulp upstream bug priority is at %s. Updating the '
+                                'external tracker on this bug.' % issue.priority.name)
+                    downstream_POST_plus = ['POST', 'MODIFIED', 'ON_QA', 'VERIFIED',
+                                            'RELEASE_PENDING', 'CLOSED']
+                    downstream_ACCEPTABLE_resolution = ['NOTABUG', 'WONTFIX', 'DEFERRED',
+                                                        'WORKSFORME']
+                    upstream_POST_minus = ['NEW', 'ASSIGNED', 'POST']
+                    if bug.status in downstream_POST_plus and \
+                                    issue.status.name in upstream_POST_minus:
+                        if bug.resolution not in downstream_ACCEPTABLE_resolution:
+                            msg = 'The downstream bug %s is at POST+ but the upstream ' \
+                                  'bug %s at POST-.\n' % (bug.id, issue.id)
+                            downstream_state_issue_record += msg
+                    links_back = True
+            transition_to_post = []
+            for external_bug in bug.external_bugs:
+                if external_bug['type']['description'] == 'Foreman Issue Tracker':
+                    # If the bug has an external foreman issue, don't transition the BZ
+                    transition_to_post.append(False)
+                if external_bug['type']['description'] == 'Pulp Redmine':
+                    if bug.status in ['NEW', 'ASSIGNED']:
+                        if external_bug['ext_status'] in ['MODIFIED', 'ON_QA', 'VERIFIED',
+                                                 'CLOSED - CURRENTRELEASE']:
+                            if 'FailedQA' in bug.cf_verified:
+                                needinfo = True
+                                external_bug_id = external_bug['ext_bz_bug_id']
+                                redmine_issue = redmine.issue.get(external_bug_id)
+                                redmine_user_id = redmine_issue.assigned_to.id
+                                needinfo_email = redmine.user.get(redmine_user_id).mail
+                                msg = "Bugzilla %s failed QA. Needinfo is set for %s." % \
+                                      (bug.id, needinfo_email)
+                                for flag in bug.flags:
+                                    if flag['name'] == 'needinfo' and \
+                                                    flag['requestee'] == needinfo_email:
+                                        needinfo = False
+                                if needinfo:
+                                    flag = { "name": "needinfo",
+                                             "status": "?",
+                                             "requestee": needinfo_email,
+                                             "new": True}
+                                    updates = BZ.build_update(status=bug.status, flags = [flag])
+                                    BZ.update_bugs(bug.id, updates)
+                                    bug.addcomment("Requesting needsinfo from upstream " \
+                                                   "developer %s because the 'FailedQA' " \
+                                                   "flag is set." % needinfo_email)
+                                    new_failed_qa_record += "%s\n" % msg
+                                print msg
+                                failed_qa_bugzillas.append(bug.id)
+                            else:
+                                transition_to_post.append(True)
                         else:
-                            raise
-                    for external_bug in bug.external_bugs:
-                        if external_bug['type']['description'] == 'Pulp Redmine' and \
-                                        external_bug['ext_bz_bug_id'] == str(issue.id):
-                            add_cc_list_to_bugzilla_bug(bug)
-                            ext_params = {}
-                            if external_bug['ext_description'] != issue.subject:
-                                ext_params['ext_description'] = issue.subject
-                            if external_bug['ext_status'] != issue.status.name:
-                                ext_params['ext_status'] = issue.status.name
-                            if external_bug['ext_priority'] != issue.priority.name:
-                                ext_params['ext_priority'] = issue.priority.name
-                            if len(ext_params.keys()) > 0:
-                                ext_bug_record += 'Bugzilla bug %s updated from upstream bug %s ' \
-                                                  'with %s\n' % (bug.id, issue.id, ext_params)
-                                ext_params['ids'] = external_bug['id']
-                                BZ.update_external_tracker(**ext_params)
-                                if 'ext_status' in ext_params:
-                                    bug.addcomment(
-                                        'The Pulp upstream bug status is at %s. Updating the '
-                                        'external tracker on this bug.' % issue.status.name)
-                                if 'ext_priority' in ext_params:
-                                    bug.addcomment(
-                                        'The Pulp upstream bug priority is at %s. Updating the '
-                                        'external tracker on this bug.' % issue.priority.name)
-                            downstream_POST_plus = ['POST', 'MODIFIED', 'ON_QA', 'VERIFIED',
-                                                    'RELEASE_PENDING', 'CLOSED']
-                            downstream_ACCEPTABLE_resolution = ['NOTABUG', 'WONTFIX', 'DEFERRED',
-                                                                'WORKSFORME']
-                            upstream_POST_minus = ['NEW', 'ASSIGNED', 'POST']
-                            if bug.status in downstream_POST_plus and \
-                                            issue.status.name in upstream_POST_minus:
-                                if bug.resolution not in downstream_ACCEPTABLE_resolution:
-                                    msg = 'The downstream bug %s is at POST+ but the upstream ' \
-                                          'bug %s at POST-.\n' % (bug.id, issue.id)
-                                    downstream_state_issue_record += msg
-                            links_back = True
-                    transition_to_post = []
-                    for external_bug in bug.external_bugs:
-                        if external_bug['type']['description'] == 'Foreman Issue Tracker':
-                            # If the bug has an external foreman issue, don't transition the BZ
                             transition_to_post.append(False)
-                        if external_bug['type']['description'] == 'Pulp Redmine':
-                            if bug.status in ['NEW', 'ASSIGNED']:
-                                if external_bug['ext_status'] in ['MODIFIED', 'ON_QA', 'VERIFIED',
-                                                         'CLOSED - CURRENTRELEASE']:
-                                    if 'FailedQA' in bug.cf_verified:
-                                        needinfo = True
-                                        external_bug_id = external_bug['ext_bz_bug_id']
-                                        redmine_issue = redmine.issue.get(external_bug_id)
-                                        redmine_user_id = redmine_issue.assigned_to.id
-                                        needinfo_email = redmine.user.get(redmine_user_id).mail
-                                        msg = "Bugzilla %s failed QA. Needinfo is set for %s." % \
-                                              (bug.id, needinfo_email)
-                                        for flag in bug.flags:
-                                            if flag['name'] == 'needinfo' and \
-                                                            flag['requestee'] == needinfo_email:
-                                                needinfo = False
-                                        if needinfo:
-                                            flag = { "name": "needinfo",
-                                                     "status": "?",
-                                                     "requestee": needinfo_email,
-                                                     "new": True}
-                                            updates = BZ.build_update(status=bug.status, flags = [flag])
-                                            BZ.update_bugs(bug.id, updates)
-                                            bug.addcomment("Requesting needsinfo from upstream " \
-                                                           "developer %s because the 'FailedQA' " \
-                                                           "flag is set." % needinfo_email)
-                                            new_failed_qa_record += "%s\n" % msg
-                                        print msg
-                                        failed_qa_bugzillas.append(bug.id)
-                                    else:
-                                        transition_to_post.append(True)
-                                else:
-                                    transition_to_post.append(False)
-                    if not links_back:
-                        links_issues_record += 'Redmine #%s -> Bugzilla %s, but Bugzilla %s does ' \
-                                               'not link back\n' % (issue.id, bug.id, bug.id)
-                    if len(transition_to_post) > 0 and all(transition_to_post):
-                        msg = 'All upstream Pulp bugs are at MODIFIED+. Moving this bug to POST.'
-                        bug.setstatus('POST', msg)
-                        downstream_changes += 'Bugzilla %s was transitioned to POST\n' % bug.id
+            if not links_back:
+                links_issues_record += 'Redmine #%s -> Bugzilla %s, but Bugzilla %s does ' \
+                                       'not link back\n' % (issue.id, bug.id, bug.id)
+            if len(transition_to_post) > 0 and all(transition_to_post):
+                msg = 'All upstream Pulp bugs are at MODIFIED+. Moving this bug to POST.'
+                bug.setstatus('POST', msg)
+                downstream_changes += 'Bugzilla %s was transitioned to POST\n' % bug.id
 
     for bug in bugzilla_bugs:
         for external_bug in bug.external_bugs:
@@ -227,19 +226,19 @@ def main():
                     issue_id = external_bug['ext_bz_bug_id']
                     issue = redmine.issue.get(issue_id)
                     links_back = False
-                    for custom_field in issue.custom_fields.resources:
-                        if custom_field['name'] == 'Bugzillas' and custom_field['value']:
-                            bug_list = [int(id_str) for id_str in custom_field['value'].split(',')]
-                            for bug_id in bug_list:
-                                try:
-                                    if bug_id == bug.id:
-                                        links_back = True
-                                except KeyError:
-                                    # If value isn't present this field is not linking back
-                                    continue
-                                except ValueError:
-                                    # If value is present but empty this field is not linking back
-                                    continue
+                    bugzilla_field = issue.custom_fields.get(32)  # 32 is the 'Bugzillas' field
+                    if bugzilla_field['value']:
+                        bug_list = [int(id_str) for id_str in bugzilla_field['value'].split(',')]
+                        for bug_id in bug_list:
+                            try:
+                                if bug_id == bug.id:
+                                    links_back = True
+                            except KeyError:
+                                # If value isn't present this field is not linking back
+                                continue
+                            except ValueError:
+                                # If value is present but empty this field is not linking back
+                                continue
                     if not links_back:
                         links_issues_record += 'Bugzilla #%s -> Redmine %s, but Redmine %s does ' \
                                                'not link back\n' % (bug.id, issue.id, issue.id)
