@@ -41,6 +41,7 @@
                 - 'pulp-install.sh'
                 - 'pre-upgrade.sh'
         - shell: |
+            export ANSIBLE_CONFIG="${{PWD}}/ci/ansible/ansible.cfg"
             ansible-playbook --connection local -i hosts ci/ansible/pulp_server_upgrade.yaml \
                 -e "upgrade_pulp_build=${{UPGRADE_PULP_BUILD}}" \
                 -e "upgrade_pulp_version=${{UPGRADE_PULP_VERSION}}"
