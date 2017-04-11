@@ -8,8 +8,10 @@
          version: '2.11'
       - 2.12-dev:
          version: '2.12'
-      - master:
+      - 2.13-dev:
          version: '2.13'
+      - master:
+         version: '2.14'
 
 - project:
     name: ci-update-jobs
@@ -22,6 +24,7 @@
      - 'docs-builder-{release_config}'
     release_config:
      - 2.12-dev
+     - 2.13-dev
      - master
      - 3.0-dev
     trigger_times: '@midnight'
@@ -33,6 +36,8 @@
     release_config:
      - 2.12-build
      - 2.12-release
+     - 2.13-build
+     - 2.13-release
     trigger_times: ''
 
 - project:
@@ -164,6 +169,7 @@
             - 2.0-release
             - 2.1-dev
             - 2.2-dev
+            - 2.4-dev
           unittest_platforms:
             - f24-np
             - f25-np
@@ -187,6 +193,7 @@
             - 2.10-dev
             - 2.11-dev
             - 2.12-dev
+            - 2.13-dev
             - master
           unittest_platforms:
             - f24-np
@@ -211,6 +218,7 @@
             - 2.10-dev
             - 2.11-dev
             - 2.12-dev
+            - 2.13-dev
             - master
           unittest_platforms:
             - f24-np
