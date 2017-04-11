@@ -37,13 +37,7 @@
 
             cd $WORKSPACE/
 
-            sudo pip install --upgrade python-bugzilla
-            sudo pip install python-redmine
-            sudo pip install certifi
-
-            # Here due to InsecurePlatformWarning
-            # https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning
-            sudo pip install ndg-httpsclient pyasn1 pyopenssl urllib3
+            sudo pip install python-bugzilla python-redmine certifi
 
             python pulp_packaging/ci/redmine_bugzilla.py
 
