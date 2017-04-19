@@ -155,26 +155,26 @@
   shell: sudo semanage boolean --modify --on pulp_manage_rsync
   when: pulp_version | version_compare('2.10', '>=')
 
-- name: Ensure Apache server is running
+- name: Ensure Apache server is started
   service:
     name: httpd
     enabled: yes
-    state: running
+    state: started
 
-- name: Ensure Pulp workers are running
+- name: Ensure Pulp workers are started
   service:
     name: pulp_workers
     enabled: yes
-    state: running
+    state: started
 
-- name: Ensure Pulp celerybeat is running
+- name: Ensure Pulp celerybeat is started
   service:
     name: pulp_celerybeat
     enabled: yes
-    state: running
+    state: started
 
-- name: Ensure Pulp resource manager is running
+- name: Ensure Pulp resource manager is started
   service:
     name: pulp_resource_manager
     enabled: yes
-    state: running
+    state: started
