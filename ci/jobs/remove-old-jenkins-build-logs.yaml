@@ -1,0 +1,16 @@
+- job:
+    name: remove-old-jenkins-build-logs
+    triggers:
+      # for now we'll fire it at midnight every day
+      - timed: |
+          @midnight
+    wrappers:
+      - workspace-cleanup:
+          dirmatch: True
+          include: ['*']
+      - jenkins-ssh-credentials
+    builders:
+      - shell: |
+          # remove build logs older than 31 days
+          ssh pulpadmin@repos.fedorapeople.org 'find /home/fedora/pulpadmin/public_html/jenkins/* -mtime +31 -type f -exec rm -v {} \;'
+    # One of the few jobs that can run on the jenkins master, no need to mark offline
