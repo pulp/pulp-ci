@@ -151,10 +151,10 @@
             echo "Host *
                 StrictHostKeyChecking no" >> ~/.ssh/config
             sudo chmod 400 ~/.ssh/config
-            export NODE=${{JOB_NAME##*/}}
-            export SHORT_JOB_NAME=${{JOB_NAME/\/$NODE/}}
+            export NODE=${JOB_NAME##*/}
+            export SHORT_JOB_NAME=${JOB_NAME/\/$NODE/}
             curl -k -o $NODE.txt $BUILD_URL/consoleText
-            rsync -rv --rsync-path="mkdir -p ~/public_html/jenkins/jobs/${{SHORT_JOB_NAME}}/builds/${{BUILD_ID}}/ && rsync" $NODE.txt pulpadmin@repos.fedorapeople.org:public_html/jenkins/jobs/${{SHORT_JOB_NAME}}/builds/${{BUILD_ID}}/
+            rsync -rv --rsync-path="mkdir -p ~/public_html/jenkins/jobs/${SHORT_JOB_NAME}/builds/${BUILD_ID}/ && rsync" $NODE.txt pulpadmin@repos.fedorapeople.org:public_html/jenkins/jobs/${SHORT_JOB_NAME}/builds/${BUILD_ID}/
 
 
     publishers:
