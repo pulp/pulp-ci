@@ -218,6 +218,7 @@
           allow-whitelist-orgs-as-admins: true
           # only-trigger-phrase: true
           white-list-target-branches: '{obj:unittest_branches}'
+          white-list: '{obj:unittest_whitelist}'
     wrappers:
         - jenkins-ssh-credentials
     builders:
