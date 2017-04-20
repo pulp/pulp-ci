@@ -15,6 +15,12 @@
     mode: 01777
     path: /srv/pulp_coverage
     state: directory
+    group: apache
+    owner: apache
+    selevel: s0
+    serole: object_r
+    seuser: system_u
+    setype: httpd_sys_rw_content_t
 
 - name: Clone coverage repository
   git:
