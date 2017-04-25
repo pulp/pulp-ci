@@ -184,6 +184,15 @@
                 - '*/master'
             skip-tag: true
 
+- scm:
+    name: pulp-smash-github
+    scm:
+        - git:
+            url: https://github.com/PulpQE/pulp-smash.git
+            branches:
+                - '*/master'
+            skip-tag: true
+
 - wrapper:
     name: default-ci-workflow-wrappers
     wrappers:

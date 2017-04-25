@@ -123,7 +123,7 @@
     properties:
         - qe-ownership
     scm:
-        - pulp-packaging-github
+        - pulp-smash-github
     wrappers:
         - ansicolor
         - timeout:
@@ -155,12 +155,9 @@
             sudo yum -y install python-pip python-virtualenv
             virtualenv -p /usr/bin/python3 venv
             source venv/bin/activate
-            git clone http://github.com/PulpQE/pulp-smash.git
-            cd pulp-smash
             pip install -U setuptools
             pip install -r requirements.txt pytest
 
-            mkdir -p pulp_smash
             cat > pulp_smash/settings.json <<EOF
             {
                 "pulp": {
