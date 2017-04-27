@@ -9,7 +9,7 @@ from lib import builder, promote
 from lib.builder import WORKING_DIR
 
 
-LATEST = '2.12'
+LATEST = '2.13'
 
 USERNAME = '57600fb10c1e664383000229'
 HOSTNAME = 'docs-pulp.rhcloud.com'
