@@ -175,6 +175,6 @@
             test -f junit-report.xml
     publishers:
         - archive:
-            artifacts: 'pulp-smash/junit-report.xml'
+            artifacts: 'junit-report.xml'
         - email-notify-owners
         - mark-node-offline
