@@ -19,7 +19,7 @@ SITE_ROOT = '~/app-root/repo/diy/'
 # dict of {git repo: [list of package dirs containing setup.py]} that need to be installed
 # for apidoc generation to work; only used for pulp 3+
 APIDOC_PACKAGES = {
-    'pulp': ['app', 'common', 'exceptions', 'plugin', 'tasking']
+    'pulp': ['platform', 'common']
 }
 
 
