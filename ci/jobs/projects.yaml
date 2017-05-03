@@ -23,7 +23,6 @@
     jobs:
      - 'docs-builder-{release_config}'
     release_config:
-     - 2.12-dev
      - 2.13-dev
      - master
      - 3.0-dev
@@ -34,8 +33,6 @@
     jobs:
      - 'docs-builder-{release_config}'
     release_config:
-     - 2.12-build
-     - 2.12-release
      - 2.13-build
      - 2.13-release
     trigger_times: ''
