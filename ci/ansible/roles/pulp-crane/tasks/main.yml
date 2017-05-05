@@ -14,6 +14,14 @@
     mode: 0644
   notify: restart apache
 
+# NOTE: This task exists as a work-around for https://pulp.plan.io/issues/2719
+# When that issue is fixed, this task should be removed.
+- name: "Let Apache bind to port 5000"
+  seboolean:
+    name: httpd_use_openstack
+    state: true
+    persistent: true
+
 - name: Install Crane configuration file
   copy:
     src: crane.conf
