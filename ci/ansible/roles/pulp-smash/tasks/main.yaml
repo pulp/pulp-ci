@@ -1,30 +1,81 @@
 ---
+# Pulp Smash requires Python 3.4+, and we want to create a Python 3 virtualenv.
+# Unfortunately, there's some problems on RHEL 7. (And some other distros.)
+# First, `virtualenv -p python3 ...` breaks due to a bug in virtualenv 1.10. [1]
+# Second, `python3 -m venv ...` breaks when installing pip. [2]
+#
+# This Ansible playbook works around the issue by creating a Python 3 virtualenv
+# without pip, and then installing pip into the virtualenv with a script
+# provided by PyPA. This solution is chosen because it's low impact. Alternative
+# solutions require doing things like installing an updated version of pip
+# system-wide with pip, instead of the system package manager.
+#
+# [1] https://github.com/pypa/virtualenv/issues/463#issuecomment-41204800
+# [2] http://stackoverflow.com/a/26314477
 
-- name: Remove previous Pulp Smash repository
-  shell: rm -rf pulp-smash
+- block:
 
-- name: Clone Pulp Smash repository
-  git: repo=https://github.com/PulpQE/pulp-smash.git depth=1 dest=pulp-smash
+  - name: Ensure Python 3 is present (non-RHEL)
+    action: "{{ ansible_pkg_mgr }} name=python3 state=present"
 
-- name: Install required OS packages
-  action: "{{ ansible_pkg_mgr }} name={{ item }} state=present"
-  with_items:
-    - python
-    - python-pip
-    - python-virtualenv
+  - name: Ensure a Pulp Smash virtualenv is available (non-RHEL)
+    command: python3 -m venv "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
+    args:
+      creates:  "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
 
-- name: Create Pulp Smash virtual environment
-  shell: virtualenv venv chdir=pulp-smash
+  when: ansible_distribution != "RedHat"
 
-# mock Pulp Smash requirement requires an updated setuptools
-- name: Update setuptools
-  shell: venv/bin/pip install -U setuptools chdir=pulp-smash
+- block:
 
-- name: Install Pulp Smash requirements
-  shell: venv/bin/pip install -r requirements.txt pytest chdir=pulp-smash
+  - name: Ensure Python 3 is present (RHEL)
+    action: "{{ ansible_pkg_mgr }} name=python34 state=present"
 
-- name: Configure Pulp Smash
-  template: src=settings.j2 dest=pulp-smash/pulp_smash/settings.json
+  - name: Ensure a Pulp Smash virtualenv is available (RHEL)
+    command: python3 -m venv --without-pip "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
+    args:
+      creates:  "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
+
+  - name: Ensure pip is present (RHEL)
+    shell: >
+      source {{ ansible_user_dir }}/.virtualenvs/pulp-smash/bin/activate
+      && (which pip || curl https://bootstrap.pypa.io/get-pip.py | python)
+
+  when: ansible_distribution == "RedHat"
+
+# The --upgrade flag only has an effect if the named packages are already
+# present. If the named packages aren't present, the --upgrade flag is ignored.
+- name: Ensure pip is installed and up-to-date
+  pip:
+    virtualenv: "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
+    name: pip
+    state: latest
+
+- name: Ensure Git is present
+  action: "{{ ansible_pkg_mgr }} name=git state=present"
+
+- name: Ensure Pulp Smash is installed and up-to-date
+  pip:
+    virtualenv: "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
+    name: git+https://github.com/PulpQE/pulp-smash.git#egg=pulp-smash
+    state: latest
+
+- name: Ensure pytest is installed and up-to-date
+  pip:
+    virtualenv: "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
+    name: pytest
+    state: latest
+
+- name: Ensure a Pulp Smash configuration directory is present
+  file:
+    path: "{{ ansible_user_dir }}/.config/pulp_smash"
+    state: directory
+
+- name: Ensure a Pulp Smash configuration file is present
+  template:
+    src: settings.j2
+    dest: "{{ ansible_user_dir }}/.config/pulp_smash/settings.json"
 
 - name: Run Pulp Smash
-  shell: XDG_CONFIG_DIRS=. venv/bin/py.test --junit-xml=report.xml pulp_smash/tests chdir=pulp-smash
+  shell: >
+    source {{ ansible_user_dir }}/.virtualenvs/pulp-smash/bin/activate
+    && python -m pytest --junit-xml "{{ ansible_user_dir }}/report.xml" --pyargs pulp_smash.tests
