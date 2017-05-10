@@ -41,7 +41,6 @@
             - pulp
           # Poll once per minute since our jenkins isn't public and web hooks aren't an option
           cron: '* * * * *'
-          status-context: 'unit tests results'
           status-url: 'https://pulpadmin.fedorapeople.org/jenkins/jobs/${JOB_NAME}/builds/${BUILD_ID}/'
           trigger-phrase: 'ok test'
           allow-whitelist-orgs-as-admins: true
@@ -213,7 +212,6 @@
           # Poll once per minute since our jenkins isn't public and web hooks aren't an option
           cron: '* * * * *'
           trigger-phrase: 'ok test'
-          status-context: 'unit tests results'
           status-url: 'https://pulpadmin.fedorapeople.org/jenkins/jobs/${{JOB_NAME}}/builds/${{BUILD_ID}}/'
           allow-whitelist-orgs-as-admins: true
           # only-trigger-phrase: true
