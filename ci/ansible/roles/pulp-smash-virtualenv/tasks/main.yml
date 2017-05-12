@@ -59,8 +59,3 @@
   template:
     src: settings.j2
     dest: "{{ ansible_user_dir }}/.config/pulp_smash/settings.json"
-
-- name: Run Pulp Smash
-  shell: >
-    source {{ ansible_user_dir }}/.virtualenvs/pulp-smash/bin/activate
-    && python -m pytest --junit-xml "{{ ansible_user_dir }}/report.xml" --pyargs pulp_smash.tests
