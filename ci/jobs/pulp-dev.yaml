@@ -123,7 +123,7 @@
     properties:
         - qe-ownership
     scm:
-        - pulp-smash-github
+        - pulp-packaging-github
     wrappers:
         - ansicolor
         - timeout:
@@ -152,25 +152,17 @@
             sudo cp CA_CERT /etc/pki/ca-trust/source/anchors/cacert.pem
             sudo update-ca-trust
 
-            sudo yum -y install python-pip python-virtualenv
-            virtualenv -p /usr/bin/python3 venv
-            source venv/bin/activate
-            pip install -U setuptools
-            pip install -r requirements.txt pytest
-
-            cat > pulp_smash/settings.json <<EOF
-            {
-                "pulp": {
-                    "base_url": "${BASE_URL}",
-                    "auth": ["admin", "admin"],
-                    "version": "${PULP_VERSION}",
-                    "cli_transport": "ssh",
-                    "verify": "/etc/pki/ca-trust/source/anchors/cacert.pem"
-                }
-            }
-            EOF
+            sudo dnf -y install ansible attr git libselinux-python
+            echo 'localhost' > hosts
+            export ANSIBLE_CONFIG="${PWD}/ci/ansible/ansible.cfg"
+            ansible-playbook --connection local -i hosts ci/ansible/pulp_smash.yaml \
+                -e pulp_smash_baseurl="${BASE_URL}" \
+                -e pulp_smash_cli_transport="ssh" \
+                -e pulp_smash_verify="/etc/pki/ca-trust/source/anchors/cacert.pem" \
+                -e pulp_smash_version="${PULP_VERSION}"
+            source ~/.virtualenvs/pulp-smash/bin/activate
             set +e
-            XDG_CONFIG_DIRS=. py.test -v --color=yes --junit-xml=junit-report.xml pulp_smash/tests
+            py.test -v --color=yes --junit-xml=junit-report.xml --pyargs pulp_smash.tests
             set -e
             test -f junit-report.xml
     publishers:
