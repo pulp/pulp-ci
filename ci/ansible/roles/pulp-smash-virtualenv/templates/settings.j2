@@ -8,6 +8,12 @@
         {% if pulp_smash_cli_transport|default() %}
         "cli_transport": "{{ pulp_smash_cli_transport }}",
         {% endif %}
-        "verify": {{ pulp_smash_verify }}
+
+        {# "verify" may be either a boolean or a string path to a cert. #}
+        {% if pulp_smash_verify in (true, "true", false, "false") %}
+            "verify": {{ pulp_smash_verify }}
+        {% else %}
+            "verify": "{{ pulp_smash_verify }}"
+        {% endif %}
     }
 }
