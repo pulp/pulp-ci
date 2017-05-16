@@ -14,22 +14,6 @@
 # [2] http://stackoverflow.com/a/26314477
 
 - block:
-
-  - name: Ensure Python 3 is present (non-RHEL)
-    action: "{{ ansible_pkg_mgr }} name=python3 state=present"
-
-  - name: Ensure a Pulp Smash virtualenv is available (non-RHEL)
-    command: python3 -m venv "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
-    args:
-      creates:  "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
-
-  when: ansible_distribution != "RedHat"
-
-- block:
-
-  - name: Ensure Python 3 is present (RHEL)
-    action: "{{ ansible_pkg_mgr }} name=python34 state=present"
-
   - name: Ensure a Pulp Smash virtualenv is available (RHEL)
     command: python3 -m venv --without-pip "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
     args:
@@ -42,16 +26,17 @@
 
   when: ansible_distribution == "RedHat"
 
-# The --upgrade flag only has an effect if the named packages are already
-# present. If the named packages aren't present, the --upgrade flag is ignored.
+- name: Ensure a Pulp Smash virtualenv is available (non-RHEL)
+  command: python3 -m venv "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
+  args:
+    creates:  "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
+  when: ansible_distribution != "RedHat"
+
 - name: Ensure pip is installed and up-to-date
   pip:
     virtualenv: "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
     name: pip
     state: latest
-
-- name: Ensure Git is present
-  action: "{{ ansible_pkg_mgr }} name=git state=present"
 
 - name: Ensure Pulp Smash is installed and up-to-date
   pip:

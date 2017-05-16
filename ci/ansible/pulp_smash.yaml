@@ -2,4 +2,9 @@
 
 - hosts: all
   roles:
-    - pulp-smash
+    - pulp-smash-dependencies
+
+- hosts: all
+  become: false
+  roles:
+    - pulp-smash-virtualenv
