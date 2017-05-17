@@ -41,6 +41,7 @@ key = XXXX
 
 import ConfigParser
 import os
+import time
 
 from bugzilla.rhbugzilla import RHBugzilla
 from redminelib import Redmine
@@ -219,12 +220,22 @@ def main():
                 bug.setstatus('POST', msg)
                 downstream_changes += 'Bugzilla %s was transitioned to POST\n' % bug.id
 
+    start_time = time.time()
+    redmine_issues_looked_up = 0
     for bug in bugzilla_bugs:
         for external_bug in bug.external_bugs:
                 if external_bug['type']['description'] == 'Pulp Redmine':
                     add_cc_list_to_bugzilla_bug(bug)
                     issue_id = external_bug['ext_bz_bug_id']
-                    issue = redmine.issue.get(issue_id)
+                    try:
+                        redmine_issues_looked_up += 1
+                        issue = redmine.issue.get(issue_id)
+                    except:
+                        end_time = time.time()
+                        time_to_query_before_failure = start_time - end_time
+                        print 'Total time to query %d redmine issues: %f' %\
+                              (redmine_issues_looked_up, time_to_query_before_failure)
+                        raise
                     links_back = False
                     bugzilla_field = issue.custom_fields.get(32)  # 32 is the 'Bugzillas' field
                     if bugzilla_field['value']:
@@ -243,6 +254,9 @@ def main():
                         links_issues_record += 'Bugzilla #%s -> Redmine %s, but Redmine %s does ' \
                                                'not link back\n' % (bug.id, issue.id, issue.id)
 
+    end_time = time.time()
+    time_to_query_all = end_time - start_time
+    print 'Total time to query %d redmine issues: %f' % (redmine_issues_looked_up, time_to_query_all)
     if ext_bug_record != '':
         print '\nBugzilla Updates From Upstream'
         print '------------------------------'
