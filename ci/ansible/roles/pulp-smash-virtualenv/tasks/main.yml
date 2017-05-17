@@ -18,11 +18,13 @@
     command: python3 -m venv --without-pip "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
     args:
       creates:  "{{ ansible_user_dir }}/.virtualenvs/pulp-smash"
+    register: result
 
   - name: Ensure pip is present (RHEL)
     shell: >
       source {{ ansible_user_dir }}/.virtualenvs/pulp-smash/bin/activate
       && (which pip || curl https://bootstrap.pypa.io/get-pip.py | python)
+    when: result|changed
 
   when: ansible_distribution == "RedHat"
 
