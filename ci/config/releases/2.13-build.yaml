@@ -14,7 +14,7 @@ repositories:
   - name: pulp_rpm
     git_url: git@github.com:pulp/pulp_rpm.git
     git_branch: 2.13-dev
-    version: 2.13.1-0.1.beta
+    version: 2.13.1-0.2.beta
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
     parent_branch: 2.4-dev
