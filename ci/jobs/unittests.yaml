@@ -153,7 +153,8 @@
             export NODE=${JOB_NAME##*/}
             export SHORT_JOB_NAME=${JOB_NAME/\/$NODE/}
             curl -k -o $NODE.txt $BUILD_URL/consoleText
-            rsync -rv --rsync-path="mkdir -p ~/public_html/jenkins/jobs/${SHORT_JOB_NAME}/builds/${BUILD_ID}/ && rsync" $NODE.txt pulpadmin@repos.fedorapeople.org:public_html/jenkins/jobs/${SHORT_JOB_NAME}/builds/${BUILD_ID}/
+            if grep -q FAILED $NODE.txt ; then mv $NODE.txt $NODE-FAILED.txt; fi
+            rsync -rv --rsync-path="mkdir -p ~/public_html/jenkins/jobs/${SHORT_JOB_NAME}/builds/${BUILD_ID}/ && rsync" $NODE*.txt pulpadmin@repos.fedorapeople.org:public_html/jenkins/jobs/${SHORT_JOB_NAME}/builds/${BUILD_ID}/
 
 
     publishers:
@@ -314,7 +315,8 @@
             export NODE=${{JOB_NAME##*/}}
             export SHORT_JOB_NAME=${{JOB_NAME/\/$NODE/}}
             curl -k -o $NODE.txt $BUILD_URL/consoleText
-            rsync -rv --rsync-path="mkdir -p ~/public_html/jenkins/jobs/${{SHORT_JOB_NAME}}/builds/${{BUILD_ID}}/ && rsync" $NODE.txt pulpadmin@repos.fedorapeople.org:public_html/jenkins/jobs/${{SHORT_JOB_NAME}}/builds/${{BUILD_ID}}/
+            if grep -q FAILED $NODE.txt ; then mv $NODE.txt $NODE-FAILED.txt; fi
+            rsync -rv --rsync-path="mkdir -p ~/public_html/jenkins/jobs/${{SHORT_JOB_NAME}}/builds/${{BUILD_ID}}/ && rsync" $NODE*.txt pulpadmin@repos.fedorapeople.org:public_html/jenkins/jobs/${{SHORT_JOB_NAME}}/builds/${{BUILD_ID}}/
 
 
     publishers:
