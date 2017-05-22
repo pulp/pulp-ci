@@ -81,7 +81,7 @@ Example Config
 
 Create the config file.
 
-```commandline
+```sh
 mkdir ~/.config/jenkins_jobs/
 vi ~/.config/jenkins_jobs/jenkins_jobs.ini
 ```
