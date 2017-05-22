@@ -75,3 +75,70 @@ Once you have the UUID of interest, add it into your job template. Each job temp
 or more private credentials to be installed in the `ssh-agent` using the `ssh-agent-credentials`
 directive. See the [`ssh-agent-credentials docs`](http://docs.openstack.org/infra/jenkins-job-builder/wrappers.html#wrappers.ssh-agent-credentials)
 for examples.
+
+Example Config
+--------------
+
+Create the config file.
+
+```commandline
+mkdir ~/.config/jenkins_jobs/
+vi ~/.config/jenkins_jobs/jenkins_jobs.ini
+```
+
+Here is an example config:
+```ini
+[jenkins]
+user=bbouters
+password=5cxr6230dptzp6l7oqga03chupnqa8f5
+url=https://pulp-jenkins.rhev-ci-vms.eng.rdu2.redhat.com
+query_plugins_info=False
+
+[job_builder]
+include_path=ci/jobs/scripts
+```
+
+The password above is your API token. Go to configure page for your username. For example for user
+'bbouters' that would be: https://pulp-jenkins.rhev-ci-vms.eng.rdu2.redhat.com/user/bbouters/configure
+
+Click 'Show API Token'.
+
+Example Usage
+-------------
+
+Test the potential job changes. Ensure sure you are at the top of the repo.
+
+```sh
+jenkins-jobs --ignore-cache test ci/jobs 'docs-builder-*'
+```
+
+Update the jobs by job name. Make sure you are at the top of the repo. For example:
+
+```sh
+jenkins-jobs --ignore-cache update ci/jobs 'docs-builder-*'
+```
+
+Update all jobs. Make sure you are at the top of the repo. For example:
+
+```sh
+jenkins-jobs --ignore-cache update ci/jobs
+```
+
+SSL Issues
+----------
+
+If you don't have the CA that secures our Jenkins instance in your system CA pack JJB will complain
+about SSL issues. To fix this add the CA to your system CA pack. Alternatively you can modify the
+JJB check to allow insecure usage. Warning: allow ***insecure at your own risk***.
+
+To workaround SSL errors patch line 431 of `/usr/lib/python2.7/site-packages/jenkins/__init__.py`
+
+```python
+import ssl
+context = ssl._create_unverified_context()
+response = urlopen(req, context=context, timeout=self.timeout).read()
+```
+
+In my case using the Pulp vagrant environment, the \_\_init\_\_.py file actually lived at:
+
+`/home/vagrant/.virtualenvs/jjb_env/lib/python2.7/site-packages/jenkins/__init__.py`
