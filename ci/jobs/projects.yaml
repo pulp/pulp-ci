@@ -164,6 +164,9 @@
             - rhel7-np
           unittest_whitelist:
             - mibanescu
+          unittest_adminlist:
+            - pulpbot
+            - mibanescu
       - pulp_docker:
           min_coverage: 100
           unittest_branches:
@@ -178,6 +181,8 @@
             - f25-np
             - rhel7-np
           unittest_whitelist: ""
+          unittest_adminlist:
+            - pulpbot
       - pulp_ostree:
           min_coverage: 100
           unittest_branches:
@@ -190,6 +195,8 @@
             - f25-np
             - rhel7-np
           unittest_whitelist: ""
+          unittest_adminlist:
+            - pulpbot
       - pulp_puppet:
           min_coverage: 95
           unittest_branches:
@@ -205,6 +212,8 @@
             - f25-np
             - rhel7-np
           unittest_whitelist: ""
+          unittest_adminlist:
+            - pulpbot
       - pulp_python:
           min_coverage: 100
           unittest_branches:
@@ -217,6 +226,8 @@
             - f25-np
             - rhel7-np
           unittest_whitelist: ""
+          unittest_adminlist:
+            - pulpbot
       - pulp_rpm:
           min_coverage: 87
           unittest_branches:
@@ -232,3 +243,5 @@
             - f25-np
             - rhel7-np
           unittest_whitelist: ""
+          unittest_adminlist:
+            - pulpbot

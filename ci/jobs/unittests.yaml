@@ -206,8 +206,7 @@
             wipe-workspace: false
     triggers:
       - github-pull-request:
-          admin-list:
-            - pulpbot
+          admin-list: '{obj:unittest_adminlist}'
           org-list:
             - pulp
           # Poll once per minute since our jenkins isn't public and web hooks aren't an option
