@@ -35,8 +35,8 @@
                 - pulp-smash-runner
               block: true
               predefined-parameters: |
-                  BASE_URL=$BASE_URL
-                  PULP_VERSION=$PULP_VERSION
+                  PULP_SMASH_SYSTEM_HOSTNAME=$PULP_SMASH_SYSTEM_HOSTNAME
+                  PULP_SMASH_PULP_VERSION=$PULP_SMASH_PULP_VERSION
               block-thresholds:
                   build-step-failure-threshold: never
                   unstable-threshold: never
@@ -98,75 +98,5 @@
         - archive:
             artifacts: "*.tar.gz"
             allow-empty: true
-        - email-notify-owners
-        - mark-node-offline
-
-- job:
-    name: pulp-smash-runner
-    concurrent: true
-    properties:
-        - copyartifact:
-            projects: pulp-*-dev-*
-    node: pulp-smash-np
-    parameters:
-        - string:
-            name: BASE_URL
-        - string:
-            name: PULP_VERSION
-            decription: Pulp version setup on the server.
-        - file:
-            name: PRIVATE_KEY
-            description: Private ssh key to connect on the server.
-        - file:
-            name: CA_CERT
-            description: The CA certificate that signed the Pulp apache server.
-    properties:
-        - qe-ownership
-    scm:
-        - pulp-packaging-github
-    wrappers:
-        - ansicolor
-        - timeout:
-            # pulp-smash usually takes about an hour or two, so time it out
-            # after 7:40 hours. This gives room to some tasks time out.
-            timeout: 460
-            abort: true
-        - timestamps
-    builders:
-        - shell: |
-            # Setup ssh config and private key
-            mkdir ~/.ssh/controlmasters
-            cat > ~/.ssh/config <<EOF
-            Host $(echo ${BASE_URL} | cut -d/ -f3)
-                User jenkins
-                StrictHostKeyChecking no
-                UserKnownHostsFile /dev/null
-                IdentityFile ${PWD}/PRIVATE_KEY
-                ControlMaster auto
-                ControlPersist 5m
-                ControlPath ~/.ssh/controlmasters/%C
-            EOF
-            chmod 600 PRIVATE_KEY ~/.ssh/config
-
-            # Set up the CA certificate that signed Pulp's apache server.
-            sudo cp CA_CERT /etc/pki/ca-trust/source/anchors/cacert.pem
-            sudo update-ca-trust
-
-            sudo dnf -y install ansible attr git libselinux-python
-            echo 'localhost' > hosts
-            export ANSIBLE_CONFIG="${PWD}/ci/ansible/ansible.cfg"
-            ansible-playbook --connection local -i hosts ci/ansible/pulp_smash.yaml \
-                -e pulp_smash_baseurl="${BASE_URL}" \
-                -e pulp_smash_cli_transport="ssh" \
-                -e pulp_smash_verify="/etc/pki/ca-trust/source/anchors/cacert.pem" \
-                -e pulp_smash_version="${PULP_VERSION}"
-            source ~/.virtualenvs/pulp-smash/bin/activate
-            set +e
-            py.test -v --color=yes --junit-xml=junit-report.xml --pyargs pulp_smash.tests
-            set -e
-            test -f junit-report.xml
-    publishers:
-        - archive:
-            artifacts: 'junit-report.xml'
         - email-notify-owners
         - mark-node-offline

@@ -62,8 +62,8 @@
                 - pulp-smash-runner
               block: true
               predefined-parameters: |
-                  BASE_URL=$BASE_URL
-                  PULP_VERSION=$UPGRADE_PULP_VERSION
+                  PULP_SMASH_SYSTEM_HOSTNAME=$PULP_SMASH_SYSTEM_HOSTNAME
+                  PULP_SMASH_PULP_VERSION=$PULP_SMASH_PULP_VERSION
               block-thresholds:
                   build-step-failure-threshold: never
                   unstable-threshold: never
