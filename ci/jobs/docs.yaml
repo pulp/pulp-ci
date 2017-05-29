@@ -51,11 +51,7 @@
             # create a virtualenv in which to install packages needed to build docs
             virtualenv -p /usr/bin/python3 --system-site-packages ~/docs_ve
             source ~/docs_ve/bin/activate
-
-            # Sphinx version is limited only due to the following bug:
-            # https://github.com/sphinx-doc/sphinx/issues/3779.
-            # Whenever it will be resolved, remove this version limitation
-            pip3 install 'sphinx<1.6.1' git+https://github.com/snide/sphinx_rtd_theme.git@abfa98539a2bfc44198a9ca8c2f16efe84cc4d26 pyyaml virtualenv
+            pip3 install sphinx git+https://github.com/snide/sphinx_rtd_theme.git@abfa98539a2bfc44198a9ca8c2f16efe84cc4d26 pyyaml virtualenv
 
             # clone and build the docs
             cd pulp_packaging/ci/
