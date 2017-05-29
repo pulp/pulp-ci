@@ -61,3 +61,10 @@
   template:
     src: settings.j2
     dest: "{{ ansible_user_dir }}/.config/pulp_smash/settings.json"
+  when: pulp_smash_custom_settings is not defined
+
+- name: Copy custom Pulp Smash configuration file
+  copy:
+    src: "{{ pulp_smash_custom_settings }}"
+    dest: "{{ ansible_user_dir }}/.config/pulp_smash/settings.json"
+  when: pulp_smash_custom_settings is defined
