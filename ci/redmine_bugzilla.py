@@ -181,7 +181,7 @@ def main():
                 if external_bug['type']['description'] == 'Pulp Redmine':
                     if bug.status in ['NEW', 'ASSIGNED']:
                         if external_bug['ext_status'] in ['MODIFIED', 'ON_QA', 'VERIFIED',
-                                                 'CLOSED - CURRENTRELEASE']:
+                                                 'CLOSED - CURRENTRELEASE', 'CLOSED - COMPLETE']:
                             if 'FailedQA' in bug.cf_verified:
                                 needinfo = True
                                 external_bug_id = external_bug['ext_bz_bug_id']
