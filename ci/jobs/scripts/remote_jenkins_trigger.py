@@ -16,20 +16,12 @@ JENKINS_USERNAME = os.environ.get('REMOTE_JENKINS_USERNAME')
 JOB_NAME = '{job_name}'
 
 logging.captureWarnings(True)
-print('Get crumb from Satellite Jenkins server...')
-crumb = requests.get(
-    JENKINS_URL + '/crumbIssuer/api/json',
-    auth=(JENKINS_USERNAME, JENKINS_API_TOKEN),
-    verify=False
-).json()
-
 print('Queuing job {{}}...'.format(JOB_NAME))
 queue_url = requests.post(
     JENKINS_URL + '/job/{{}}/buildWithParameters'
     .format(JOB_NAME),
     auth=(JENKINS_USERNAME, JENKINS_API_TOKEN),
     data={{
-        crumb['crumbRequestField']: crumb['crumb'],
         {job_parameters}
     }},
     verify=False
