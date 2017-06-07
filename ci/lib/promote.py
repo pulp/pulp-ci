@@ -286,17 +286,21 @@ def parse_release(release):
 
 def set_spec_version(spec_file, version, release):
     version_regex = re.compile("^(version:\s*)(.+)$", re.IGNORECASE)
-    release_regex = re.compile("^(release:\s*)(.+)$", re.IGNORECASE)
+    old_release_regex = re.compile("^(release:\s*)(.+)$", re.IGNORECASE)
+    new_release_regex = re.compile("^(%global release_number\s*)(.+)$", re.IGNORECASE)
+
     in_f = open(spec_file, 'r')
     out_f = open(spec_file + ".new", 'w')
     for line in in_f.readlines():
         match = re.match(version_regex, line)
         if match:
             line = "".join((match.group(1), version, "\n"))
-        match = re.match(release_regex, line)
+        match = re.match(new_release_regex, line)
         if match:
+            line = "".join((match.group(1), release, "\n"))
+        match = re.match(old_release_regex, line)
+        if match and 'release_number' not in line:
             line = "".join((match.group(1), release, "%{?dist}\n"))
-
         out_f.write(line)
 
     in_f.close()
