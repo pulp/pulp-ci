@@ -101,7 +101,7 @@
                 sed -i -e "s|{PULP_CA_CERT_PATH}|${PULP_CA_CERT_PATH}|" \
                     PULP_SMASH_CUSTOM_SETTINGS
                 ansible-playbook --connection local -i "localhost," ci/ansible/pulp_smash.yaml \
-                    -e pulp_smash_custom_settings PULP_SMASH_CUSTOM_SETTINGS
+                    -e pulp_smash_custom_settings="${PWD}/PULP_SMASH_CUSTOM_SETTINGS"
             else
                 ansible-playbook --connection local -i "localhost," ci/ansible/pulp_smash.yaml \
                     -e pulp_smash_system_hostname="${PULP_SMASH_SYSTEM_HOSTNAME}" \
