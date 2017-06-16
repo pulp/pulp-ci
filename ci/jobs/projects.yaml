@@ -238,3 +238,65 @@
           unittest_whitelist: ""
           unittest_adminlist:
             - pulpbot
+
+- project:
+    name: docs-pr
+    jobs:
+     - 'docs-pulp-pr'
+     - 'docs-plugins-pr-jobs'
+    pulp_plugin:
+      - pulp_python:
+          docs_branches:
+            - 2.0-dev
+            - master
+          docs_platforms:
+            - f25-np
+          docs_whitelist: ""
+          docs_adminlist:
+            - pulpbot
+      - pulp_deb:
+          docs_branches:
+            - master
+          docs_platforms:
+            - f25-np
+          docs_whitelist:
+            - mibanescu
+          docs_adminlist:
+            - pulpbot
+            - mibanescu
+      - pulp_docker:
+          docs_branches:
+            - master
+            - 2.4-dev
+          docs_platforms:
+            - f25-np
+          docs_whitelist: ""
+          docs_adminlist:
+            - pulpbot
+      - pulp_ostree:
+          docs_branches:
+            - master
+            - 1.2-dev
+          docs_platforms:
+            - f25-np
+          docs_whitelist: ""
+          docs_adminlist:
+            - pulpbot
+      - pulp_puppet:
+          docs_branches:
+            - 2.13-dev
+            - master
+          docs_platforms:
+            - f25-np
+          docs_whitelist: ""
+          docs_adminlist:
+            - pulpbot
+      - pulp_rpm:
+          docs_branches:
+            - 2.13-dev
+            - master
+          docs_platforms:
+            - f25-np
+          docs_whitelist: ""
+          docs_adminlist:
+            - pulpbot
