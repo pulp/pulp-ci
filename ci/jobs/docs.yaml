@@ -53,6 +53,10 @@
             source ~/docs_ve/bin/activate
             pip3 install sphinx git+https://github.com/snide/sphinx_rtd_theme.git@abfa98539a2bfc44198a9ca8c2f16efe84cc4d26 pyyaml virtualenv
 
+            # create server.yaml config file
+            sudo mkdir -p /etc/pulp
+            echo "SECRET_KEY: $(cat /dev/urandom | tr -dc 'a-z0-9\!@#$%^&*(-_=+)' | head -c 50)" | sudo tee -a /etc/pulp/server.yaml
+
             # clone and build the docs
             cd pulp_packaging/ci/
             export PYTHONUNBUFFERED=1
