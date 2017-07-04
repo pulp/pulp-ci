@@ -55,7 +55,7 @@
 
             # create server.yaml config file
             sudo mkdir -p /etc/pulp
-            echo "SECRET_KEY: $(cat /dev/urandom | tr -dc 'a-z0-9\!@#$%^&*(-_=+)' | head -c 50)" | sudo tee -a /etc/pulp/server.yaml
+            echo "SECRET_KEY: $(cat /dev/urandom | tr -dc 'a-z0-9\!@#$%^&*(\-_=+)' | head -c 50)" | sudo tee -a /etc/pulp/server.yaml
 
             # clone and build the docs
             cd pulp_packaging/ci/
