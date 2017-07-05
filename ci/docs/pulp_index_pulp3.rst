@@ -24,7 +24,7 @@ Content
 .. toctree::
    :maxdepth: 1
 
-   installation
+   installation/index
    cli_guide/index
    integration_guide/index
    contributing/index
