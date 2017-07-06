@@ -47,6 +47,7 @@
             - 2.13-dev
             - 2.13-release
             - master
+            - 3.0-dev
     wrappers:
         - jenkins-ssh-credentials
     builders:
@@ -83,8 +84,6 @@
             sudo chmod 400 ~/.ssh/config
             export NODE=${JOB_NAME##*/}
             export SHORT_JOB_NAME=${JOB_NAME/\/$NODE/}
-
-            export DJANGO_SETTINGS_MODULE='pulp.app.settings'
 
             make html &> $NODE-docs.txt
             docs_exit_code=$?
