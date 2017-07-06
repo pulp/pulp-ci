@@ -60,7 +60,6 @@
             # clone and build the docs
             cd pulp_packaging/ci/
             export PYTHONUNBUFFERED=1
-            export DJANGO_SETTINGS_MODULE='pulp.app.settings'
             python3 docs-builder.py --release {release_config}
     publishers:
       - email-notify-owners
