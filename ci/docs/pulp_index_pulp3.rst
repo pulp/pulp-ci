@@ -30,7 +30,7 @@ Content
    integration_guide/index
    contributing/index
    release_notes/index
-   getting_help/index
+   troubleshooting/index
    plugins/index
    glossary
 
