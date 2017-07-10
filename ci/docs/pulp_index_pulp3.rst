@@ -42,4 +42,4 @@ Index and Search
 .. toctree::
    :maxdepth: 1
 
-   all_content_index
+   all_content_index_pulp3
