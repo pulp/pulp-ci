@@ -1,23 +1,38 @@
 ---
+- block:
+  - name: Open firewall ports (iptables)
+    iptables:
+      action: insert
+      chain: INPUT
+      ctstate: NEW
+      protocol: "{{ item.protocol }}"
+      destination_port: "{{ item.port }}"
+      jump: ACCEPT
+    with_items:
+      - { port: 'http', protocol: 'tcp' }
+      - { port: 'https', protocol: 'tcp' }
+      - { port: 'amqps', protocol: 'tcp' }
+      - { port: 'amqp', protocol: 'tcp' }
+    notify:
+      - Save IPv4 iptables configuration
 
-- name: Open firewall ports (iptables)
-  iptables:
-    action: insert
-    chain: INPUT
-    ctstate: NEW
-    protocol: "{{ item.protocol }}"
-    destination_port: "{{ item.port }}"
-    jump: ACCEPT
-  with_items:
-    - { port: 'http', protocol: 'tcp' }
-    - { port: 'https', protocol: 'tcp' }
-    - { port: 'amqps', protocol: 'tcp' }
-    - { port: 'amqp', protocol: 'tcp' }
+  - name: Install required packages for RHEL 6
+    action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
+    with_items:
+        - libselinux-python
+        - policycoreutils-python
+
+  - name: Setup qpid custom repo
+    get_url: url=https://copr.fedorainfracloud.org/coprs/g/qpid/qpid/repo/epel-6/irina-qpid-epel-6.repo dest=/etc/yum.repos.d/copr-qpid.repo
+
+  - name:  Allow Apache to listen on tcp port 5000
+    seport:
+      ports: 5000
+      proto: tcp
+      setype: http_port_t
+      state: present
   when:
-    - ansible_distribution == "RedHat"
-    - ansible_distribution_major_version|int == 6
-  notify:
-    - Save IPv4 iptables configuration
+      - (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
 
 - block:
   - name: Install firewalld and python bindings
@@ -56,12 +71,6 @@
 
 - name: Start and enable MongoDB server service
   service: name=mongod state=started enabled=yes
-
-- name: Setup qpid custom repo
-  get_url: url=https://copr.fedorainfracloud.org/coprs/g/qpid/qpid/repo/epel-6/irina-qpid-epel-6.repo dest=/etc/yum.repos.d/copr-qpid.repo
-  when:
-    - ansible_os_family == "RedHat"
-    - ansible_distribution_major_version|int == 6
 
 - name: Install qpid-cpp server
   action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
