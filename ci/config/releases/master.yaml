@@ -31,3 +31,7 @@ repositories:
     git_url: git@github.com:pulp/pulp_python.git
     git_branch: master
     version: 2.1.0-0.1.alpha
+  - name: pulp_deb
+    git_url: git@github.com:pulp/pulp_deb.git
+    git_branch: master
+    version: 1.5.2-0.1.alpha
