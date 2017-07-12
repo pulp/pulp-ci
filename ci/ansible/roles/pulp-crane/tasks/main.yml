@@ -30,9 +30,25 @@
     group: root
     mode: 0644
 
-- name: Open firewall port for Crane
+- name: Open firewall port for Crane (iptables)
+  iptables:
+    action: insert
+    chain: INPUT
+    ctstate: NEW
+    protocol: tcp
+    destination_port: 5000
+    jump: ACCEPT
+  when:
+    - ansible_distribution == "RedHat"
+    - ansible_distribution_major_version|int == 6
+  notify:
+    - Save IPv4 iptables configuration
+
+- name: Open firewall port for Crane (firewalld)
   firewalld:
     port: "5000/tcp"
     state: enabled
     permanent: true
     immediate: true
+  when:
+    - not (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
