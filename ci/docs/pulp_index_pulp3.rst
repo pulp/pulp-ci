@@ -4,8 +4,7 @@ Pulp
 ====
 
 Pulp manages repositories of content, such as software packages, and makes it available for
-installation. Pulp has plugins for :ref:`rpm_list_desc`, :ref:`python_list_desc`,
-:ref:`puppet_list_desc`, :ref:`docker_list_desc`, and :ref:`ostree_list_desc`.
+installation.
 
 Using Pulp you can:
 
@@ -29,9 +28,9 @@ Content
    cli_guide/index
    integration_guide/index
    contributing/index
+   plugins/index
    release_notes/index
    troubleshooting/index
-   plugins/index
    glossary
 
 Index and Search
@@ -42,4 +41,4 @@ Index and Search
 .. toctree::
    :maxdepth: 1
 
-   all_content_index_pulp3
+   all_content_index

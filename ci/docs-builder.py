@@ -77,24 +77,26 @@ def main():
         dst = os.sep.join([plugins_dir, component['name']])
         os.symlink(src, dst)
 
-    # copy in the pulp_index.rst file
     if is_pulp3:
-        src_path = 'docs/pulp_index_pulp3.rst'
+        src_index_path = 'docs/pulp_index_pulp3.rst'
+        src_all_content_path = 'docs/all_content_index_pulp3.rst'
     else:
-        src_path = 'docs/pulp_index.rst'
-    pulp_index_rst = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'index.rst'])
-    copyfile(src_path, pulp_index_rst)
+        src_index_path = 'docs/pulp_index.rst'
+        src_all_content_path = 'docs/all_content_index.rst'
 
-    # copy in the plugin_index.rst file
-    plugin_index_rst = os.sep.join([plugins_dir, 'index.rst'])
-    copyfile('docs/plugin_index.rst', plugin_index_rst)
+        # copy in the plugin_index.rst file for Pulp 2 only
+        # (currently Pulp 3 has its own plugins/index.rst without a need of managing it here,
+        # outside of platform code)
+        plugin_index_rst = os.sep.join([plugins_dir, 'index.rst'])
+        copyfile('docs/plugin_index.rst', plugin_index_rst)
+
+    # copy in the pulp_index.rst file
+    pulp_index_rst = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'index.rst'])
+    copyfile(src_index_path, pulp_index_rst)
 
     # copy in the all_content_index.rst file
     all_content_index_rst = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'all_content_index.rst'])
-    if is_pulp3:
-        copyfile('docs/all_content_index_pulp3.rst', all_content_index_rst)
-    else:
-        copyfile('docs/all_content_index.rst', all_content_index_rst)
+    copyfile(src_all_content_path, all_content_index_rst)
 
     # make the _templates dir
     layout_dir = os.sep.join([WORKING_DIR, 'pulp', 'docs', '_templates'])
