@@ -10,5 +10,4 @@ Documentation Index
    plugins/pulp_puppet/index
    plugins/pulp_docker/index
    plugins/pulp_ostree/index
-   plugins/pulp_deb/index
    plugins/crane/index
