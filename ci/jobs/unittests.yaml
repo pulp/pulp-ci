@@ -58,6 +58,8 @@
             - 2.12-release
             - 2.13-dev
             - 2.13-release
+            - 2.14-dev
+            - 2.14-release
             - master
     wrappers:
         - jenkins-ssh-credentials
