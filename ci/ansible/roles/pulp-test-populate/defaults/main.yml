@@ -1,0 +1,1 @@
+test_results_dir: "{{ ansible_user_dir }}"

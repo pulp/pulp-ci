@@ -22,6 +22,7 @@
     username: "{{ rhn_username }}"
     password: "{{ rhn_password }}"
     pool: "{{ rhn_pool }}"  # e.g. rhn_pool='^SKU Name$'
+  ignore_errors: yes
   when:
     - rhn_pool is defined
     - rhn_username is defined

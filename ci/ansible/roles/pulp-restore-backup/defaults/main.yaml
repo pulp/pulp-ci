@@ -1,0 +1,19 @@
+---
+remote_bkup_dir: "/root/backups"
+local_bkup_dir: "backups"
+files_to_restore:
+  etc_pulp:
+    dest_dir: /etc/pulp
+    file: etc_pulp
+    archive: etc_pulp.tar.bz2
+  etc_pki_pulp:
+    dest_dir: /etc/pki/pulp
+    file: etc_pki_pulp
+    archive: etc_pki_pulp.tar.bz2
+  var_lib_pulp:
+    dest_dir: /var/lib/pulp
+    file: var_lib_pulp
+    archive: var_lib_pulp.tar.bz2
+db_to_restore:
+  archive: mongodb_backup.bz2
+  dir: mongodb_backup_dir
