@@ -13,6 +13,19 @@
     group: root
     mode: 0644
   notify: restart apache
+  when:
+    - not (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
+
+- name: Install Apache configuration file for Apache version 2.2 or less
+  copy:
+    src: pulp_crane_el6.conf
+    dest: /etc/httpd/conf.d/pulp_crane_el6.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart apache
+  when:
+    - (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
 
 # NOTE: This task exists as a work-around for https://pulp.plan.io/issues/2719
 # When that issue is fixed, this task should be removed.
@@ -30,9 +43,33 @@
     group: root
     mode: 0644
 
-- name: Open firewall port for Crane
+- name: Open firewall port for Crane (firewalld)
   firewalld:
     port: "5000/tcp"
     state: enabled
     permanent: true
     immediate: true
+  when:
+  - not (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
+
+- block:
+  - name: Install Crane WSGI config file (RHEL 6)
+    copy:
+      src: crane_el6.wsgi
+      dest: /usr/share/crane/crane_el6.wsgi
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Open firewall port for Crane (iptables)
+    iptables:
+      action: insert
+      chain: INPUT
+      ctstate: NEW
+      protocol: tcp
+      destination_port: 5000
+      jump: ACCEPT
+    notify:
+      - Save IPv4 iptables configuration
+  when:
+    - (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
