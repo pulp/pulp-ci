@@ -1,4 +1,4 @@
-koji-target-prefix: pulp-2.14
+koji-target-prefix: pulp-2.15
 rsync-target-dir: 2.15/stage
 rsync-tested-dir: 2.15/dev
 repositories:
