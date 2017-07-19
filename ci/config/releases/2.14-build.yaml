@@ -35,3 +35,4 @@ repositories:
     git_url: git@github.com:pulp/pulp_deb.git
     git_branch: 1.5-dev
     version: 1.5.2-0.1.beta
+    build_docs: false

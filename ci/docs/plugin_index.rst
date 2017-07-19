@@ -79,3 +79,17 @@ Host OSTree repositories, fetch from remote OSTree repositories, or upload OSTre
 - :doc:`pulp_ostree/user-guide/index`
 - :doc:`pulp_ostree/tech-reference/index`
 - `OSTree Plugin Bugs <https://pulp.plan.io/projects/pulp_ostree/issues?sort=cf_5%3Adesc%2Cid%3Adesc>`_
+
+
+.. _deb_list_desc:
+
+Debian
+------
+
+Host Debian repositories, fetch from remote Debian repositories.
+
+- :doc:`pulp_deb/user-guide/installation`
+- :doc:`pulp_deb/user-guide/recipes`
+- :doc:`pulp_deb/user-guide/index`
+- :doc:`pulp_deb/tech-reference/index`
+- `Debian Plugin Bugs <https://pulp.plan.io/projects/pulp_deb/issues?sort=cf_5%3Adesc%2Cid%3Adesc>`_

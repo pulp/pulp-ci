@@ -3,6 +3,7 @@
 import argparse
 import subprocess
 import os
+import re
 from shutil import copyfile
 
 from lib import builder, promote
@@ -68,33 +69,40 @@ def main():
     plugins_dir = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'plugins'])
     builder.ensure_dir(plugins_dir)
 
+    plugins_to_add = []
     for component in repo_list:
         if component['name'] == 'pulp':
             promote.update_versions(os.path.join(WORKING_DIR, 'pulp'), *version.split('-'))
             continue
 
-        src = os.sep.join([WORKING_DIR, component['name'], 'docs'])
-        dst = os.sep.join([plugins_dir, component['name']])
-        os.symlink(src, dst)
+        # build docs only for specific plugins
+        if component.get('build_docs', True):
+            plugins_to_add.append(component['name'])
+            src = os.sep.join([WORKING_DIR, component['name'], 'docs'])
+            dst = os.sep.join([plugins_dir, component['name']])
+            os.symlink(src, dst)
 
-    # copy in the pulp_index.rst file
-    if is_pulp3:
-        src_path = 'docs/pulp_index_pulp3.rst'
-    else:
-        src_path = 'docs/pulp_index.rst'
-    pulp_index_rst = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'index.rst'])
-    copyfile(src_path, pulp_index_rst)
+    if not is_pulp3:
+        # copy in the plugin_index.rst file eliminating plugins for which docs are not built
+        src_plugin_index = 'docs/plugin_index.rst'
+        dst_plugin_index = os.sep.join([plugins_dir, 'index.rst'])
+        copy_content = True
+        plugin_block_regex = re.compile(r'\.\. (_[a-z]+)_list_desc:')
+        with open(src_plugin_index) as f_src, open(dst_plugin_index, 'w') as f_dst:
+            for line in f_src:
+                match = plugin_block_regex.search(line)
+                if match:
+                    plugin_name = 'pulp' + match.groups()[0]
+                    copy_content = plugin_name in plugins_to_add
+                if copy_content:
+                    f_dst.write(line)
 
-    # copy in the plugin_index.rst file
-    plugin_index_rst = os.sep.join([plugins_dir, 'index.rst'])
-    copyfile('docs/plugin_index.rst', plugin_index_rst)
-
-    # copy in the all_content_index.rst file
+    # add plugin references to all_context_index.rst
     all_content_index_rst = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'all_content_index.rst'])
-    if is_pulp3:
-        copyfile('docs/all_content_index_pulp3.rst', all_content_index_rst)
-    else:
-        copyfile('docs/all_content_index.rst', all_content_index_rst)
+    with open(all_content_index_rst, 'a') as f_dst:
+        for plugin_name in plugins_to_add:
+            plugin_index_ref = '\n   %s' % os.sep.join(['plugins', plugin_name, 'index'])
+            f_dst.write(plugin_index_ref)
 
     # make the _templates dir
     layout_dir = os.sep.join([WORKING_DIR, 'pulp', 'docs', '_templates'])
