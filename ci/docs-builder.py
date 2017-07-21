@@ -66,7 +66,7 @@ def main():
                     subprocess.check_call(['python', 'setup.py', 'develop'], cwd=package_dir)
 
     plugins_dir = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'plugins'])
-    builder.ensure_dir(plugins_dir)
+    builder.ensure_dir(plugins_dir, clean=False)
 
     for component in repo_list:
         if component['name'] == 'pulp':
