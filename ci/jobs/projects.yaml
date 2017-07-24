@@ -45,6 +45,7 @@
     os:
         - 'f24'
         - 'f25'
+        - 'f26'
         - 'rhel7'
     pulp_version:
         - '2.12'
@@ -53,8 +54,10 @@
         - '2.15':
             reverse_trigger: 'master'
     exclude:
-        - pulp_version: '2.10'
-          os: 'f25'
+        - pulp_version: '2.12'
+          os: 'f26'
+        - pulp_version: '2.13'
+          os: 'f26'
     reverse_trigger: '{pulp_version}-dev'
     jobs:
         - pulp-{pulp_version}-dev-{os}
