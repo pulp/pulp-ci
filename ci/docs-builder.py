@@ -73,6 +73,9 @@ def main():
             promote.update_versions(os.path.join(WORKING_DIR, 'pulp'), *version.split('-'))
             continue
 
+        if component['name'] == 'pulp_deb':
+            continue
+
         src = os.sep.join([WORKING_DIR, component['name'], 'docs'])
         dst = os.sep.join([plugins_dir, component['name']])
         os.symlink(src, dst)
