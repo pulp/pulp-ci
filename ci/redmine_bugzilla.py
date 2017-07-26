@@ -50,7 +50,7 @@ import xmlrpclib
 BUGZILLA_URL = 'https://bugzilla.redhat.com'
 REDMINE_URL = 'https://pulp.plan.io'
 
-REQUIRED_CC = ['mhrivnak@redhat.com', 'bbouters@redhat.com', 'pcreech@redhat.com', 'ttereshc@redhat.com']
+REQUIRED_CC = ['mhrivnak@redhat.com', 'pcreech@redhat.com', 'ttereshc@redhat.com']
 
 
 def get_bugzilla_connection(user, password):
