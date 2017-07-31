@@ -83,8 +83,6 @@
     properties:
         - ownership:
             owner: dkliban
-            co-owners:
-                - bbouters
 
 # Ownership that indicates quality engineers are the primary contact for the
 # job
