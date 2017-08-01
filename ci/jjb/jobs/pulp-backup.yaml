@@ -1,0 +1,50 @@
+- job-template:
+    name: 'pulp-{pulp_version}-{pulp_build}-backup-{os}'
+    node: '{os}-np'
+    properties:
+        - qe-ownership
+        # don't want to build up too many artifacts because they are of
+        # some appreciable size
+        - build-discarder:
+            days-to-keep: 7
+            num-to-keep: 7
+            artifact-days-to-keep: 7
+            artifact-num-to-keep: 3
+    scm:
+        - pulp-packaging-github
+    wrappers:
+        - config-file-provider:
+            files:
+                - file-id: rhn_credentials
+                  variable: RHN_CREDENTIALS
+        - inject:
+            properties-content: |
+                OS={os}
+                PULP_BUILD={pulp_build}
+                PULP_VERSION={pulp_version}
+    triggers:
+        - timed: '@midnight'
+    builders:
+        - shell:
+            !include-raw-escape:
+                - 'ssh-setup.sh'
+        - shell:
+            !include-raw-escape:
+                - 'ansible-setup.sh'
+                - 'pulp-backup.sh'
+        - capture-logs
+    publishers:
+      - postbuildscript:
+          script-only-if-succeeded: False
+          script-only-if-failed: False
+          builders:
+            - shell: |
+                if [[ "${{OS}}" =~ "rhel" ]]; then
+                    sudo subscription-manager unregister
+                fi
+      - archive:
+          artifacts: '*.bz2'
+      - junit:
+          results: "*.xml"
+      - email-notify-owners
+      - mark-node-offline
