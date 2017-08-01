@@ -63,6 +63,31 @@
         - pulp-{pulp_version}-dev-{os}
 
 - project:
+    name: pulp-restore
+    os:
+        - 'rhel7'
+    pulp_version:
+        - '2.13'
+    pulp_build:
+        - 'stable'
+    backup_version: '2.11'
+    backup_build: 'stable'
+    backup_os: 'rhel6'
+    jobs:
+        - pulp-{pulp_version}-{pulp_build}-restore-{os}
+
+- project:
+    name: pulp-backup
+    os:
+        - 'rhel6'
+    pulp_build:
+        - 'stable'
+    pulp_version:
+        - '2.11'
+    jobs:
+        - pulp-{pulp_version}-{pulp_build}-backup-{os}
+
+- project:
     name: pulp-fixtures-publisher
     jobs:
         - pulp-fixtures-publisher

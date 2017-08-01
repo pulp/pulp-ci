@@ -1,0 +1,48 @@
+- job-template:
+    name: 'pulp-{pulp_version}-{pulp_build}-restore-{os}'
+    node: '{os}-np'
+    properties:
+        - qe-ownership
+    scm:
+        - pulp-packaging-github
+    wrappers:
+        - config-file-provider:
+            files:
+                - file-id: rhn_credentials
+                  variable: RHN_CREDENTIALS
+        - inject:
+            properties-content: |
+                OS={os}
+                PULP_BUILD={pulp_build}
+                PULP_VERSION={pulp_version}
+    triggers:
+        - reverse:
+            jobs: 'pulp-{backup_version}-{backup_build}-backup-{backup_os}'
+            result: 'success'
+    builders:
+        - copyartifact:
+            project: 'pulp-{backup_version}-{backup_build}-backup-{backup_os}'
+            which-build: last-successful
+            filter: "*.bz2"
+            flatten: true
+        - shell:
+            !include-raw-escape:
+                - 'ssh-setup.sh'
+        - shell:
+            !include-raw-escape:
+                - 'ansible-setup.sh'
+                - 'pulp-restore.sh'
+        - capture-logs
+    publishers:
+        - postbuildscript:
+            script-only-if-succeeded: False
+            script-only-if-failed: False
+            builders:
+              - shell: |
+                  if [[ "${{OS}}" =~ "rhel" ]]; then
+                      sudo subscription-manager unregister
+                  fi
+        - junit:
+            results: "*.xml"
+        - email-notify-owners
+        - mark-node-offline
