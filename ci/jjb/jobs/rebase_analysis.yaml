@@ -6,7 +6,7 @@
     defaults: ci-workflow-runtest
     node: 'f25-np'
     properties:
-        - dev-ownership
+        - satellite-ownership
     scm:
         - git:
             url: 'https://github.com/pulp/pulp_packaging.git'

@@ -18,7 +18,7 @@
         - matrix-combinations:
             name: MATRIX_AXIS
     properties:
-      - dev-ownership
+      - docs-ownership
       - github:
           url: https://github.com/pulp/pulp/
     scm:

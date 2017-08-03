@@ -68,9 +68,9 @@
                 - dkliban
                 - ttereshc
 
-# Ownership that defines owners for Bugzilla/Redmine integration job
+# Ownership that defines owners for Satellite related job
 - property:
-    name: bz-redmine-ownership
+    name: satellite-ownership
     properties:
         - ownership:
             owner: dadavis
