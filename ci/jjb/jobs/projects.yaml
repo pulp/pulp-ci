@@ -138,6 +138,8 @@
           upgrade_pulp_version: 2.12-beta
         - os: rhel6
           upgrade_pulp_version: 2.13-beta
+        - os: rhel6
+          upgrade_pulp_version: 2.14-beta
     jobs:
         - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-{os}'
 
