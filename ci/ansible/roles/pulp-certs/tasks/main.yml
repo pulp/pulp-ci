@@ -1,4 +1,13 @@
 ---
+- name: Install openssl-perl (to create /etc/pki/CA)
+  dnf:
+    # See `dnf whatprovides /etc/pki/CA`.
+    name: openssl-perl
+    state: present
+  when:
+    - ansible_distribution == "Fedora"
+    - ansible_distribution_major_version|int == 26
+
 - name: Create CA to sign all certificates
   command: >
     /usr/bin/openssl req -x509 -newkey rsa:2048 -keyout private/cakey.pem -nodes -days 3650
