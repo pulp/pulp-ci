@@ -108,16 +108,34 @@
       gpgcheck: 0
   when: pulp_build == "beta" or pulp_build == "stable"
 
-- name: Install Pulp Server
-  action: "{{ ansible_pkg_mgr }} name=@pulp-server-qpid"
-  notify:
-    - Restart Apache service
-    - Restart Pulp workers service
-    - Restart Pulp celerybeat service
-    - Restart Pulp resource manager service
+# https://github.com/ansible/ansible/issues/26868
+- block:
+  - name: Install Pulp Server (Fedora 26)
+    command: dnf -y install @pulp-server-qpid
+    notify:
+      - Restart Apache service
+      - Restart Pulp workers service
+      - Restart Pulp celerybeat service
+      - Restart Pulp resource manager service
 
-- name: Install Pulp Admin (RPM, Puppet, Docker)
-  action: "{{ ansible_pkg_mgr }} name=@pulp-admin"
+  - name: Install Pulp Admin (RPM, Puppet, Docker) (Fedora 26)
+    command: dnf -y install @pulp-admin
+
+  when: (ansible_distribution == "Fedora" and ansible_distribution_major_version|int == 26)
+
+- block:
+  - name: Install Pulp Server
+    action: "{{ ansible_pkg_mgr }} name=@pulp-server-qpid"
+    notify:
+      - Restart Apache service
+      - Restart Pulp workers service
+      - Restart Pulp celerybeat service
+      - Restart Pulp resource manager service
+
+  - name: Install Pulp Admin (RPM, Puppet, Docker)
+    action: "{{ ansible_pkg_mgr }} name=@pulp-admin"
+
+  when: not (ansible_distribution == "Fedora" and ansible_distribution_major_version|int == 26)
 
 - name: Install OSTree
   action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
