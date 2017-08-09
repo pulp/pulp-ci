@@ -103,9 +103,15 @@ DISTRIBUTION_INFO = {
         DIST_KOJI_NAME: 'fedora25',
         REPO_CHECKSUM_TYPE: 'sha256'
     },
+    'fc26': {
+        ARCH: ['i686', 'x86_64'],
+        REPO_NAME: 'fedora-26',
+        DIST_KOJI_NAME: 'fedora26',
+        REPO_CHECKSUM_TYPE: 'sha256'
+    },
 }
 
-SUPPORTED_DISTRIBUTIONS = ['el7', 'fc24', 'fc25']
+SUPPORTED_DISTRIBUTIONS = ['el7', 'fc24', 'fc25', 'fc26']
 
 DIST_LIST = DISTRIBUTION_INFO.keys()
 WORKSPACE = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
