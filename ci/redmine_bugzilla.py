@@ -209,8 +209,8 @@ def main():
                                 # Don't set needsinfo for people who are already flagged
                                 for flag in bug.flags:
                                     if flag['name'] == 'needinfo' and flag['requestee'] in needsinfo_contacts:
-                                        needsinfo_contacts = list(filter(needsinfo_contacts,
-                                                                         lambda x: x != flag['requestee']))
+                                        needsinfo_contacts = list(filter(lambda x: x != flag['requestee'],
+                                                                         needsinfo_contacts))
 
                                 if needsinfo_contacts:
                                     flags = []
