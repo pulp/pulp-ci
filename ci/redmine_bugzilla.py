@@ -51,7 +51,7 @@ BUGZILLA_URL = 'https://bugzilla.redhat.com'
 REDMINE_URL = 'https://pulp.plan.io'
 
 DOWNSTREAM_CONTACTS = ['pcreech@redhat.com', 'ttereshc@redhat.com']
-REQUIRED_CC = ['mhrivnak@redhat.com'].extend(DOWNSTREAM_CONTACTS)
+REQUIRED_CC = ['mhrivnak@redhat.com'] + DOWNSTREAM_CONTACTS
 
 
 def get_bugzilla_connection(user, password):
