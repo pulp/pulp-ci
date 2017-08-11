@@ -43,7 +43,15 @@ if [ "$(nova list | grep ${INSTANCE_NAME})" ]; then
     done
 fi
 
-FLOATING_IP="$(openstack floating ip list -f value -c "Floating IP Address" --status DOWN | head -n 1)"
+ROUTER="$(openstack router list -f value -c "ID" -c "Name" | grep "default-satellite-jenkins" | cut -f1 -d' ')"
+EXTERNAL_GATEWAY_INFO="$(openstack router show -f value -c external_gateway_info "${ROUTER}")"
+NETWORK="$(python3 <<EOF
+import json
+data = json.loads('${EXTERNAL_GATEWAY_INFO}')
+print(data['network_id'])
+EOF
+)"
+FLOATING_IP="$(openstack floating ip list -f value -c "Floating IP Address" --network "${NETWORK}" --status DOWN | head -n 1)"
 INSTANCE_HOSTNAME="host-$(echo ${FLOATING_IP} | cut -d. -f 2- | sed 's/\./-/g')"
 INSTANCE_FQDN="${INSTANCE_HOSTNAME}.host.centralci.eng.rdu2.redhat.com"
 cat > cloud-config.txt << EOF
