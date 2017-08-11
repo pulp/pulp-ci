@@ -184,16 +184,10 @@ def main():
                         if external_bug['ext_status'] in ['MODIFIED', 'ON_QA', 'VERIFIED',
                                                  'CLOSED - CURRENTRELEASE', 'CLOSED - COMPLETE']:
                             if 'FailedQA' in bug.cf_verified:
-                                needinfo = True
                                 external_bug_id = external_bug['ext_bz_bug_id']
                                 redmine_issue = redmine.issue.get(external_bug_id)
                                 redmine_user_id = redmine_issue.assigned_to.id
                                 needinfo_email = redmine.user.get(redmine_user_id).mail
-
-                                for flag in bug.flags:
-                                    if flag['name'] == 'needinfo' and \
-                                       flag['requestee'] == needinfo_email:
-                                        needinfo = False
 
                                 user_has_no_bz = False
                                 try:
@@ -208,16 +202,19 @@ def main():
                                 # If the Redmine user does not have a Bugzilla account, default
                                 # to the downstream contacts for Pulp
                                 if user_has_no_bz:
-                                    contacts = DOWNSTREAM_CONTACTS
+                                    needsinfo_contacts = DOWNSTREAM_CONTACTS
                                 else:
-                                    contacts = [needinfo_email]
+                                    needsinfo_contacts = [needinfo_email]
 
-                                msg = "Bugzilla %s failed QA. Needinfo is set for %s." % \
-                                    (bug.id, ", ".join(contacts))
+                                # Don't set needsinfo for people who are already flagged
+                                for flag in bug.flags:
+                                    if flag['name'] == 'needinfo' and flag['requestee'] in needsinfo_contacts:
+                                        needsinfo_contacts = list(filter(needsinfo_contacts,
+                                                                         lambda x: x != flag['requestee']))
 
-                                if needinfo:
+                                if needsinfo_contacts:
                                     flags = []
-                                    for contact in contacts:
+                                    for contact in needsinfo_contacts:
                                         flags.append({
                                             "name": "needinfo",
                                             "status": "?",
@@ -228,7 +225,10 @@ def main():
                                     BZ.update_bugs(bug.id, updates)
                                     bug.addcomment("Requesting needsinfo from upstream " \
                                                    "developer %s because the 'FailedQA' " \
-                                                   "flag is set." % ", ".join(contacts))
+                                                   "flag is set." % ", ".join(needsinfo_contacts))
+
+                                    msg = "Bugzilla %s failed QA. Needinfo is set for %s." % \
+                                        (bug.id, ", ".join(needsinfo_contacts))
                                     new_failed_qa_record += "%s\n" % msg
 
                                 print msg
