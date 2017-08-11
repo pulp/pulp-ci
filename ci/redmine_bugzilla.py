@@ -50,7 +50,8 @@ import xmlrpclib
 BUGZILLA_URL = 'https://bugzilla.redhat.com'
 REDMINE_URL = 'https://pulp.plan.io'
 
-REQUIRED_CC = ['mhrivnak@redhat.com', 'pcreech@redhat.com', 'ttereshc@redhat.com']
+DOWNSTREAM_CONTACTS = ['pcreech@redhat.com', 'ttereshc@redhat.com']
+REQUIRED_CC = ['mhrivnak@redhat.com'].extend(DOWNSTREAM_CONTACTS)
 
 
 def get_bugzilla_connection(user, password):
@@ -188,23 +189,48 @@ def main():
                                 redmine_issue = redmine.issue.get(external_bug_id)
                                 redmine_user_id = redmine_issue.assigned_to.id
                                 needinfo_email = redmine.user.get(redmine_user_id).mail
-                                msg = "Bugzilla %s failed QA. Needinfo is set for %s." % \
-                                      (bug.id, needinfo_email)
+
                                 for flag in bug.flags:
                                     if flag['name'] == 'needinfo' and \
-                                                    flag['requestee'] == needinfo_email:
+                                       flag['requestee'] == needinfo_email:
                                         needinfo = False
+
+                                user_has_no_bz = False
+                                try:
+                                    # Check that the Redmine user has a Bugzilla account
+                                    BZ.getuser(needinfo_email)
+                                except xmlrpclib.Fault as e:
+                                    if e.faultCode == 51:
+                                        user_has_no_bz = True
+                                    else:
+                                        raise
+
+                                # If the Redmine user does not have a Bugzilla account, default
+                                # to the downstream contacts for Pulp
+                                if user_has_no_bz:
+                                    contacts = DOWNSTREAM_CONTACTS
+                                else:
+                                    contacts = [needinfo_email]
+
+                                msg = "Bugzilla %s failed QA. Needinfo is set for %s." % \
+                                    (bug.id, ", ".join(contacts))
+
                                 if needinfo:
-                                    flag = { "name": "needinfo",
-                                             "status": "?",
-                                             "requestee": needinfo_email,
-                                             "new": True}
-                                    updates = BZ.build_update(status=bug.status, flags = [flag])
+                                    flags = []
+                                    for contact in contacts:
+                                        flags.append({
+                                            "name": "needinfo",
+                                            "status": "?",
+                                            "requestee": contact,
+                                            "new": True
+                                        })
+                                    updates = BZ.build_update(status=bug.status, flags=flags)
                                     BZ.update_bugs(bug.id, updates)
                                     bug.addcomment("Requesting needsinfo from upstream " \
                                                    "developer %s because the 'FailedQA' " \
-                                                   "flag is set." % needinfo_email)
+                                                   "flag is set." % ", ".join(contacts))
                                     new_failed_qa_record += "%s\n" % msg
+
                                 print msg
                                 failed_qa_bugzillas.append(bug.id)
                             else:
