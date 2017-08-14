@@ -82,7 +82,7 @@
     name: dev-ownership
     properties:
         - ownership:
-            owner: dkliban
+            owner: bizhang
 
 # Ownership that indicates quality engineers are the primary contact for the
 # job
