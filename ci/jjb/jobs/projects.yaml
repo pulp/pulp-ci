@@ -113,6 +113,11 @@
         - pulp-installer
 
 - project:
+    name: pulp-3-installer
+    jobs:
+      - pulp-3-installer
+
+- project:
     name: pulp-upgrade
     os:
         - f24
