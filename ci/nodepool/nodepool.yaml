@@ -72,7 +72,7 @@ providers:
     max-servers: 18
     boot-timeout: 240
     launch-timeout: 900
-    pool: "10.8.180.0/22"
+    pool: "10.8.241.120/22"
     clean-floating-ips: true
     images:
       - name: docker-np
