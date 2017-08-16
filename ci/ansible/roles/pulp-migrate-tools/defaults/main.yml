@@ -1,0 +1,17 @@
+# Pulp system hostname
+pulp_smash_system_hostname: "localhost"
+
+# If Pulp's API is published over HTTPS or HTTP
+pulp_smash_api_scheme: "https"
+
+# Pulp Server username
+pulp_smash_pulp_username: "admin"
+
+# Pulp Server password
+pulp_smash_pulp_password: "admin"
+
+# If SSL certificate should be verified
+pulp_smash_api_verify: "false"
+
+# AMQP broker service either qpidd or rabbitmq
+pulp_smash_amqp_broker_service: "qpidd"

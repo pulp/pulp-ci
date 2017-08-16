@@ -1,0 +1,7 @@
+---
+- name: Test that the server is populated
+  shell: >
+    source "{{ ansible_user_dir }}/.venvs/pulp-migrate/bin/activate" &&
+    pytest --junit-xml "{{ test_results_dir }}/restore.test.report.xml" --pyargs pulp_migrate.test_restore
+  ignore_errors: yes
+  # We would rather find out about errors from the xml report and not halt all execution

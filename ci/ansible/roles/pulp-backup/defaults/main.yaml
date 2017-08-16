@@ -1,0 +1,17 @@
+---
+fetch_to_localhost: true
+remote_bkup_dir: "{{ ansible_user_dir }}/remote_backups"
+local_bkup_dir: "backups"
+files_to_backup:
+  etc_pulp:
+    src_dir: /etc/pulp
+    file: etc_pulp
+  etc_pki_pulp:
+    src_dir: /etc/pki/pulp
+    file: etc_pki_pulp
+  var_lib_pulp:
+    src_dir: /var/lib/pulp
+    file: var_lib_pulp
+db_to_bkup:
+  dir: mongodb_backup_dir
+  file: mongodb_backup

@@ -1,0 +1,12 @@
+---
+
+- name: Start Pulp
+  service: "name={{ item }} state=started"
+  with_items:
+    - httpd
+    - pulp_celerybeat
+    - pulp_resource_manager
+    - pulp_streamer
+    - pulp_workers
+    - qpidd
+
