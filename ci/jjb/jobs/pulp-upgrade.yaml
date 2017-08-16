@@ -82,13 +82,16 @@
             which-build: specific-build
             build-number: ${{TRIGGERED_BUILD_NUMBER_PULP_SMASH_RUNNER}}
             flatten: true
-        - shell: |
-            if [[ "${{OS}}" =~ "rhel" ]]; then
-                sudo subscription-manager unregister
-                sudo subscription-manager clean
-            fi
         - capture-logs
     publishers:
+      - postbuildscript:
+          script-only-if-succeeded: False
+          script-only-if-failed: False
+          builders:
+            - shell: |
+                if [[ "${{OS}}" =~ "rhel" ]]; then
+                    sudo subscription-manager unregister
+                fi
       - archive:
           artifacts: "*.tar.gz"
           allow-empty: true
