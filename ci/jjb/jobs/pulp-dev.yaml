@@ -67,10 +67,6 @@
                     -e pulp_coverage_report_xml=true
                 cp /tmp/report.xml coverage.xml
             fi
-            if [[ "${{OS}}" =~ "rhel" ]]; then
-                sudo subscription-manager unregister
-                sudo subscription-manager clean
-            fi
         # TODO: Uncomment and update the configuration when sonar is ready to
         # be used
         # - conditional-step:
@@ -82,6 +78,14 @@
         #             sonar-name: 'Sonar Test Server'
         - capture-logs
     publishers:
+        - postbuildscript:
+            script-only-if-succeeded: False
+            script-only-if-failed: False
+            builders:
+              - shell: |
+                  if [[ "${{OS}}" =~ "rhel" ]]; then
+                      sudo subscription-manager unregister
+                  fi
         - junit:
             results: junit-report.xml
         - cobertura:
