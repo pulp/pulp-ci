@@ -230,8 +230,8 @@ def main():
                                     msg = "Bugzilla %s failed QA. Needinfo is set for %s." % \
                                         (bug.id, ", ".join(needsinfo_contacts))
                                     new_failed_qa_record += "%s\n" % msg
+                                    print msg
 
-                                print msg
                                 failed_qa_bugzillas.append(bug.id)
                             else:
                                 transition_to_post.append(True)
