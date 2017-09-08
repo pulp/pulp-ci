@@ -17,7 +17,7 @@ repositories:
     version: 2.14.1-0.1.alpha
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
-    git_branch: 3.0-dev-tmp
+    git_branch: 3.0-dev
     version: 3.0.1-0.1.alpha
   - name: crane
     git_url: git@github.com:pulp/crane.git
