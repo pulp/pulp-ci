@@ -20,7 +20,7 @@ repositories:
     version: 2.14.0-0.3.rc
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
-    parent_branch: 3.0-dev-tmp
+    parent_branch: 3.0-dev
     git_branch: pulp-docker-3.0.0-0.2.beta
     version: 3.0.0-0.3.rc
   - name: crane
