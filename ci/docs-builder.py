@@ -63,7 +63,7 @@ def main():
             for package in packages:
                 package_dir = os.path.join(WORKING_DIR, repo, package)
                 if os.path.exists(package_dir):
-                    subprocess.check_call(['python', 'setup.py', 'develop'], cwd=package_dir)
+                    subprocess.check_call(['pip', 'install', '-e', '.'], cwd=package_dir)
 
     plugins_dir = os.sep.join([WORKING_DIR, 'pulp', 'docs', 'plugins'])
     builder.ensure_dir(plugins_dir, clean=False)
