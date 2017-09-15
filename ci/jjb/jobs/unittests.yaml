@@ -139,7 +139,7 @@
 
             for setup in `find . -name setup.py`; do
                 pushd `dirname $setup`;
-                sudo python setup.py develop;
+                sudo pip install -e .;
                 popd;
             done;
             sudo python ./pulp-dev.py -I
