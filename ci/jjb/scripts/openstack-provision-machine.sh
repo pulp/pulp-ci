@@ -13,7 +13,6 @@ KEY_NAME="pulp-jenkins"
 IMAGE_ID="$(openstack image show -f value -c id "rhel-7.3-server-x86_64-updated")"
 
 # Upload SSH key pair for OpenStack instance.
-openstack keypair show "${KEY_NAME}"
 if ! openstack keypair list | grep -q "${KEY_NAME}"; then
     echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6DJ8fmd61DWPCMiOEuy96ajI7rL3rWu7C9NQhE9a4SfyaiBcghREHJNCz9LGJ57jtOmNV0+UEDhyvTckZI2YQeDqGCP/xO9B+5gQNlyGZ9gSmFz+68NhYQ0vRekikpb9jNdy6ZZbfZDLp1w7dxqDIKfoyu7QO3Qr3E/9CpiucQif2p+oQOVOCdKEjvGYNkYQks0jVTYNRscgmcezpfLKhqWzAre5+JaMB0kRD5Nqadm2uXKZ4cNYStrpZ4xUrnMvAqjormxW2VJNx+0716Wc2Byhg8Nva+bsOkxp/GewBWHfNPtzQGMsL7oYZPtOd/LrmyYeu/M5Uz7/6QCv4N90P pulp" > pulp-jenkins.pub
     echo "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAzoPajR2xtQOAfBebX69Mx9Ee4P/LMqlxQLKvF0bc79/1ayMf3IrmpY1V6JCpABvMV1830I9D9x9Tr8E9zjg2wWT14hhHsrUKSWUsy3doIwz3MtISBZPMig5AizVjH6Wl/t833zgkeHtStCYI/bmJQykj6AgB8/A4L5SRIpNnl1q7V+sw37Rmumaiqu4lRDXyTXY7mlOCuxrus/WcGyVTh2k+oBVqkz2V2s3+Or8Zy2Y441B4z3vF3lE6aoIBwidBVZ1LKaofZDMRf/lu575cI4AB3N5DQvpqwLSc4+HIvog0FdKUo3qMaFgg0KNkYS5fnpDpRDRQnFw7oFnBHiPNqw== jenkins@satellite-jenkins" >> pulp-jenkins.pub
@@ -52,6 +51,12 @@ print(data['network_id'])
 EOF
 )"
 FLOATING_IP="$(openstack floating ip list -f value -c "Floating IP Address" --network "${NETWORK}" --status DOWN | head -n 1)"
+
+if [ ! "${FLOATING_IP}" ]; then
+    openstack floating ip create "${NETWORK}"
+    FLOATING_IP="$(openstack floating ip list -f value -c "Floating IP Address" --network "${NETWORK}" --status DOWN | head -n 1)"
+fi
+
 INSTANCE_HOSTNAME="host-$(echo ${FLOATING_IP} | cut -d. -f 2- | sed 's/\./-/g')"
 INSTANCE_FQDN="${INSTANCE_HOSTNAME}.host.centralci.eng.rdu2.redhat.com"
 cat > cloud-config.txt << EOF
