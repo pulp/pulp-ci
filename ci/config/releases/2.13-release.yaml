@@ -18,7 +18,7 @@ repositories:
   - name: pulp_docker
     git_url: git@github.com:pulp/pulp_docker.git
     git_branch: 2.4-release
-    version: 2.4.0-2
+    version: 2.4.1-2
   - name: crane
     git_url: git@github.com:pulp/crane.git
     git_branch: 2.1-release
