@@ -247,31 +247,32 @@ def main():
 
     for bug in bugzilla_bugs:
         for external_bug in bug.external_bugs:
-                if external_bug['type']['description'] == 'Pulp Redmine':
-                    add_cc_list_to_bugzilla_bug(bug)
-                    issue_id = external_bug['ext_bz_bug_id']
-                    try:
-                        issue = redmine.issue.get(issue_id)
-                    except exceptions.ResourceNotFoundError as e:
-                        print "Redmine #%s linked as external on BZ #%s does not exist" % (issue_id, bug.id)
-                        raise e
-                    links_back = False
-                    bugzilla_field = issue.custom_fields.get(32)  # 32 is the 'Bugzillas' field
-                    if bugzilla_field['value']:
-                        bug_list = [int(id_str) for id_str in bugzilla_field['value'].split(',')]
-                        for bug_id in bug_list:
-                            try:
-                                if bug_id == bug.id:
-                                    links_back = True
-                            except KeyError:
-                                # If value isn't present this field is not linking back
-                                continue
-                            except ValueError:
-                                # If value is present but empty this field is not linking back
-                                continue
-                    if not links_back:
-                        links_issues_record += 'Bugzilla #%s -> Redmine %s, but Redmine %s does ' \
-                                               'not link back\n' % (bug.id, issue.id, issue.id)
+            if external_bug['type']['description'] == 'Pulp Redmine':
+                add_cc_list_to_bugzilla_bug(bug)
+                issue_id = external_bug['ext_bz_bug_id']
+                try:
+                    issue = redmine.issue.get(issue_id)
+                except exceptions.ResourceNotFoundError as e:
+                    links_issues_record += 'Bugzilla #%s -> Redmine %d, but Redmine %d does ' \
+                                           'not exist\n' % (bug.id, issue_id, issue_id)
+                    continue
+                links_back = False
+                bugzilla_field = issue.custom_fields.get(32)  # 32 is the 'Bugzillas' field
+                if bugzilla_field['value']:
+                    bug_list = [int(id_str) for id_str in bugzilla_field['value'].split(',')]
+                    for bug_id in bug_list:
+                        try:
+                            if bug_id == bug.id:
+                                links_back = True
+                        except KeyError:
+                            # If value isn't present this field is not linking back
+                            continue
+                        except ValueError:
+                            # If value is present but empty this field is not linking back
+                            continue
+                if not links_back:
+                    links_issues_record += 'Bugzilla #%s -> Redmine %s, but Redmine %s does ' \
+                                           'not link back\n' % (bug.id, issue.id, issue.id)
 
     if ext_bug_record != '':
         print '\nBugzilla Updates From Upstream'
