@@ -253,7 +253,7 @@ def main():
                 try:
                     issue = redmine.issue.get(issue_id)
                 except exceptions.ResourceNotFoundError as e:
-                    links_issues_record += 'Bugzilla #%s -> Redmine %d, but Redmine %d does ' \
+                    links_issues_record += 'Bugzilla #%s -> Redmine %s, but Redmine %s does ' \
                                            'not exist\n' % (bug.id, issue_id, issue_id)
                     continue
                 links_back = False
