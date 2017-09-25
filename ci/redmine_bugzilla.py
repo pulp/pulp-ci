@@ -43,7 +43,7 @@ import ConfigParser
 import os
 
 from bugzilla.rhbugzilla import RHBugzilla
-from redminelib import Redmine
+from redminelib import Redmine, exceptions
 import xmlrpclib
 
 
@@ -250,7 +250,11 @@ def main():
                 if external_bug['type']['description'] == 'Pulp Redmine':
                     add_cc_list_to_bugzilla_bug(bug)
                     issue_id = external_bug['ext_bz_bug_id']
-                    issue = redmine.issue.get(issue_id)
+                    try:
+                        issue = redmine.issue.get(issue_id)
+                    except exceptions.ResourceNotFoundError as e:
+                        print "Redmine #%s linked as external on BZ #%s does not exist" % (issue_id, bug.id)
+                        raise e
                     links_back = False
                     bugzilla_field = issue.custom_fields.get(32)  # 32 is the 'Bugzillas' field
                     if bugzilla_field['value']:
