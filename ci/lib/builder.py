@@ -732,11 +732,15 @@ def get_build_names_from_external_deps_file(external_deps, include_unsupported=F
     :return: Full path/filename of the external deps file
     :rtype: str
     """
+    client_deps = ['gofer', 'python-isodate', 'python-amqp', 'python-qpid']
+
     with open(external_deps) as file_handle:
             deps_list = json.load(file_handle)
             for dep_info in deps_list:
                 for dist in dep_info[u'platform']:
-                    if not include_unsupported and dist not in SUPPORTED_DISTRIBUTIONS:
+                    if not include_unsupported and \
+                           dist not in SUPPORTED_DISTRIBUTIONS and \
+                           dep_info['name'] not in client_deps:
                         continue
                     package_nevra = "%s-%s.%s" % (dep_info['name'], dep_info[u'version'], dist)
                     yield package_nevra
