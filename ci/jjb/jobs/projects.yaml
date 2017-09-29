@@ -111,6 +111,7 @@
         - 2.11-stable
         - 2.12-stable
         - 2.13-stable
+        - 2.14-stable
     upgrade_pulp_version:
         - 2.11-beta
         - 2.12-beta
