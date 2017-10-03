@@ -51,7 +51,7 @@
             # create a virtualenv in which to install packages needed to build docs
             virtualenv -p /usr/bin/python3 --system-site-packages ~/docs_ve
             source ~/docs_ve/bin/activate
-            pip3 install sphinx git+https://github.com/snide/sphinx_rtd_theme.git@abfa98539a2bfc44198a9ca8c2f16efe84cc4d26 pyyaml virtualenv
+            pip3 install djangorestframework-jwt sphinx git+https://github.com/snide/sphinx_rtd_theme.git@abfa98539a2bfc44198a9ca8c2f16efe84cc4d26 pyyaml virtualenv
 
             # create server.yaml config file
             sudo mkdir -p /etc/pulp
