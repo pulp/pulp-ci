@@ -84,6 +84,13 @@
         - ownership:
             owner: bizhang
 
+# Ownership that indicates build team is the primary contact for the job
+- property:
+    name: build-ownership
+    properties:
+        - ownership:
+            owner: pcreech
+
 # Ownership that indicates quality engineers are the primary contact for the
 # job
 - property:
