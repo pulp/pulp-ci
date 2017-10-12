@@ -70,6 +70,14 @@
         - pulp-{pulp_version}-dev-{os}
 
 - project:
+    name: pulp-3-dev
+    os:
+        - f25
+        - f26
+    jobs:
+        - pulp-3-dev-{os}
+
+- project:
     name: pulp-restore
     os:
         - 'rhel7'

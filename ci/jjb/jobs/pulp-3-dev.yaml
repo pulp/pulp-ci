@@ -1,0 +1,49 @@
+# Install Pulp 3 on a host with Ansible, and smash it.
+#
+# This code assumes that Pulp and Pulp Smash are to be installed on localhost.
+- job-template:
+    name: pulp-3-dev-{os}
+    node: '{os}-np'
+    description: |
+      <p>Install Pulp 3 on a host with Ansible, and smash it.</p>
+      <p>
+        The installation procedure assumes that Pulp and Pulp Smash should be
+        installed on localhost. As a result, actions like SSH configuration are
+        skipped.
+      </p>
+      <p>
+        At this time, the "test" consists of running a simple command to verify
+        that Pulp Smash is correctly installed.
+      </p>
+    properties:
+      - qe-ownership
+    scm:
+      - git:
+          url: https://github.com/pulp/devel.git
+          branches:
+            - '3.0-dev'
+          skip-tag: true
+    builders:
+      # Install Pulp 3.
+      - shell: |
+          sudo dnf -y install ansible python3
+          # See the scm: block above.
+          cd ansible
+          ansible-galaxy install -r requirements.yml -p roles
+          # Pulp 3 can't deal with SELinux.
+          ansible all \
+            --inventory localhost, \
+            --connection local \
+            --become \
+            -m selinux \
+            -a state=disabled
+          ansible-playbook deploy-pulp3.yml \
+            --inventory localhost, \
+            --connection local
+      # Install Pulp Smash.
+      - shell:
+          !include-raw-escape:
+            - pulp-smash-setup.sh
+    publishers:
+      - email-notify-owners
+      - mark-node-offline
