@@ -57,7 +57,7 @@
             echo "${HOSTNAME} ansible_user=${USER}" > hosts
             source "${RHN_CREDENTIALS}"
             export ANSIBLE_CONFIG="${PWD}/ci/ansible/ansible.cfg"
-            ansible-playbook --private-key pulp_server_key -i hosts \
+            ansible-playbook -i hosts \
                 ci/ansible/pulp_server.yaml \
                 -e "pulp_build=${PULP_BUILD}" \
                 -e "pulp_version=${PULP_VERSION}" \
