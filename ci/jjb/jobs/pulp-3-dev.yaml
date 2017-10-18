@@ -40,10 +40,21 @@
           ansible-playbook deploy-pulp3.yml \
             --inventory localhost, \
             --connection local
+      # Start Pulp 3.
+      - shell: |
+          ansible all \
+              --inventory localhost, \
+              --connection local \
+              --become \
+              --become-user pulp \
+              -m shell \
+              -a 'source ~/pulpvenv/bin/activate && pulp-manager runserver 0.0.0.0:8000 &'
       # Install Pulp Smash.
       - shell:
           !include-raw-escape:
             - pulp-smash-setup.sh
+      # Perform a sanity check against Pulp 3.
+      - shell: curl http://localhost:8000/api/v3/
     publishers:
       - email-notify-owners
       - mark-node-offline
