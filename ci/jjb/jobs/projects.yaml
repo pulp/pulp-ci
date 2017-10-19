@@ -21,6 +21,27 @@
       - master
 
 - project:
+    name: pulp-packaging-build
+    os:
+        - 'f24'
+        - 'f25'
+        - 'rhel7'
+    pulp_version:
+        - '2.15':
+            reverse_trigger: 'master'
+    exclude:
+        - pulp_version: '2.12'
+          os: 'f26'
+        - pulp_version: '2.13'
+          os: 'f26'
+    reverse_trigger: '{pulp_version}-dev'
+    jobs:
+        - pulp-packaging-{pulp_version}-dev-{os}
+    release_config:
+      - master
+
+
+- project:
     name: ci-update-jobs
     jobs:
      - ci-update-jobs

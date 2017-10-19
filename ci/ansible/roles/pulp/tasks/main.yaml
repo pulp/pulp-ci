@@ -97,6 +97,17 @@
       gpgcheck: 0
   when: pulp_build == "nightly"
 
+- name: Setup Pulp nightly koji repository
+  template:
+    src: yum_repo.j2
+    dest: /etc/yum.repos.d/{{ item.key }}.repo
+  with_dict:
+    pulp:
+      name: Pulp Project repository
+      baseurl: "http://koji.katello.org/releases/yum/pulp-nightly/pulp/{% if ansible_distribution == 'Fedora' %}fedora-{% endif %}$releasever/$basearch/"
+      gpgcheck: 0
+  when: pulp_build == "nightly_koji"
+
 - name: Setup Pulp beta or stable repository
   template:
     src: yum_repo.j2
