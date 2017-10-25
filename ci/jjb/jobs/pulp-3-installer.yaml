@@ -1,0 +1,79 @@
+# Install Pulp 3 on a host.
+- job:
+    name: pulp-3-installer
+    concurrent: true
+    node: 'fedora-np'
+    description: |
+      <p>
+        Install Pulp on the host identified by the job parameter
+        <code>HOSTNAME</code>.
+      </p>
+      <p>
+        This job requires two hosts: one for use as an Ansible control host, and
+        one on which to install Pulp 3. Jenkins is responsible for providing the
+        control host, and you are responsible for providing the Pulp 3 host.
+        When this job is executed, Jenkins will configure the control host, by
+        doing things like installing Ansible and configuring SSH keys. Then, the
+        control host will reach out and install Pulp 3 onto the host identified
+        by <code>HOSTNAME</code>.
+      </p>
+      <p>
+        Ensure the following is in <code>~/.ssh/authorized_keys</code> on the
+        Pulp 3 host:
+      </p>
+      <pre>
+        ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6DJ8fmd61DWPCMiOEuy96ajI7rL3rWu7C9NQhE9a4SfyaiBcghREHJNCz9LGJ57jtOmNV0+UEDhyvTckZI2YQeDqGCP/xO9B+5gQNlyGZ9gSmFz+68NhYQ0vRekikpb9jNdy6ZZbfZDLp1w7dxqDIKfoyu7QO3Qr3E/9CpiucQif2p+oQOVOCdKEjvGYNkYQks0jVTYNRscgmcezpfLKhqWzAre5+JaMB0kRD5Nqadm2uXKZ4cNYStrpZ4xUrnMvAqjormxW2VJNx+0716Wc2Byhg8Nva+bsOkxp/GewBWHfNPtzQGMsL7oYZPtOd/LrmyYeu/M5Uz7/6QCv4N90P pulp
+      </pre>
+      <p>
+        In addition, ensure the Pulp 3 host satisfies the <a
+        href="http://docs.ansible.com/ansible/latest/intro_installation.html#managed-node-requirements">managed
+        node requirements</a>.
+      </p>
+      <p>
+        Currently, this job can't install Pulp 3 on a RHEL host. (It can install
+        Pulp 3 on a Fedora host, though.) This is because neither this job nor
+        the Ansible installer it calls can deal with subscription-manager.
+      </p>
+    parameters:
+      - string:
+          name: HOSTNAME
+      - string:
+          name: USER
+          default: root
+    properties:
+      - qe-ownership
+    scm:
+      - git:
+          url: https://github.com/pulp/devel.git
+          branches:
+            - '3.0-dev'
+          skip-tag: true
+    wrappers:
+      - jenkins-ssh-credentials
+    builders:
+      - shell: |
+          sudo dnf -y install ansible
+          export ANSIBLE_HOST_KEY_CHECKING=False
+          # See the scm: block above.
+          cd ansible
+          ansible-galaxy install -r requirements.yml -p roles
+          # Pulp 3 can't deal with SELinux.
+          ansible all \
+            --inventory "$HOSTNAME", \
+            --user "$USER" \
+            --become \
+            -m selinux \
+            -a state=disabled
+          # The installer doesn't do things like install deps. :-/
+          ansible all \
+            --inventory "$HOSTNAME", \
+            --user "$USER" \
+            --become \
+            -m dnf \
+            -a 'name=python3 state=present'
+          ansible-playbook deploy-pulp3.yml \
+            --user "$USER" \
+            --inventory "$HOSTNAME",
+    publishers:
+      - email-notify-owners
+      - mark-node-offline
