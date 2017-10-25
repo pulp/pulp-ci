@@ -31,3 +31,7 @@ EOF
 pulp-smash settings path
 pulp-smash settings show
 pulp-smash settings validate
+# Use pytest instead of unittest for XML reports. :-(
+pip install pytest
+py.test -v --color=yes --junit-xml=junit-report.xml --pyargs pulp_smash.tests
+test -f junit-report.xml

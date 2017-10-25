@@ -11,10 +11,6 @@
         installed on localhost. As a result, actions like SSH configuration are
         skipped.
       </p>
-      <p>
-        At this time, the "test" consists of running a simple command to verify
-        that Pulp Smash is correctly installed.
-      </p>
     properties:
       - qe-ownership
     scm:
@@ -24,7 +20,7 @@
             - '3.0-dev'
           skip-tag: true
     builders:
-      # Install Pulp 3.
+      # Install and start Pulp 3.
       - shell: |
           sudo dnf -y install ansible python3
           # See the scm: block above.
@@ -40,8 +36,6 @@
           ansible-playbook deploy-pulp3.yml \
             --inventory localhost, \
             --connection local
-      # Start Pulp 3.
-      - shell: |
           ansible all \
               --inventory localhost, \
               --connection local \
@@ -49,12 +43,23 @@
               --become-user pulp \
               -m shell \
               -a 'source ~/pulpvenv/bin/activate && pulp-manager runserver 0.0.0.0:8000 &'
-      # Install Pulp Smash.
+      # Install and run Pulp Smash.
       - shell:
           !include-raw-escape:
-            - pulp-smash-setup.sh
-      # Perform a sanity check against Pulp 3.
-      - shell: curl http://localhost:8000/api/v3/
+              - pulp-3-dev-smasher.sh
     publishers:
-      - email-notify-owners
-      - mark-node-offline
+        - postbuildscript:
+            script-only-if-succeeded: False
+            script-only-if-failed: False
+            builders:
+              - shell: |
+                  if [[ "${{OS}}" =~ "rhel" ]]; then
+                      sudo subscription-manager unregister
+                  fi
+        - junit:
+            results: 'junit-report.xml'
+        - archive:
+            artifacts: "*.tar.gz"
+            allow-empty: true
+        - email-notify-owners
+        - mark-node-offline
