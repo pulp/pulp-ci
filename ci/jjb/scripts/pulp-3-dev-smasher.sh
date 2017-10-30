@@ -15,7 +15,7 @@ cat >~/.config/pulp_smash/settings.json <<EOF
             "hostname": "$(hostname --long)",
             "roles": {
                 "amqp broker": {"service": "rabbitmq"},
-                "api": {"scheme": "http"},
+                "api": {"port": 8000, "scheme": "http"},
                 "mongod": {},
                 "pulp celerybeat": {},
                 "pulp cli": {},
