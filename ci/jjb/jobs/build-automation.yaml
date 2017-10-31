@@ -10,10 +10,10 @@
         - dev-ownership
     scm:
         - git:
-            url: 'https://github.com/pulp/pulp_packaging.git'
+            url: 'https://github.com/pulp/pulp-ci.git'
             branches:
                 - origin/master
-            basedir: pulp_packaging
+            basedir: pulp-ci
             skip-tag: true
             wipe-workspace: false
     triggers:
@@ -61,7 +61,7 @@
             cp -v $KOJI_CONFIG/.katello-ca.cert ~/
             cp -v $KOJI_CONFIG/satellite6_rsa .
             koji moshimoshi
-            cd pulp_packaging/ci
+            cd pulp-ci/ci
 
             if [ $RELEASE_BUILD == true ] ; then
               ./build-all.py {release_config} --release
@@ -107,10 +107,10 @@
           description: "Make no changes to remote repos."
     scm:
         - git:
-            url: 'https://github.com/pulp/pulp_packaging.git'
+            url: 'https://github.com/pulp/pulp-ci.git'
             branches:
                 - origin/master
-            basedir: pulp_packaging
+            basedir: pulp-ci
             skip-tag: true
             wipe-workspace: false
     wrappers:
@@ -122,7 +122,7 @@
             fail: true
     builders:
         - shell: |
-            cd "$WORKSPACE/pulp_packaging/ci"
+            cd "$WORKSPACE/pulp-ci/ci"
 
             if [[ $FORCE_PROMOTE = "true" ]]; then promote_opts="$promote_opts --force"; fi
             if [[ $DRY_RUN = "true" ]]; then promote_opts="$promote_opts --dry-run"; fi

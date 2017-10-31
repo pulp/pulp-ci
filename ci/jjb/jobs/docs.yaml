@@ -9,10 +9,10 @@
         - docs-ownership
     scm:
         - git:
-            url: 'https://github.com/pulp/pulp_packaging.git'
+            url: 'https://github.com/pulp/pulp-ci.git'
             branches:
                 - origin/master
-            basedir: pulp_packaging
+            basedir: pulp-ci
             skip-tag: true
             wipe-workspace: false
     triggers:
@@ -58,7 +58,7 @@
             echo "SECRET_KEY: '$(cat /dev/urandom | tr -dc 'a-z0-9\!@#$%^&*(\-_=+)' | head -c 50)'" | sudo tee -a /etc/pulp/server.yaml
 
             # clone and build the docs
-            cd pulp_packaging/ci/
+            cd pulp-ci/ci/
             export PYTHONUNBUFFERED=1
             python3 docs-builder.py --release {release_config}
     publishers:

@@ -118,7 +118,7 @@ WORKSPACE = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..',
 WORKING_DIR = os.path.join(WORKSPACE, 'working')
 MASH_DIR = os.path.join(WORKSPACE, 'mash')
 TITO_DIR = os.path.join(WORKSPACE, 'tito')
-CI_DIR = os.path.join(WORKSPACE, 'pulp_packaging', 'ci')
+CI_DIR = os.path.join(WORKSPACE, 'pulp-ci', 'ci')
 
 
 def clone_branch(component):

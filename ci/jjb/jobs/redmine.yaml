@@ -1,5 +1,5 @@
 # This Jenkins job runs a script which performs automation related to Redmine
-# and Bugzilla. See https://github.com/pulp/pulp_packaging/ci/redmine_bugzilla.py
+# and Bugzilla. See https://github.com/pulp/pulp-ci/ci/redmine_bugzilla.py
 
 - job:
     name: 'redmine-bugzilla-automation'
@@ -9,10 +9,10 @@
         - satellite-ownership
     scm:
         - git:
-            url: 'https://github.com/pulp/pulp_packaging.git'
+            url: 'https://github.com/pulp/pulp-ci.git'
             branches:
                 - origin/master
-            basedir: pulp_packaging
+            basedir: pulp-ci
             skip-tag: true
             wipe-workspace: false
     triggers:
@@ -39,7 +39,7 @@
 
             sudo pip install python-bugzilla python-redmine certifi
 
-            python pulp_packaging/ci/redmine_bugzilla.py
+            python pulp-ci/ci/redmine_bugzilla.py
 
     publishers:
       - email-notify-owners-with-log
