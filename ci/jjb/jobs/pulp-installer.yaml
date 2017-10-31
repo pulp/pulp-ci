@@ -57,7 +57,7 @@
     properties:
       - qe-ownership
     scm:
-        - pulp-packaging-github
+        - pulp-ci-github
     wrappers:
         - config-file-provider:
             files:

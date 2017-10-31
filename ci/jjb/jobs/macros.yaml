@@ -182,7 +182,7 @@
             } catch(NullPointerException ex) {}
 
 - scm:
-    name: pulp-packaging-github
+    name: pulp-ci-github
     scm:
         - git:
             url: https://github.com/pulp/pulp-ci.git
