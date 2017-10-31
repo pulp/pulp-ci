@@ -11,7 +11,7 @@
             artifact-days-to-keep: 7
             artifact-num-to-keep: 3
     scm:
-        - pulp-packaging-github
+        - pulp-ci-github
     wrappers:
         - config-file-provider:
             files:

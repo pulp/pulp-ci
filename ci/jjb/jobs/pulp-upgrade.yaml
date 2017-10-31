@@ -7,7 +7,7 @@
     properties:
         - qe-ownership
     scm:
-        - pulp-packaging-github
+        - pulp-ci-github
     triggers:
         - timed: 'H H * * 1,4'
     wrappers:
