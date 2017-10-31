@@ -10,7 +10,7 @@
         - build-ownership
     scm:
         - git:
-            url: 'https://github.com/pcreech/pulp-packaging.git'
+            url: 'https://github.com/pulp/pulp-packaging.git'
             branches:
                 - origin/master
             basedir: pulp-packaging
