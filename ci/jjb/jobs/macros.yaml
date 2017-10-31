@@ -32,7 +32,7 @@
     builders:
         # install deps needed to run PR tester jobs;
         # based on the packages installed by the old puppet modules:
-        # https://github.com/pulp/pulp_packaging/pull/270/files
+        # https://github.com/pulp/pulp-ci/pull/270/files
         - shell: |
             sudo yum install -y mongodb-server qpid-cpp-server qpid-cpp-server-linearstore \
                 python-virtualenvwrapper rpm-build python-paste python-lxml
@@ -185,7 +185,7 @@
     name: pulp-packaging-github
     scm:
         - git:
-            url: https://github.com/pulp/pulp_packaging.git
+            url: https://github.com/pulp/pulp-ci.git
             branches:
                 - '*/master'
             skip-tag: true

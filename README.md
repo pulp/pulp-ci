@@ -1,4 +1,4 @@
-pulp_packaging
+pulp-ci
 ==============
 
 This repository is in the process of being deprecated. The dockerfiles that used to live here have

@@ -31,7 +31,7 @@ $( document ).ready( function() {
 
   
   // get JSON from server and load supported_versions
-  $.getJSON("https://raw.githubusercontent.com/pulp/pulp_packaging/master/ci/config/releases/supported-releases.json" , function(data) {
+  $.getJSON("https://raw.githubusercontent.com/pulp/pulp-ci/master/ci/config/releases/supported-releases.json" , function(data) {
     if ($.inArray($version_number, data) === -1) {
       $('.rst-content').prepend(warning)
       }

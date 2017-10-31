@@ -6,7 +6,7 @@
         - qe-ownership
     scm:
         - git:
-            url: https://github.com/pulp/pulp_packaging.git
+            url: https://github.com/pulp/pulp-ci.git
             branches:
                 - origin/master
             skip-tag: true

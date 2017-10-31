@@ -1,4 +1,4 @@
-script-dir: /home/pulp/pulp_packaging/ci/nodepool/scripts/
+script-dir: /home/pulp/pulp-ci/ci/nodepool/scripts/
 
 # empty dir, stops nodepool from throwing a traceback on start
 images-dir: /etc/nodepool/images
