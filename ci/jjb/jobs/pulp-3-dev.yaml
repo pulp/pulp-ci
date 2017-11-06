@@ -19,6 +19,8 @@
           branches:
             - '3.0-dev'
           skip-tag: true
+    triggers:
+        - timed: "H 2 * * *"
     builders:
       # Install and start Pulp 3.
       - shell: |
