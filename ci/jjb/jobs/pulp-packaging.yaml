@@ -58,7 +58,7 @@
             koji moshimoshi
             cd pulp-packaging/
 
-            ansible-playbook nightlies.yaml
+            ansible-playbook nightly-and-mash.yaml
 
     publishers:
       - email-notify-owners
