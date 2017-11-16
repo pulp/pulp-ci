@@ -1,4 +1,4 @@
-script-dir: /home/pulp/pulp_packaging/ci/nodepool/scripts/
+script-dir: /home/pulp/pulp-ci/ci/nodepool/scripts/
 
 # empty dir, stops nodepool from throwing a traceback on start
 images-dir: /etc/nodepool/images
@@ -55,6 +55,12 @@ labels:
     providers:
       - name: ci-rhos
     ready-script: fix_hostname.sh
+  - name: f27-np
+    image: f27-np
+    min-ready: 0
+    providers:
+      - name: ci-rhos
+    ready-script: fix_hostname.sh
   - name: rhel6-np
     image: rhel6-np
     min-ready: 0
@@ -100,7 +106,13 @@ providers:
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
       - name: f26-np
-        base-image: Fedora-Cloud-Base-26-nightly-latest
+        base-image: Fedora-Cloud-Base-26-compose-latest
+        username: jenkins
+        setup: prepare_node.sh
+        private-key: /etc/nodepool/pulp_rsa
+        min-ram: 3072
+      - name: f27-np
+        base-image: Fedora-Cloud-Base-27-1.6
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
@@ -117,7 +129,7 @@ providers:
         min-ram: 4096
         name-filter: t2.medium
       - name: rhel7-np
-        base-image: rhel-7.3-server-x86_64-updated
+        base-image: rhel-7.4-server-x86_64-updated
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
