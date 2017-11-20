@@ -1,5 +1,5 @@
 # This set of Jenkins jobs which build the Pulp platform and plugin documentation and publishes
-# it to https://docs.pulpproject.org/
+# it to https://docs.pulpproject.org/ for pulp2
 
 - job-template:
     name: 'docs-builder-{release_config}'
@@ -64,3 +64,117 @@
     publishers:
       - email-notify-owners
       - mark-node-offline
+
+
+# This set of Jenkins jobs which build the Pulp platform and plugin documentation and publishes
+# it to https://docs.pulpproject.org/ for Pulp3
+
+- job-template:
+    name: 'docs-builder-3.0-dev'
+    defaults: ci-workflow-runtest
+    node: 'fedora-np'
+    properties:
+        - docs-ownership
+    scm:
+        - git:
+            url: 'https://github.com/pulp/pulp-ci.git'
+            branches:
+                - origin/master
+            basedir: pulp-ci
+            skip-tag: true
+            wipe-workspace: false
+        - git:
+            url: https://github.com/pulp/devel.git
+            branches:
+              - '3.0-dev'
+            skip-tag: true
+            basedir: devel
+            wipe-workspace: false
+    triggers:
+        - timed: '{trigger_times}'
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '044c0620-d67e-4172-9814-dc49e443e7b6'
+                - '2f7a0c14-d520-40d3-b9b5-ebd8bb780d03'
+        - credentials-binding:
+            - zip-file:
+                credential-id: 9051da21-c8af-49bd-a0ac-c1dd94a6d216
+                variable: KOJI_CONFIG
+        - timeout:
+            # Timeout in minutes
+            timeout: 240
+            timeout-var: 'BUILD_TIMEOUT'
+            fail: true
+    builders:
+        - shell: |
+            #!/bin/bash
+            # install packages deps required to build docs
+            sudo dnf install graphviz plantuml postgresql-devel python3-devel gcc ansible -y
+
+            git config --global user.email "pulp-infra@redhat.com"
+            git config --global user.name "pulpbot"
+            git config --global push.default simple
+            set -x
+
+            # Add github.com as a known host
+            echo "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> /home/jenkins/.ssh/known_hosts
+            echo "docs-pulp.rhcloud.com,52.1.83.65 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAwUPkUQ84FKIWhOxy5RBBuR9gbrov2epARmFmaxD7NFRayobnDvl8GaBTbH1kxaZ/tYQeIqVE1assL74KArMQBzz6rj0FEWf0zrXxAY55EGswmWEEdqlYu1LbIxDCG6opqkiq6ocxjea9K3XYq+2aYoAvI3sshSImTYZP1glFhrh3QUsNJHOfDboTLJFNSdLjzXubRMa4eEx7s9pe9kwBOaLNIiVeGzUWg5+KaykSg2UMB3aG127t8kX+OhDYceVR42ehQJ0MjQGlGoNtldxGrlX8NjxUqvJAo6pqNqRK8Cps7/x/m0GPXWAgSZymhurXmj1o2LP5nKLtVzMPvwMb0w==" >> /home/jenkins/.ssh/known_hosts
+
+            chmod 644 /home/jenkins/.ssh/known_hosts
+
+            # create a virtualenv in which to install packages needed to build docs
+            python3 -m venv --system-site-packages ~/docs_ve
+            source ~/docs_ve/bin/activate
+            pip3 install celery sphinxcontrib-swaggerdoc django django-filter djangorestframework djangorestframework-jwt drf-nested-routers psycopg2 sphinx git+https://github.com/snide/sphinx_rtd_theme.git@abfa98539a2bfc44198a9ca8c2f16efe84cc4d26 pyyaml virtualenv
+
+            # create server.yaml config file
+            sudo mkdir -p /etc/pulp
+            echo "SECRET_KEY: '$(cat /dev/urandom | tr -dc 'a-z0-9\!@#$%^&*(\-_=+)' | head -c 50)'" | sudo tee -a /etc/pulp/server.yaml
+
+            # Install Pulp3 from ansible roles
+            pushd devel/ansible
+
+            ansible-galaxy install -r requirements.yml -p roles
+            # Pulp 3 can't deal with SELinux.
+            ansible all \
+              --inventory localhost, \
+              --connection local \
+              --become \
+              -m selinux \
+              -a state=disabled
+
+            ansible-playbook deploy-pulp3.yml \
+              --inventory localhost, \
+              --connection local
+
+            # Current drf_openapi in PyPI is not backwards compatible with drf 3.7,  install from source instead.
+            # drf_openapi is needed to generate REST API docs.
+            ansible all \
+                --inventory localhost, \
+                --connection local \
+                --become \
+                --become-user pulp \
+                -m pip \
+                -a 'virtualenv=~/pulpvenv name=git+https://github.com/limdauto/drf_openapi.git@master#egg=drf_openapi'
+
+            # Start pulp server in the background
+            ansible all \
+                --inventory localhost, \
+                --connection local \
+                --become \
+                --become-user pulp \
+                -m shell \
+                -a 'source ~/pulpvenv/bin/activate && pulp-manager runserver localhost:8000 &'
+
+            popd
+
+            # clone and build the docs
+            pushd pulp-ci/ci/
+            export PYTHONUNBUFFERED=1
+            python3 docs-builder.py --release 3.0-dev
+    publishers:
+      - email-notify-owners
+      - mark-node-offline
+
+
