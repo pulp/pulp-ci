@@ -17,21 +17,6 @@
       - master
 
 - project:
-    name: pulp-packaging-build
-    os:
-        - 'f24'
-        - 'f25'
-        - 'f26'
-        - 'rhel7'
-    pulp_version:
-        - '2.15':
-            reverse_trigger: 'master'
-    jobs:
-        - pulp-packaging-{pulp_version}-dev-{os}
-    release_config:
-      - master
-
-- project:
     name: ci-update-jobs
     jobs:
      - ci-update-jobs
@@ -58,12 +43,11 @@
 - project:
     name: pulp-dev
     os:
-        - 'f24'
         - 'f25'
         - 'f26'
+        - 'f27'
         - 'rhel7'
     pulp_version:
-        - '2.14'
         - '2.15':
             reverse_trigger: 'master'
     reverse_trigger: '{pulp_version}-dev'

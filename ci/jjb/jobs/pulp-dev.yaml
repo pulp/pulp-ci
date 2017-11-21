@@ -17,7 +17,7 @@
                 PULP_VERSION={pulp_version}
     triggers:
         - reverse:
-            jobs: 'build-automation-repo-{reverse_trigger}'
+            jobs: 'pulp-packaging-{reverse_trigger}'
             result: 'success'
     builders:
         - shell:
