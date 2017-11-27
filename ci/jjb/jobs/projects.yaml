@@ -28,8 +28,14 @@
     release_config:
      - 2.14-dev
      - master
-     - 3.0-dev
     trigger_times: '@midnight'
+
+- project:
+    name: docs-build-nightly-3.0-dev
+    jobs:
+     - 'docs-builder-3.0-dev'
+    trigger_times: '@midnight'
+
 
 - project:
     name: docs-build-manually
