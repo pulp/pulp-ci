@@ -1,0 +1,37 @@
+koji-target-prefix: pulp-2.14
+rsync-target-dir: 2.14/stage
+rsync-tested-dir: 2.14/dev
+repositories:
+  - name: pulp
+    external_deps: deps/external_deps.json
+    git_url: git@github.com:pulp/pulp.git
+    git_branch: 2.15.0
+    version: 2.15.0-1
+  - name: pulp_puppet
+    git_url: git@github.com:pulp/pulp_puppet.git
+    git_branch: 2.15.0
+    version: 2.15.0-1
+  - name: pulp_rpm
+    git_url: git@github.com:pulp/pulp_rpm.git
+    git_branch: 2.15.0
+    version: 2.15.0-1
+  - name: pulp_docker
+    git_url: git@github.com:pulp/pulp_docker.git
+    git_branch: 3.1.0
+    version: 3.1.0-1
+  - name: crane
+    git_url: git@github.com:pulp/crane.git
+    git_branch: 3.1.0
+    version: 3.1.0-1
+  - name: pulp_ostree
+    git_url: git@github.com:pulp/pulp_ostree.git
+    git_branch: 1.3-release
+    version: 1.3.0-1
+  - name: pulp_python
+    git_url: git@github.com:pulp/pulp_python.git
+    git_branch: 2.0-release
+    version: 2.0.2-1
+  - name: pulp_deb
+    git_url: git@github.com:pulp/pulp_deb.git
+    git_branch: 1.6.0
+    version: 1.6.0-1
