@@ -42,8 +42,8 @@
     jobs:
      - 'docs-builder-{release_config}'
     release_config:
-     - 2.14-build
-     - 2.14-release
+     - 2.15-build
+     - 2.15-release
     trigger_times: ''
 
 - project:
