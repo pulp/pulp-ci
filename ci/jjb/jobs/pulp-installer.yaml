@@ -35,6 +35,7 @@
         - choice:
             name: PULP_VERSION
             choices:
+                - '2.15'
                 - '2.14'
                 - '2.13'
                 - '2.12'
