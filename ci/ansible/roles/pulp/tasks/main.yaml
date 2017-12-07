@@ -138,6 +138,7 @@
   - name: Install Pulp Server
     action: "{{ ansible_pkg_mgr }} name=@pulp-server-qpid"
     notify:
+      - Restart qpidd service
       - Restart Apache service
       - Restart Pulp workers service
       - Restart Pulp celerybeat service
