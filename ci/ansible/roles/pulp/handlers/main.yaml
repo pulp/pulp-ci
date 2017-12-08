@@ -27,3 +27,8 @@
 
 - name: Save IPv4 iptables configuration
   shell: 'iptables-save > /etc/sysconfig/iptables'
+
+- name: Restart qpidd service
+  service:
+    name: qpidd
+    state: restarted
