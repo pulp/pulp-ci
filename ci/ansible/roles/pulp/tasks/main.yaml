@@ -85,6 +85,10 @@
 - name: Start and enable qpid-cpp server service
   service: name=qpidd state=started enabled=yes
 
+- name: Explicitly install python-django (https://bugzilla.redhat.com/show_bug.cgi?id=1524560)
+  action: "{{ ansible_pkg_mgr }} name=python-django state=latest"
+  when:  (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 7)
+
 - name: Setup Pulp nightly repository
   template:
     src: yum_repo.j2
