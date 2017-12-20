@@ -21,7 +21,7 @@
         - ssh-agent-credentials:
             users:
                 - '044c0620-d67e-4172-9814-dc49e443e7b6'
-                - '2f7a0c14-d520-40d3-b9b5-ebd8bb780d03'
+                - '31be896c-3325-4158-9ed6-8d0c2716342a'
         - credentials-binding:
             - zip-file:
                 credential-id: 9051da21-c8af-49bd-a0ac-c1dd94a6d216
@@ -44,7 +44,7 @@
 
             # Add github.com as a known host
             echo "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> /home/jenkins/.ssh/known_hosts
-            echo "docs-pulp.rhcloud.com,52.1.83.65 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAwUPkUQ84FKIWhOxy5RBBuR9gbrov2epARmFmaxD7NFRayobnDvl8GaBTbH1kxaZ/tYQeIqVE1assL74KArMQBzz6rj0FEWf0zrXxAY55EGswmWEEdqlYu1LbIxDCG6opqkiq6ocxjea9K3XYq+2aYoAvI3sshSImTYZP1glFhrh3QUsNJHOfDboTLJFNSdLjzXubRMa4eEx7s9pe9kwBOaLNIiVeGzUWg5+KaykSg2UMB3aG127t8kX+OhDYceVR42ehQJ0MjQGlGoNtldxGrlX8NjxUqvJAo6pqNqRK8Cps7/x/m0GPXWAgSZymhurXmj1o2LP5nKLtVzMPvwMb0w==" >> /home/jenkins/.ssh/known_hosts
+            echo "docs.pulpproject.org,8.43.85.236 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBGXG+8vjSQvnAkq33i0XWgpSrbco3rRqNZr0SfVeiqFI7RN/VznwXMioDDhc+hQtgVhd6TYBOrV07IMcKj+FAzg=" >> /home/jenkins/.ssh/known_hosts
 
             chmod 644 /home/jenkins/.ssh/known_hosts
 
@@ -96,7 +96,7 @@
         - ssh-agent-credentials:
             users:
                 - '044c0620-d67e-4172-9814-dc49e443e7b6'
-                - '2f7a0c14-d520-40d3-b9b5-ebd8bb780d03'
+                - '31be896c-3325-4158-9ed6-8d0c2716342a'
         - credentials-binding:
             - zip-file:
                 credential-id: 9051da21-c8af-49bd-a0ac-c1dd94a6d216
@@ -119,7 +119,7 @@
 
             # Add github.com as a known host
             echo "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> /home/jenkins/.ssh/known_hosts
-            echo "docs-pulp.rhcloud.com,52.1.83.65 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAwUPkUQ84FKIWhOxy5RBBuR9gbrov2epARmFmaxD7NFRayobnDvl8GaBTbH1kxaZ/tYQeIqVE1assL74KArMQBzz6rj0FEWf0zrXxAY55EGswmWEEdqlYu1LbIxDCG6opqkiq6ocxjea9K3XYq+2aYoAvI3sshSImTYZP1glFhrh3QUsNJHOfDboTLJFNSdLjzXubRMa4eEx7s9pe9kwBOaLNIiVeGzUWg5+KaykSg2UMB3aG127t8kX+OhDYceVR42ehQJ0MjQGlGoNtldxGrlX8NjxUqvJAo6pqNqRK8Cps7/x/m0GPXWAgSZymhurXmj1o2LP5nKLtVzMPvwMb0w==" >> /home/jenkins/.ssh/known_hosts
+            echo "docs.pulpproject.org,8.43.85.236 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBGXG+8vjSQvnAkq33i0XWgpSrbco3rRqNZr0SfVeiqFI7RN/VznwXMioDDhc+hQtgVhd6TYBOrV07IMcKj+FAzg=" >> /home/jenkins/.ssh/known_hosts
 
             chmod 644 /home/jenkins/.ssh/known_hosts
 
