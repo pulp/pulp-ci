@@ -1,0 +1,100 @@
+{
+  "variables": {
+    "vagrant_cloud_token": ""
+  },
+  "builders":
+  [
+    {
+      "type": "virtualbox-ovf",
+      "source_path": "{{ ovf_path }}",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "60s" ,
+      "headless": true,
+      "boot_wait": "10s",
+      {% raw %}
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--memory", "4096"],
+        ["modifyvm", "{{.Name}}", "--natdnshostresolver1", "on"]
+      ],
+      {% endraw %}
+      "shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now"
+    },
+    {
+      "type": "qemu",
+      "accelerator": "kvm",
+      "iso_url": "{{ img_path }}",
+      "iso_checksum_type": "none",
+      "qemu_binary": "qemu-kvm",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "60s",
+      "headless": true,
+      "boot_wait": "10s",
+      "disk_image": true,
+      "disk_size": 40960,
+      "qemuargs": [
+        [ "-m", "4096M" ]
+      ],
+      "shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now"
+    }
+  ],
+  "provisioners":
+  [
+    {
+      "type": "file",
+      "source": "motd",
+      "destination": "/tmp/motd"
+    },
+    {
+      "type":"shell",
+      "only": ["virtualbox-ovf"],
+      "inline": [
+        "sudo mkdir -p /tmp/vboxguest",
+        "sudo mount -t iso9660 -o loop /home/vagrant/VBoxGuestAdditions.iso /tmp/vboxguest",
+        "cd /tmp/vboxguest",
+        "sudo dnf -y install dkms kernel-devel-$(uname -r) gcc",
+        "sudo ./VBoxLinuxAdditions.run",
+        "cd /tmp",
+        "sudo umount /tmp/vboxguest",
+        "sudo rmdir /tmp/vboxguest",
+        "rm /home/vagrant/VBoxGuestAdditions.iso"
+      ]
+    },
+    {
+      "type":"ansible",
+      "playbook_file": "deploy-pulp3.yml",
+      "user": "vagrant"
+    },
+    {
+      "type":"shell",
+      "inline": [
+        "sudo mv /tmp/motd /etc/motd",
+        "sudo rm /etc/yum.repos.d/epel.repo",
+        "sudo dnf -y install git httpie",
+        "echo 'machine localhost' >> /home/vagrant/.netrc",
+        "echo 'login admin' >> /home/vagrant/.netrc",
+        "echo 'password admin' >> /home/vagrant/.netrc",
+        "sudo sed -i 's/enforcing/permissive/' /etc/selinux/config"
+      ]
+    }
+  ],
+  "post-processors": 
+  [
+    [
+      {
+        "type": "vagrant"
+      },
+      {
+        "type": "vagrant-cloud",
+        {% raw %}
+        "access_token": "{{user `vagrant_cloud_token`}}",
+        {% endraw %}
+        "box_tag": "{{ box_name }}",
+        "version": "{{ '%Y%m%d' | strftime }}"
+      }
+    ]
+  ]
+}

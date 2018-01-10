@@ -1,0 +1,88 @@
+---
+- name: Update
+  yum:
+    name: "*"
+    state: latest
+  register: updated
+
+- name: Reboot Server
+  command: /sbin/shutdown -r
+  poll: 0
+  when: updated | changed
+
+- name: Wait for remote host to reboot
+  wait_for_connection:
+    delay: 60
+  when: updated | changed
+
+- name: Get VirtualBox repo file
+  get_url:
+    url: "{{ virtualbox_repo }}"
+    dest: /etc/yum.repos.d/virtualbox.repo
+
+- name: Get VirtualBox GPG key
+  rpm_key:
+    key: "{{ virtualbox_key }}"
+    state: present
+
+- name: Add repository
+  yum:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm
+    state: present
+
+- name: Add EPEL GPG key
+  rpm_key:
+    key: /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}
+    state: present
+
+- name: Install VirtualBox and its dependencies
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - kernel-devel
+    - dkms
+    - gcc
+    - make
+    - VirtualBox-5.1
+
+- name: Compile Kernel modules
+  command: /sbin/vboxconfig
+
+- name: Get Virtual Box status
+  systemd:
+    name: vboxdrv
+  register: vbox
+
+- name: Check if kernel modules are loaded and active
+  fail:
+    msg: "The Kernel Modules are inactive or not loaded"
+  when: (vbox.status.ActiveState != 'active') or
+        (vbox.status.LoadState != 'loaded')
+
+- name: Install vagrant
+  package:
+    name: "{{ vagrant_url }}"
+    state: present
+  register: check_if_installed
+  until: not check_if_installed | failed
+
+- name: Add F26 virtualbox
+  command: vagrant box add fedora/26-cloud-base --provider virtualbox --force
+  register: check_if_added
+  until: not check_if_added | failed
+
+- name: Find ovf file for Fedora box
+  find:
+    paths: ~/.vagrant.d/boxes/fedora-VAGRANTSLASH-26-cloud-base
+    recurse: yes
+    patterns: 'box.ovf'
+  register: results
+
+- assert:
+    that: results['matched'] == 1
+    msg: "More than one .ovf files were found for Fedora box"
+
+- name: Set ovf file path
+  set_fact:
+    ovf_path: "{{ results['files'][0]['path'] }}"

@@ -1,0 +1,67 @@
+---
+- name: Install KVM and its dependencies
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - qemu-kvm
+    - qemu-img
+    - virt-manager
+    - libvirt
+    - libvirt-python
+    - libvirt-client
+    - virt-install
+    - virt-viewer
+    - bridge-utils
+
+- name: Ensure /etc/profile.d/custom.sh exists
+  file:
+    path: /etc/profile.d/custom.sh
+    state: touch
+
+- name: Add /usr/libexec to $PATH
+  copy:
+    dest: /etc/profile.d/custom.sh
+    content: 'PATH=$PATH:/usr/libexec'
+
+- name: Add /usr/libexec to $PATH
+  copy:
+    dest: /etc/profile.d/
+    src: custom.sh
+  
+- name: Start and enable libvirtd service
+  systemd:
+    name: libvirtd
+    state: started
+    enabled: yes
+
+- name: Get KVM status
+  systemd:
+    name: libvirtd
+  register: libvirt
+
+- name: Check if kernel modules are loaded and active
+  fail:
+    msg: "The Kernel Modules are inactive or not loaded"
+  when: (libvirt.status.ActiveState != 'active') or
+        (libvirt.status.LoadState != 'loaded')
+
+- name: Add F26 libvirt box
+  command: vagrant box add fedora/26-cloud-base --provider libvirt --force
+  register: check_if_added
+  until: not check_if_added | failed
+
+- name: Find img file for Fedora box
+  find:
+    paths: ~/.vagrant.d/boxes/fedora-VAGRANTSLASH-26-cloud-base
+    recurse: yes
+    patterns: 'box.img'
+  register: results
+
+- assert:
+    that: results['matched'] == 1
+    msg: "More than one .img files were found for Fedora box"
+
+- name: Set img file path
+  set_fact:
+    img_path: "{{ results['files'][0]['path'] }}"
