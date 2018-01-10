@@ -3,7 +3,8 @@
 import argparse
 import subprocess
 import os
-from shutil import copyfile
+from shutil import copyfile, rmtree
+import tempfile
 
 from lib import builder, promote
 from lib.builder import WORKING_DIR
@@ -11,16 +12,40 @@ from lib.builder import WORKING_DIR
 
 LATEST = '2.14'
 
-USERNAME = '57600fb10c1e664383000229'
-HOSTNAME = 'docs-pulp.rhcloud.com'
+USERNAME = 'doc_builder'
+HOSTNAME = '8.43.85.236'
 
-SITE_ROOT = '~/app-root/repo/diy/'
+SITE_ROOT = '/var/www/docs.pulpproject.org/'
 
 # dict of {git repo: [list of package dirs containing setup.py]} that need to be installed
 # for apidoc generation to work; only used for pulp 3+
 APIDOC_PACKAGES = {
     'pulp': ['common', 'platform', 'plugin']
 }
+
+
+def make_directory_with_rsync(remote_paths_list):
+    """
+    Ensure the remote directory path exists
+
+    :param remote_paths_list: The list of parameters. e.g. ['en', 'latest'] to be en/latest on the
+        remote.
+    :type remote_paths_list: a list of strings, with each string representing a directory.
+    """
+    try:
+        tempdir_path = tempfile.mkdtemp()
+        cwd = os.getcwd()
+        os.chdir(tempdir_path)
+        os.makedirs(os.sep.join(remote_paths_list))
+        remote_path_arg = '%s@%s:%s%s' % (USERNAME, HOSTNAME, SITE_ROOT, remote_paths_list[0])
+        local_path_arg = tempdir_path + os.sep + remote_paths_list[0] + os.sep
+        rsync_command = ['rsync', '-avzh', local_path_arg, remote_path_arg]
+        exit_code = subprocess.call(rsync_command)
+        if exit_code != 0:
+            raise RuntimeError('An error occurred while creating remote directories.')
+    finally:
+        rmtree(tempdir_path)
+        os.chdir(cwd)
 
 
 def main():
@@ -122,66 +147,46 @@ def main():
         local_path_arg = os.sep.join([docs_directory, '_build', 'html']) + os.sep
         remote_path_arg = '%s@%s:%s' % (USERNAME, HOSTNAME, SITE_ROOT)
         rsync_command = ['rsync', '-avzh', '--delete', '--exclude', 'en',
-                         local_path_arg, remote_path_arg]
+                         '--omit-dir-times', local_path_arg, remote_path_arg]
         exit_code = subprocess.call(rsync_command, cwd=docs_directory)
         if exit_code != 0:
-            raise RuntimeError('An error occurred while pushing latest docs to OpenShift.')
+            raise RuntimeError('An error occurred while pushing latest docs.')
+
+        # Also publish to the /en/latest/ directory
+        make_directory_with_rsync(['en', 'latest'])
+        local_path_arg = os.sep.join([docs_directory, '_build', 'html']) + os.sep
+        remote_path_arg = '%s@%s:%sen/latest/' % (USERNAME, HOSTNAME, SITE_ROOT)
+        rsync_command = ['rsync', '-avzh', '--delete', local_path_arg, remote_path_arg]
+        exit_code = subprocess.call(rsync_command, cwd=docs_directory)
+        if exit_code != 0:
+            raise RuntimeError("An error occurred while pushing the 'latest' directory.")
 
     # rsync the nightly "master" docs to an unversioned "nightly" dir for
     # easy linking to in-development docs: /en/nightly/
     if build_type == 'nightly' and opts.release == 'master':
         local_path_arg = os.sep.join([docs_directory, '_build', 'html']) + os.sep
         remote_path_arg = '%s@%s:%sen/%s/' % (USERNAME, HOSTNAME, SITE_ROOT, build_type)
-        path_option_arg = 'mkdir -p %sen/%s/ && rsync' % (SITE_ROOT, build_type)
-        rsync_command = ['rsync', '-avzh', '--rsync-path', path_option_arg, '--delete',
-                         local_path_arg, remote_path_arg]
+        make_directory_with_rsync(['en', build_type])
+        rsync_command = ['rsync', '-avzh', '--delete', local_path_arg, remote_path_arg]
         exit_code = subprocess.call(rsync_command, cwd=docs_directory)
         if exit_code != 0:
-            raise RuntimeError('An error occurred while pushing nightly docs to OpenShift.')
+            raise RuntimeError('An error occurred while pushing nightly docs.')
 
-    # rsync the docs to OpenShift
+    # rsync the docs
     local_path_arg = os.sep.join([docs_directory, '_build', 'html']) + os.sep
     remote_path_arg = '%s@%s:%sen/%s/' % (USERNAME, HOSTNAME, SITE_ROOT, x_y_version)
     if build_type != 'ga':
         remote_path_arg += build_type + '/'
-        path_option_arg = 'mkdir -p %sen/%s/%s/ && rsync' % (SITE_ROOT, x_y_version, build_type)
-        rsync_command = ['rsync', '-avzh', '--rsync-path', path_option_arg, '--delete',
-                         local_path_arg, remote_path_arg]
+
+        make_directory_with_rsync(['en', x_y_version, build_type])
+        rsync_command = ['rsync', '-avzh', '--delete', local_path_arg, remote_path_arg]
     else:
-        path_option_arg = 'mkdir -p %sen/%s/ && rsync' % (SITE_ROOT, x_y_version)
-        rsync_command = ['rsync', '-avzh', '--rsync-path', path_option_arg, '--delete',
-                         '--exclude', 'nightly', '--exclude', 'testing',
-                         local_path_arg, remote_path_arg]
+        make_directory_with_rsync(['en', x_y_version])
+        rsync_command = ['rsync', '-avzh', '--delete', '--exclude', 'nightly', '--exclude',
+                         'testing', local_path_arg, remote_path_arg]
     exit_code = subprocess.call(rsync_command, cwd=docs_directory)
     if exit_code != 0:
-        raise RuntimeError('An error occurred while pushing docs to OpenShift.')
-
-    # rsync the robots.txt to OpenShift
-    local_path_arg = 'docs/robots.txt'
-    remote_path_arg = '%s@%s:%s' % (USERNAME, HOSTNAME, SITE_ROOT)
-    scp_command = ['scp', local_path_arg, remote_path_arg]
-    exit_code = subprocess.call(scp_command)
-    if exit_code != 0:
-        raise RuntimeError('An error occurred while pushing robots.txt to OpenShift.')
-
-    # rsync the testrubyserver.rb to OpenShift
-    local_path_arg = 'docs/testrubyserver.rb'
-    remote_path_arg = '%s@%s:%s' % (USERNAME, HOSTNAME, SITE_ROOT)
-    scp_command = ['scp', local_path_arg, remote_path_arg]
-    exit_code = subprocess.call(scp_command)
-    if exit_code != 0:
-        raise RuntimeError('An error occurred while pushing testrubyserver.rb to OpenShift.')
-
-    # add symlink for latest
-    symlink_cmd = [
-        'ssh',
-        '%s@%s' % (USERNAME, HOSTNAME),
-        'ln -sfn %sen/%s %sen/latest' % (SITE_ROOT, LATEST, SITE_ROOT)
-    ]
-    exit_code = subprocess.call(symlink_cmd)
-    if exit_code != 0:
-        raise RuntimeError("An error occurred while creating the 'latest' symlink "
-                           "testrubyserver.rb to OpenShift.")
+        raise RuntimeError('An error occurred while pushing docs.')
 
 
 if __name__ == "__main__":
