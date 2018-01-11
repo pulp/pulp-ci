@@ -51,7 +51,8 @@
             # create a virtualenv in which to install packages needed to build docs
             virtualenv -p /usr/bin/python3 --system-site-packages ~/docs_ve
             source ~/docs_ve/bin/activate
-            pip3 install celery 'django<2' django-filter djangorestframework==3.6.4 djangorestframework-jwt drf-nested-routers psycopg2 sphinx git+https://github.com/snide/sphinx_rtd_theme.git@abfa98539a2bfc44198a9ca8c2f16efe84cc4d26 pyyaml virtualenv
+            pip3 install celery 'django<2' django-filter djangorestframework==3.6.4
+            djangorestframework-jwt drf-nested-routers psycopg2 sphinx==1.6.5 git+https://github.com/snide/sphinx_rtd_theme.git@abfa98539a2bfc44198a9ca8c2f16efe84cc4d26 pyyaml virtualenv
 
             # create server.yaml config file
             sudo mkdir -p /etc/pulp
@@ -126,7 +127,8 @@
             # create a virtualenv in which to install packages needed to build docs
             python3 -m venv --system-site-packages ~/docs_ve
             source ~/docs_ve/bin/activate
-            pip3 install celery sphinxcontrib-swaggerdoc 'django<2' django-filter djangorestframework djangorestframework-jwt drf-nested-routers psycopg2 sphinx git+https://github.com/snide/sphinx_rtd_theme.git@abfa98539a2bfc44198a9ca8c2f16efe84cc4d26 pyyaml virtualenv
+            pip3 install celery sphinxcontrib-swaggerdoc 'django<2' django-filter
+            djangorestframework djangorestframework-jwt drf-nested-routers psycopg2 sphinx==1.6.5 git+https://github.com/snide/sphinx_rtd_theme.git@abfa98539a2bfc44198a9ca8c2f16efe84cc4d26 pyyaml virtualenv
 
             # create server.yaml config file
             sudo mkdir -p /etc/pulp
