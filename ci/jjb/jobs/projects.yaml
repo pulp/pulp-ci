@@ -63,8 +63,8 @@
 - project:
     name: pulp-3-dev
     os:
-        - f25
         - f26
+        - f27
     jobs:
         - pulp-3-dev-{os}
 
