@@ -26,7 +26,6 @@
     jobs:
      - 'docs-builder-{release_config}'
     release_config:
-     - 2.14-dev
      - master
     trigger_times: '@midnight'
 
