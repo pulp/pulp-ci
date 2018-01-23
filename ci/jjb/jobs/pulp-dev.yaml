@@ -1,5 +1,5 @@
 - job-template:
-    name: 'pulp-{pulp_version}-dev-{os}'
+    name: 'pulp-{build_version}-dev-{os}'
     node: '{os}-np'
     properties:
         - qe-ownership
