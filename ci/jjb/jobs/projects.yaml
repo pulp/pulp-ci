@@ -48,16 +48,19 @@
 - project:
     name: pulp-dev
     os:
-        - 'f25'
-        - 'f26'
-        - 'f27'
-        - 'rhel7'
-    pulp_version:
-        - '2.15':
-            reverse_trigger: 'master'
-    reverse_trigger: '{pulp_version}-dev'
+      - 'f25'
+      - 'f26'
+      - 'f27'
+      - 'rhel7'
+    build_version:
+      - master:
+          pulp_version: '2.16'
+          reverse_trigger: 'master'
+      - 2.15:
+          pulp_version: '2.15'
+    reverse_trigger: '{build_version}-dev'
     jobs:
-        - pulp-{pulp_version}-dev-{os}
+        - pulp-{build_version}-dev-{os}
 
 - project:
     name: pulp-3-dev
