@@ -3,7 +3,7 @@
 
 - job-template:
     name: 'pulp-fixtures-publisher'
-    node: 'docker-np'
+    node: f26-np || f27-np
     properties:
         - qe-ownership
     scm:
