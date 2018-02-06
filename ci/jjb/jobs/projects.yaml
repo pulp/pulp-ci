@@ -162,8 +162,8 @@
           unittest_branches:
             - master
           unittest_platforms:
-            - f24-np
-            - f25-np
+            - f26-np
+            - f27-np
             - rhel7-np
           unittest_whitelist:
             - mibanescu
@@ -176,8 +176,8 @@
             - master
             - 2.5-dev
           unittest_platforms:
-            - f24-np
-            - f25-np
+            - f26-np
+            - f27-np
             - rhel7-np
           unittest_whitelist: ""
           unittest_adminlist:
@@ -188,8 +188,8 @@
             - master
             - 1.3-dev
           unittest_platforms:
-            - f24-np
-            - f25-np
+            - f26-np
+            - f27-np
             - rhel7-np
           unittest_whitelist: ""
           unittest_adminlist:
@@ -200,8 +200,8 @@
             - 2.14-dev
             - master
           unittest_platforms:
-            - f24-np
-            - f25-np
+            - f26-np
+            - f27-np
             - rhel7-np
           unittest_whitelist: ""
           unittest_adminlist:
@@ -212,8 +212,8 @@
             - 2.0-dev
             - master
           unittest_platforms:
-            - f24-np
-            - f25-np
+            - f26-np
+            - f27-np
             - rhel7-np
           unittest_whitelist: ""
           unittest_adminlist:
@@ -224,8 +224,8 @@
             - 2.14-dev
             - master
           unittest_platforms:
-            - f24-np
-            - f25-np
+            - f26-np
+            - f27-np
             - rhel7-np
           unittest_whitelist: ""
           unittest_adminlist:
@@ -242,7 +242,7 @@
             - 2.0-dev
             - master
           docs_platforms:
-            - f25-np
+            - f27-np
           docs_whitelist: ""
           docs_adminlist:
             - pulpbot
@@ -251,7 +251,7 @@
             - 1.5-dev
             - master
           docs_platforms:
-            - f25-np
+            - f27-np
           docs_whitelist:
             - mibanescu
           docs_adminlist:
@@ -262,7 +262,7 @@
             - master
             - 2.5-dev
           docs_platforms:
-            - f25-np
+            - f27-np
           docs_whitelist: ""
           docs_adminlist:
             - pulpbot
@@ -271,7 +271,7 @@
             - master
             - 1.3-dev
           docs_platforms:
-            - f25-np
+            - f27-np
           docs_whitelist: ""
           docs_adminlist:
             - pulpbot
@@ -280,7 +280,7 @@
             - 2.14-dev
             - master
           docs_platforms:
-            - f25-np
+            - f27-np
           docs_whitelist: ""
           docs_adminlist:
             - pulpbot
@@ -289,7 +289,7 @@
             - 2.14-dev
             - master
           docs_platforms:
-            - f25-np
+            - f27-np
           docs_whitelist: ""
           docs_adminlist:
             - pulpbot
