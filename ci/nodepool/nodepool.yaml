@@ -88,7 +88,7 @@ providers:
     clean-floating-ips: true
     images:
       - name: docker-np
-        base-image: Fedora-Cloud-Base-25-compose-latest
+        base-image: Fedora-Cloud-Base-26-compose-latest
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
