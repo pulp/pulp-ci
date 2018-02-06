@@ -56,9 +56,13 @@
             cp -v $KOJI_CONFIG/satellite6_rsa .
             echo "authtype = ssl" >> ~/.koji/config
             koji moshimoshi
+
+            pip install git+https://github.com/evgeni/obal
             cd pulp-packaging/
 
-            ansible-playbook nightly-and-mash.yaml
+            obal release pulp_packages -t wait
+            ssh root@koji.katello.org pulp-mash-split.py
+            ssh root@koji.katello.org "rsync -avz --delete /mnt/koji/releases/split/yum/pulp-nightly/pulp/ pulpadmin@repos.fedorapeople.org:/srv/repos/pulp/pulp/testing/automation/2.16/stage/"
 
     publishers:
       - email-notify-owners
