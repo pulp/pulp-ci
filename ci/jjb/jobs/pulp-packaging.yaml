@@ -47,7 +47,7 @@
 
             # Consider adding this as an option
 
-            sudo yum -y install ansible rpm-build redhat-rpm-config koji mock rpmdevtools rpmlint tito createrepo
+            sudo yum -y install ansible rpm-build redhat-rpm-config koji mock rpmdevtools rpmlint tito createrepo python2-pip
 
             # Confirm koji is accessible
             cp -v -R $KOJI_CONFIG/.koji ~/
