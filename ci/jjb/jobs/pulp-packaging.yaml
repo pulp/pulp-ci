@@ -57,7 +57,7 @@
             echo "authtype = ssl" >> ~/.koji/config
             koji moshimoshi
 
-            sudo pip install git+https://github.com/evgeni/obal
+            sudo pip install obal==0.0.1
             cd pulp-packaging/
 
             obal release pulp_packages -t wait
