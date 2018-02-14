@@ -48,6 +48,7 @@
           white-list-target-branches:
             - 2.14-dev
             - 2.14-release
+            - 2.15-release
             - master
     wrappers:
         - jenkins-ssh-credentials
