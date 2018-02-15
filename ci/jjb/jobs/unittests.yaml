@@ -8,8 +8,8 @@
           type: label-expression
           name: node-type
           values:
-            - f24-np
-            - f25-np
+            - f26-np
+            - f27-np
             - rhel7-np
     parameters:
         - string:
