@@ -240,7 +240,7 @@
             sudo mv pulp-deps.repo /etc/yum.repos.d/
             cd plugin
             if [ "$OS_NAME" == "Fedora" ]; then
-              rpmspec -q --queryformat '[%{{REQUIRENEVRS}}\n]' *.spec | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq | xargs -d "\n" sudo dnf -y install --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel
+              rpmspec -q --queryformat '[%{{REQUIRENEVRS}}\n]' *.spec | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq | xargs -d "\n" sudo dnf --setopt=install_weak_deps=False --best -y install --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel
               sudo dnf -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\*
             fi
             if [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION"  \< "7" ]; then
