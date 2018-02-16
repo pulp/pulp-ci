@@ -24,27 +24,31 @@
     builders:
       # Install and start Pulp 3.
       - shell: |
+          # Pulp 3 can't deal with SELinux.
+          sudo setenforce 0
+
+          # Install Pulp 3. (See the "scm" block above.)
           sudo dnf -y install ansible python3
-          # See the scm: block above.
           cd ansible
           ansible-galaxy install -r requirements.yml -p roles
-          # Pulp 3 can't deal with SELinux.
-          ansible all \
-            --inventory localhost, \
-            --connection local \
-            --become \
-            -m selinux \
-            -a state=disabled
           ansible-playbook deploy-pulp3.yml \
             --inventory localhost, \
             --connection local
-          ansible all \
-              --inventory localhost, \
-              --connection local \
-              --become \
-              --become-user pulp \
-              -m shell \
-              -a 'source ~/pulpvenv/bin/activate && pulp-manager runserver 0.0.0.0:8000 &'
+
+          # Install pulp-file.
+          sudo su - pulp bash -c '
+          source pulpvenv/bin/activate
+          pip install pulp-file
+          pulp-manager makemigrations pulp_file
+          pulp-manager migrate pulp_file
+          '
+          sudo systemctl restart pulp_resource_manager pulp_worker@1 pulp_worker@2
+
+          # Start Pulp.
+          sudo su - pulp bash -c '
+          source ~/pulpvenv/bin/activate
+          pulp-manager runserver 0.0.0.0:8000 &
+          '
       # Install and run Pulp Smash.
       - shell:
           !include-raw-escape:
