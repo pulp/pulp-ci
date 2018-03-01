@@ -238,8 +238,7 @@
             OS_NAME=$(lsb_release -si)
             OS_VERSION=$(lsb_release -sr | cut -f1 -d.)
 
-            GIT_URL=`git config --get remote.origin.url`
-            PULP_PLUGIN=`echo $GIT_URL | cut -d '/' -f 5 | cut -d '.' -f 1`
+            PULP_PLUGIN={pulp_plugin}
             PACKAGE_PLUGIN=`echo $PULP_PLUGIN | sed -e 's@_@-@'`
             PLUGIN_SPECDIR=$WORKSPACE/pulp-packaging/packages/$PACKAGE_PLUGIN/
 
