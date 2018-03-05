@@ -235,7 +235,6 @@
 - project:
     name: docs-pr
     jobs:
-     - 'docs-pulp-pr'
      - 'docs-plugins-pr-jobs'
     pulp_plugin:
       - pulp_python:
