@@ -1,0 +1,68 @@
+# This code assumes that Pulp and Pulp Smash are to be installed on localhost.
+- job-template:
+    name: pulp-3-devel-{os}
+    node: '{os}-np'
+    description: |
+      <p>Install a Pulp 3 development environment on a host, and smash it.</p>
+      <p>
+        The installation procedure assumes that Pulp and Pulp Smash should be
+        installed on localhost. As a result, actions like SSH configuration are
+        skipped.
+      </p>
+    properties:
+      - qe-ownership
+    scm:
+      - git:
+          url: https://github.com/pulp/devel.git
+          branches:
+            - '3.0-dev'
+          skip-tag: true
+    triggers:
+        - timed: "H 2 * * *"
+    builders:
+      # Install and start Pulp 3.
+      - shell: |
+          # Pulp 3 can't deal with SELinux.
+          sudo setenforce 0
+
+          # Install Pulp 3. (See the "scm" block above.)
+          sudo dnf -y install ansible python3
+          cd ansible
+          ansible-playbook pulp-from-source.yml \
+            --inventory localhost, \
+            --connection local
+
+          # Install pulp-file.
+          sudo su - vagrant bash -c '
+          source ~/.virtualenvs/pulp/bin/activate
+          pip install git+https://github.com/pulp/pulp_file.git#egg=pulp-file
+          pulp-manager makemigrations pulp_file
+          pulp-manager migrate pulp_file
+          '
+          sudo systemctl restart pulp_resource_manager pulp_worker@1 pulp_worker@2
+
+          # Start Pulp.
+          sudo su - vagrant bash -c '
+          source ~/.virtualenvs/pulp/bin/activate
+          pulp-manager runserver 0.0.0.0:8000 &
+          '
+      # Install and run Pulp Smash.
+      - shell:
+          !include-raw-escape:
+              - pulp-3-devel-smasher.sh
+    publishers:
+        - postbuildscript:
+            script-only-if-succeeded: False
+            script-only-if-failed: False
+            builders:
+              - shell: |
+                  if [[ "${{OS}}" =~ "rhel" ]]; then
+                      sudo subscription-manager unregister
+                  fi
+        - junit:
+            results: 'junit-report.xml'
+        - archive:
+            artifacts: "*.tar.gz"
+            allow-empty: true
+        - email-notify-owners
+        - mark-node-offline

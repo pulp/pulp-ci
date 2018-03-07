@@ -71,6 +71,14 @@
         - pulp-3-pypi-{os}
 
 - project:
+    name: pulp-3-devel
+    os:
+        - f26
+        - f27
+    jobs:
+        - pulp-3-devel-{os}
+
+- project:
     name: pulp-restore
     os:
         - 'rhel7'
