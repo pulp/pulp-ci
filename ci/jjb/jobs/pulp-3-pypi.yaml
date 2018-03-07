@@ -2,10 +2,10 @@
 #
 # This code assumes that Pulp and Pulp Smash are to be installed on localhost.
 - job-template:
-    name: pulp-3-dev-{os}
+    name: pulp-3-pypi-{os}
     node: '{os}-np'
     description: |
-      <p>Install Pulp 3 on a host with Ansible, and smash it.</p>
+      <p>Install Pulp 3 from PyPI on a host, and smash it.</p>
       <p>
         The installation procedure assumes that Pulp and Pulp Smash should be
         installed on localhost. As a result, actions like SSH configuration are
@@ -52,7 +52,7 @@
       # Install and run Pulp Smash.
       - shell:
           !include-raw-escape:
-              - pulp-3-dev-smasher.sh
+              - pulp-3-pypi-smasher.sh
     publishers:
         - postbuildscript:
             script-only-if-succeeded: False

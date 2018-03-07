@@ -63,12 +63,12 @@
         - pulp-{build_version}-dev-{os}
 
 - project:
-    name: pulp-3-dev
+    name: pulp-3-pypi
     os:
         - f26
         - f27
     jobs:
-        - pulp-3-dev-{os}
+        - pulp-3-pypi-{os}
 
 - project:
     name: pulp-restore
