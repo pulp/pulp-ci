@@ -1,15 +1,4 @@
 - project:
-    name: build-automation
-    jobs:
-     - 'build-automation-repo-{release_config}'
-     - 'build-automation-promote-{release_config}'
-    release_config:
-      - 2.14-dev:
-         version: '2.14'
-      - master:
-         version: '2.15'
-
-- project:
     name: pulp-packaging
     jobs:
      - 'pulp-packaging-{release_config}'
@@ -48,14 +37,15 @@
 - project:
     name: pulp-dev
     os:
-      - 'f25'
       - 'f26'
       - 'f27'
       - 'rhel7'
     build_version:
       - master:
-          pulp_version: '2.16'
+          pulp_version: '2.17'
           reverse_trigger: 'master'
+      - 2.16:
+          pulp_version: '2.16'
       - 2.15:
           pulp_version: '2.15'
     reverse_trigger: '{build_version}-dev'
