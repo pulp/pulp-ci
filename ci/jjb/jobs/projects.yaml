@@ -67,6 +67,7 @@
     os:
         - f26
         - f27
+        - rhel7
     jobs:
         - pulp-3-devel-{os}
 
