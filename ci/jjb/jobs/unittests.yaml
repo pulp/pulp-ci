@@ -243,9 +243,9 @@
             PLUGIN_SPECDIR=$WORKSPACE/pulp-packaging/packages/$PACKAGE_PLUGIN/
 
             if [ "$OS_NAME" == "RedHatEnterpriseServer" ]; then
-                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/stable/latest/\$releasever/\$basearch/"
+                REPO_URL="https://repos.fedorapeople.org/pulp/pulp/testing/automation/master/stage/\$releasever/\$basearch/"
             else
-                REPO_URL="https://repos.fedorapeople.org/repos/pulp/pulp/stable/latest/fedora-\$releasever/\$basearch/"
+                REPO_URL="https://repos.fedorapeople.org/pulp/pulp/testing/automation/master/stage/fedora-\$releasever/\$basearch/"
             fi
 
             cat > pulp-deps.repo<< EndOfMessage
@@ -259,16 +259,12 @@
             sudo mv pulp-deps.repo /etc/yum.repos.d/
             cd plugin
             if [ "$OS_NAME" == "Fedora" ]; then
-              rpmspec -q --queryformat '[%{{REQUIRENEVRS}}\n]' $PLUGIN_SPECDIR/*.spec | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq | xargs -d "\n" sudo dnf --setopt=install_weak_deps=False --best -y install --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel
-              sudo dnf -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\*
-            fi
-            if [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION"  \< "7" ]; then
-              rpmquery --specfile $PLUGIN_SPECDIR/*.spec --queryformat '[%{{REQUIRENAME}}\n]' | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq | xargs -d "\n" sudo yum -y install --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel
-              sudo yum -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\*
+              sudo dnf --setopt=install_weak_deps=False --best -y install --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel
+              sudo dnf -y --noautoremove remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\* pulp-deb\* python-pulp-deb\*
             fi
             if [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION"  \> "6" ]; then
-              rpmspec -q --queryformat '[%{{REQUIRENEVRS}}\n]' $PLUGIN_SPECDIR/*.spec | grep -v "/.*" | grep -v "python-pulp.* " | grep -v "pulp.*" | uniq | xargs -d "\n" sudo yum -y install --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel
-              sudo yum -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\*
+              sudo yum -y install --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel
+              sudo yum --setopt=clean_requirements_on_remove=0 -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\*  pulp-deb\* python-pulp-deb\*
             fi
             if [ "$OS_VERSION" != "5" ]; then
               echo "Setting up virtualenv-wrapper"
@@ -279,6 +275,7 @@
               source /usr/bin/virtualenvwrapper.sh
               # Build a virtualenv to hold the test requirements
               mkvirtualenv --system-site-packages test
+              pip install --upgrade setuptools
               pip install --upgrade six
               pip install -r $WORKSPACE/plugin/test_requirements.txt
             fi
