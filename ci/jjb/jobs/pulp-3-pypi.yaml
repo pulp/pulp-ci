@@ -33,6 +33,7 @@
           ansible-galaxy install -r requirements.yml -p roles
           ansible-playbook deploy-pulp3.yml \
             --inventory localhost, \
+            --extra-vars "pulp_config_secret_key=secret", \
             --connection local
 
           # Install pulp-file.
