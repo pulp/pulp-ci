@@ -10,7 +10,7 @@ from lib import builder, promote
 from lib.builder import WORKING_DIR
 
 
-LATEST = '2.15'
+LATEST = '2.16'
 
 USERNAME = 'doc_builder'
 HOSTNAME = '8.43.85.236'
