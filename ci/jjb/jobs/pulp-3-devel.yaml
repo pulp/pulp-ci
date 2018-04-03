@@ -17,35 +17,50 @@
           branches:
             - '3.0-dev'
           skip-tag: true
+    wrappers:
+      - config-file-provider:
+          files:
+            - file-id: rhn_credentials
+              variable: RHN_CREDENTIALS
+      - inject:
+          properties-content: |
+            OS={os}
     triggers:
         - timed: "H 2 * * *"
     builders:
-      # Install and start Pulp 3.
       - shell: |
-          # Pulp 3 can't deal with SELinux.
-          sudo setenforce 0
-
-          # Install Pulp 3. (See the "scm" block above.)
-          sudo dnf -y install ansible python3
+          sudo yum -y install ansible
           cd ansible
-          ansible-playbook pulp-from-source.yml \
-            --inventory localhost, \
-            --connection local
 
-          # Install pulp-file.
-          sudo su - vagrant bash -c '
-          source ~/.virtualenvs/pulp/bin/activate
-          pip install git+https://github.com/pulp/pulp_file.git#egg=pulp-file
-          pulp-manager makemigrations pulp_file
-          pulp-manager migrate pulp_file
-          '
+          # RHEL 7 ships with Python 3.4, but Pulp 3 needs Python 3.5+. Make it
+          # available with an SCL.
+          if [[ "${{OS}}" =~ "rhel7" ]]; then
+            echo 'localhost ansible_connection=local ansible_python_interpreter=/usr/bin/python2' > hosts
+            source "${{RHN_CREDENTIALS}}"
+            ansible-playbook configure-rhel-7.yml \
+              -i hosts \
+              -e "rhn_username=${{RHN_USERNAME}}" \
+              -e "rhn_password=${{RHN_PASSWORD}}" \
+              -e "rhn_pool=${{RHN_POOL}}"
+            prefix='scl enable rh-python36 --'
+          else
+            echo 'localhost ansible_connection=local ansible_python_interpreter=/usr/bin/python3' > hosts
+            prefix=''
+          fi
+
+          # Install pulpcore. (The Ansible code disables SELinux.)
+          ansible-playbook pulp-from-source.yml --inventory hosts
+
+          # Install pulp_file.
+          sudo su - vagrant bash -c "
+          ${{prefix}} ~/.virtualenvs/pulp/bin/pip install git+https://github.com/pulp/pulp_file.git#egg=pulp-file
+          yes yes | ${{prefix}} ~/.virtualenvs/pulp/bin/pulp-manager makemigrations pulp_file
+          ${{prefix}} ~/.virtualenvs/pulp/bin/pulp-manager migrate pulp_file
+          "
           sudo systemctl restart pulp_resource_manager pulp_worker@1 pulp_worker@2
 
           # Start Pulp.
-          sudo su - vagrant bash -c '
-          source ~/.virtualenvs/pulp/bin/activate
-          pulp-manager runserver 0.0.0.0:8000 &
-          '
+          sudo su - vagrant bash -c "${{prefix}} ~/.virtualenvs/pulp/bin/pulp-manager runserver 0.0.0.0:8000 &"
       # Install and run Pulp Smash.
       - shell:
           !include-raw-escape:
