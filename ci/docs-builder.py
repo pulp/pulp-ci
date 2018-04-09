@@ -5,6 +5,7 @@ import subprocess
 import os
 from shutil import copyfile, rmtree
 import tempfile
+import urllib.request
 
 from lib import builder, promote
 from lib.builder import WORKING_DIR
@@ -137,6 +138,14 @@ def main():
     # build the docs via the Pulp project itself
     print("Building the docs")
     docs_directory = os.sep.join([WORKING_DIR, 'pulp', 'docs'])
+
+    # Get the latest api.yaml file to build the rest api docs
+    if is_pulp3:
+        with urllib.request.urlopen("http://localhost:8000/api/v3/docs/api.yaml") as response, \
+                open(os.path.join(docs_directory, "api.yaml"), 'wb') as api_file:
+            data = response.read()
+            api_file.write(data)
+
     make_command = ['make', 'html']
     exit_code = subprocess.call(make_command, cwd=docs_directory)
     if exit_code != 0:

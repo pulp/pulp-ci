@@ -126,7 +126,9 @@
             # create a virtualenv in which to install packages needed to build docs
             python3 -m venv --system-site-packages ~/docs_ve
             source ~/docs_ve/bin/activate
-            pip3 install celery sphinxcontrib-swaggerdoc 'django<2' django-filter djangorestframework djangorestframework-jwt drf-nested-routers psycopg2 sphinx git+https://github.com/snide/sphinx_rtd_theme.git@abfa98539a2bfc44198a9ca8c2f16efe84cc4d26 pyyaml virtualenv
+
+            # Install doc requirements:
+            pip3 install -r https://raw.githubusercontent.com/pulp/pulp/3.0-dev/doc_requirements.txt
 
             # create server.yaml config file
             sudo mkdir -p /etc/pulp
@@ -147,16 +149,6 @@
             ansible-playbook deploy-pulp3.yml \
               --inventory localhost, \
               --connection local
-
-            # Current drf_openapi in PyPI is not backwards compatible with drf 3.7,  install from source instead.
-            # drf_openapi is needed to generate REST API docs.
-            ansible all \
-                --inventory localhost, \
-                --connection local \
-                --become \
-                --become-user pulp \
-                -m pip \
-                -a 'virtualenv=~/pulpvenv name=git+https://github.com/limdauto/drf_openapi.git@master#egg=drf_openapi'
 
             # Start pulp server in the background
             ansible all \
