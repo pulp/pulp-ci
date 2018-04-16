@@ -21,7 +21,7 @@ SITE_ROOT = '/var/www/docs.pulpproject.org/'
 # dict of {git repo: [list of package dirs containing setup.py]} that need to be installed
 # for apidoc generation to work; only used for pulp 3+
 APIDOC_PACKAGES = {
-    'pulp': ['common', 'platform', 'plugin']
+    'pulp': ['common', 'pulpcore', 'plugin']
 }
 
 

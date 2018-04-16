@@ -130,14 +130,9 @@
             # Install doc requirements:
             pip3 install -r https://raw.githubusercontent.com/pulp/pulp/3.0-dev/doc_requirements.txt
 
-            # create server.yaml config file
-            sudo mkdir -p /etc/pulp
-            echo "SECRET_KEY: '$(cat /dev/urandom | tr -dc 'a-z0-9\!@#$%^&*(\-_=+)' | head -c 50)'" | sudo tee -a /etc/pulp/server.yaml
-
             # Install Pulp3 from ansible roles
             pushd devel/ansible
 
-            ansible-galaxy install -r requirements.yml -p roles
             # Pulp 3 can't deal with SELinux.
             ansible all \
               --inventory localhost, \
@@ -146,8 +141,9 @@
               -m selinux \
               -a state=disabled
 
-            ansible-playbook deploy-pulp3.yml \
+            ansible-playbook pulp-from-source.yml \
               --inventory localhost, \
+              --extra-vars "pulp_user=$(whoami)" \
               --connection local
 
             # Start pulp server in the background
@@ -155,9 +151,8 @@
                 --inventory localhost, \
                 --connection local \
                 --become \
-                --become-user pulp \
                 -m shell \
-                -a 'source ~/pulpvenv/bin/activate && pulp-manager runserver localhost:8000 &'
+                -a 'source ~/.virtualenvs/pulp/bin/activate && pulp-manager runserver localhost:8000 &'
 
             popd
 
