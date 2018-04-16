@@ -127,8 +127,17 @@
             python3 -m venv --system-site-packages ~/docs_ve
             source ~/docs_ve/bin/activate
 
+            # Upgrade setuptools- old version installed on nodepool server causes issues for some packages
+            pip3 install --upgrade pip setuptools
+
             # Install doc requirements:
             pip3 install -r https://raw.githubusercontent.com/pulp/pulp/3.0-dev/doc_requirements.txt
+
+            sudo mkdir -p /etc/pulp
+            sudo mkdir -p -m 777 /var/lib/pulp
+
+            # create server.yaml config file
+            echo "SECRET_KEY: '$(cat /dev/urandom | tr -dc 'a-z0-9\!@#$%^&*(\-_=+)' | head -c 50)'" | sudo tee -a /etc/pulp/server.yaml
 
             # Install Pulp3 from ansible roles
             pushd devel/ansible
@@ -146,11 +155,17 @@
               --extra-vars "pulp_user=$(whoami)" \
               --connection local
 
+            # Run pulp migrations
+            ansible all \
+                --inventory localhost, \
+                --connection local \
+                -m shell \
+                -a 'source $HOME/.virtualenvs/pulp/bin/activate && pulp-manager migrate'
+
             # Start pulp server in the background
             ansible all \
                 --inventory localhost, \
                 --connection local \
-                --become \
                 -m shell \
                 -a 'source ~/.virtualenvs/pulp/bin/activate && pulp-manager runserver localhost:8000 &'
 
