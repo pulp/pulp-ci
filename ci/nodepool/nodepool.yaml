@@ -129,7 +129,7 @@ providers:
         min-ram: 4096
         name-filter: t2.medium
       - name: rhel7-np
-        base-image: rhel-7.4-server-x86_64-updated
+        base-image: rhel-7.5-server-x86_64-updated
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
