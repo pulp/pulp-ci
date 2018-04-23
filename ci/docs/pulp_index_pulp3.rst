@@ -58,3 +58,15 @@ Table of Contents
    troubleshooting
    bugs-features
    glossary
+
+
+Index and Search
+================
+
+* :ref:`search`
+
+.. toctree::
+   :maxdepth: 1
+
+   all_content_index
+
