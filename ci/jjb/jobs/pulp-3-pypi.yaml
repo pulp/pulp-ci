@@ -33,23 +33,29 @@
           ansible-galaxy install -r requirements.yml -p roles
           ansible-playbook deploy-pulp3.yml \
             --inventory localhost, \
-            --extra-vars "pulp_config_secret_key=secret", \
+            --extra-vars 'pulp_config_secret_key=secret', \
+            --extra-vars 'pulp_default_admin_password=admin', \
             --connection local
 
           # Install pulp-file.
-          sudo su - pulp bash -c '
-          source pulpvenv/bin/activate
+          sudo bash -c '
+          source /opt/pulp/bin/activate
           pip install pulp-file
           pulp-manager makemigrations pulp_file
           pulp-manager migrate pulp_file
           '
           sudo systemctl restart pulp_resource_manager pulp_worker@1 pulp_worker@2
 
-          # Start Pulp.
-          sudo su - pulp bash -c '
-          source ~/pulpvenv/bin/activate
-          pulp-manager runserver 0.0.0.0:8000 &
-          '
+          # Start Pulp. By default, pulp_web.service only listens on localhost.
+          sudo mkdir -p /etc/systemd/system/pulp_web.service.d
+          sudo bash -c 'cat >/etc/systemd/system/pulp_web.service.d/override.conf <<EOF
+          [Service]
+          ExecStart=
+          ExecStart=/opt/pulp/bin/pulp-manager runserver 0.0.0.0:8000
+          EOF'
+          sudo systemctl daemon-reload
+          sudo systemctl restart pulp_web
+          sudo firewall-cmd --add-port 8000/tcp
       # Install and run Pulp Smash.
       - shell:
           !include-raw-escape:
