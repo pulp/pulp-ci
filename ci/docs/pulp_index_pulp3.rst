@@ -23,15 +23,16 @@ Content
 .. toctree::
    :maxdepth: 1
 
+   overview/index
    installation/index
-   workflows/index
-   cli_guide/index
-   arch_and_scale/index
-   integration_guide/index
-   contributing/index
    plugins/index
-   release_notes/index
-   troubleshooting/index
+   workflows/index
+   release-notes/index
+   cli-guide/index
+   integration-guide/index
+   contributing/index
+   troubleshooting
+   bugs-features
    glossary
 
 Index and Search
