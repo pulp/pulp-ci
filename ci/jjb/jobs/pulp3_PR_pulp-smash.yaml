@@ -1,0 +1,256 @@
+- job:
+    name: 'pulp-smash-pulp3-pr'
+    defaults: ci-workflow-runtest
+    project-type: matrix
+    node: 'master'
+    axes:
+      - axis:
+          type: label-expression
+          name: node-type
+          values:
+            - f27-pulp3-np
+
+    parameters:
+        - string:
+            name: sha1
+            default: ''
+            description: |
+                The hash or refname of the branch to build: for example: origin/pr/9/head
+        - matrix-combinations:
+            name: MATRIX_AXIS
+    properties:
+      - dev-ownership
+      - github:
+          url: https://github.com/pulp/pulp/
+      - zeromq-event
+    scm:
+        - git:
+            url: 'https://github.com/pulp/pulp.git'
+            refspec: '+refs/pull/*:refs/remotes/origin/pr/*'
+            branches:
+              - "${sha1}"
+            basedir: pulp
+            skip-tag: True
+            wipe-workspace: false
+    triggers:
+      - github-pull-request:
+          admin-list:
+            - pulpbot
+          org-list:
+            - pulp
+          # Poll once per minute since our jenkins isn't public and web hooks aren't an option
+          cron: '* * * * *'
+          status-url: 'https://pulpadmin.fedorapeople.org/jenkins/jobs/${JOB_NAME}/builds/${BUILD_ID}/'
+          trigger-phrase: 'ok test'
+          allow-whitelist-orgs-as-admins: true
+          # only-trigger-phrase: true
+          white-list-target-branches:
+            - 3.0-dev
+    wrappers:
+        - jenkins-ssh-credentials
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Setting up after source control extract"
+
+            source ~/bashrc
+            set -x
+
+            pstop
+            dropdb --user pulp pulp
+            createdb --user pulp pulp
+            workon pulp
+            git remote add pr file://$WORKSPACE/pulp/
+            git fetch pr
+            git checkout pr/pr-branch
+            rm -rf ~/devel/pulp/pulpcore/app/migrations/*
+            preset
+            pstart
+            python manage.py runserver >>~/django_runserver.log 2>&1 &
+
+            mkdir -p ~/.virtualenvs/pulp-smash/
+            python3 -m venv ~/.virtualenvs/pulp-smash
+            source ~/.virtualenvs/pulp-smash/bin/activate
+            pip install --upgrade pip
+            pip install git+https://github.com/PulpQE/pulp-smash.git#egg=pulp-smash
+            mkdir -p ~/.config/pulp_smash
+            cat >~/.config/pulp_smash/settings.json <<EOF
+            {
+                "pulp": {
+                    "auth": ["admin", "admin"],
+                    "version": "3"
+                },
+                "systems": [
+                    {
+                        "hostname": "localhost",
+                        "roles": {
+                            "amqp broker": {"service": "qpidd"},
+                            "api": {"port": 8000, "scheme": "http"},
+                            "mongod": {},
+                            "pulp celerybeat": {},
+                            "pulp cli": {},
+                            "pulp resource manager": {},
+                            "pulp workers": {},
+                            "shell": {},
+                            "squid": {}
+                        }
+                    }
+                ]
+            }
+            EOF
+            pulp-smash settings path
+            pulp-smash settings show
+            pulp-smash settings validate
+            # Use pytest instead of unittest for XML reports. :-(
+            pip install pytest
+            cd $WORKSPACE
+            py.test -v --color=yes --junit-xml=junit-report.xml --pyargs pulp_smash.tests.pulp3
+            test -f junit-report.xml
+            cat ~/django_runserver.log
+
+            echo "Host *
+                StrictHostKeyChecking no" >> ~/.ssh/config
+            sudo chmod 400 ~/.ssh/config
+            export NODE=${JOB_NAME##*/}
+            export SHORT_JOB_NAME=${JOB_NAME/\/$NODE/}
+            curl -k -o $NODE.txt $BUILD_URL/consoleText
+            if grep -q FAILED $NODE.txt ; then mv $NODE.txt $NODE-FAILED.txt; fi
+            rsync -rv --rsync-path="mkdir -p ~/public_html/jenkins/jobs/${SHORT_JOB_NAME}/builds/${BUILD_ID}/ && rsync" $NODE*.txt pulpadmin@repos.fedorapeople.org:public_html/jenkins/jobs/${SHORT_JOB_NAME}/builds/${BUILD_ID}/
+
+    publishers:
+      # Publish a pretty graph of the test results
+      - junit:
+          results: 'junit-report.xml'
+          keep-long-stdio: true
+          test-stability: true
+      - mark-node-offline
+
+- job:
+    name: 'pulp-smash-pulp3-pulp-file-pr'
+    defaults: ci-workflow-runtest
+    project-type: matrix
+    node: 'master'
+    axes:
+      - axis:
+          type: label-expression
+          name: node-type
+          values:
+            - f27-pulp3-np
+
+    parameters:
+        - string:
+            name: sha1
+            default: ''
+            description: |
+                The hash or refname of the branch to build: for example: origin/pr/9/head
+        - matrix-combinations:
+            name: MATRIX_AXIS
+    properties:
+      - dev-ownership
+      - github:
+          url: https://github.com/pulp/pulp_file/
+      - zeromq-event
+    scm:
+        - git:
+            url: 'https://github.com/pulp/pulp_file.git'
+            refspec: '+refs/pull/*:refs/remotes/origin/pr/*'
+            branches:
+              - "${sha1}"
+            basedir: plugin
+            skip-tag: True
+            wipe-workspace: false
+    triggers:
+      - github-pull-request:
+          admin-list:
+            - pulpbot
+          org-list:
+            - pulp
+          # Poll once per minute since our jenkins isn't public and web hooks aren't an option
+          cron: '* * * * *'
+          status-url: 'https://pulpadmin.fedorapeople.org/jenkins/jobs/${JOB_NAME}/builds/${BUILD_ID}/'
+          trigger-phrase: 'ok test'
+          allow-whitelist-orgs-as-admins: true
+          # only-trigger-phrase: true
+          white-list-target-branches:
+            - master
+    wrappers:
+        - jenkins-ssh-credentials
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Setting up after source control extract"
+
+            source ~/bashrc
+            set -x
+
+            pstop
+            dropdb --user pulp pulp
+            createdb --user pulp pulp
+            workon pulp
+            git pull
+            rm -rf ~/devel/pulp/pulpcore/app/migrations/*
+            ln -s $WORKSPACE/plugin/ ../pulp_file
+            cd ../pulp_file
+            python setup.py develop
+            pulp-manager makemigrations pulp_file
+            pulp-manager makemigrations pulp_app
+            preset
+            pstart
+            python manage.py runserver >>~/django_runserver.log 2>&1 &
+
+            mkdir -p ~/.virtualenvs/pulp-smash/
+            python3 -m venv ~/.virtualenvs/pulp-smash
+            source ~/.virtualenvs/pulp-smash/bin/activate
+            pip install --upgrade pip
+            pip install git+https://github.com/PulpQE/pulp-smash.git#egg=pulp-smash
+            mkdir -p ~/.config/pulp_smash
+            cat >~/.config/pulp_smash/settings.json <<EOF
+            {
+                "pulp": {
+                    "auth": ["admin", "admin"],
+                    "version": "3"
+                },
+                "systems": [
+                    {
+                        "hostname": "localhost",
+                        "roles": {
+                            "amqp broker": {"service": "qpidd"},
+                            "api": {"port": 8000, "scheme": "http"},
+                            "mongod": {},
+                            "pulp celerybeat": {},
+                            "pulp cli": {},
+                            "pulp resource manager": {},
+                            "pulp workers": {},
+                            "shell": {},
+                            "squid": {}
+                        }
+                    }
+                ]
+            }
+            EOF
+            pulp-smash settings path
+            pulp-smash settings show
+            pulp-smash settings validate
+            # Use pytest instead of unittest for XML reports. :-(
+            pip install pytest
+            cd $WORKSPACE
+            py.test -v --color=yes --junit-xml=junit-report.xml --pyargs pulp_smash.tests.pulp3
+            test -f junit-report.xml
+            cat ~/django_runserver.log
+
+            echo "Host *
+                StrictHostKeyChecking no" >> ~/.ssh/config
+            sudo chmod 400 ~/.ssh/config
+            export NODE=${JOB_NAME##*/}
+            export SHORT_JOB_NAME=${JOB_NAME/\/$NODE/}
+            curl -k -o $NODE.txt $BUILD_URL/consoleText
+            if grep -q FAILED $NODE.txt ; then mv $NODE.txt $NODE-FAILED.txt; fi
+            rsync -rv --rsync-path="mkdir -p ~/public_html/jenkins/jobs/${SHORT_JOB_NAME}/builds/${BUILD_ID}/ && rsync" $NODE*.txt pulpadmin@repos.fedorapeople.org:public_html/jenkins/jobs/${SHORT_JOB_NAME}/builds/${BUILD_ID}/
+
+    publishers:
+      # Publish a pretty graph of the test results
+      - junit:
+          results: 'junit-report.xml'
+          keep-long-stdio: true
+          test-stability: true
+      - mark-node-offline

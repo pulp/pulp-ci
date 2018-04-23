@@ -61,6 +61,12 @@ labels:
     providers:
       - name: ci-rhos
     ready-script: fix_hostname.sh
+  - name: f27-pulp3-np
+    image: f27-pulp3-np
+    min-ready: 0
+    providers:
+      - name: ci-rhos
+    ready-script: fix_hostname.sh
   - name: rhel6-np
     image: rhel6-np
     min-ready: 0
@@ -117,6 +123,10 @@ providers:
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
         min-ram: 3072
+      - name: f27-pulp3-np
+        base-image: Fedora-Cloud-Base-27-1.6
+        username: jenkins
+        setup: prepare_pulp3_node.sh
         # for rhel images, the "updated" images should require less updating
         # than the "released" images: https://mojo.redhat.com/docs/DOC-1081665
         # rhel6 images need the t2.medium image type because their initrd
