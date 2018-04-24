@@ -66,7 +66,7 @@ def main():
         raise RuntimeError("config file does not have an entry for 'pulp'")
     version = pulp_dict['version']
 
-    if version.endswith('alpha'):
+    if version.endswith('alpha') or is_pulp3:
         build_type = 'nightly'
     elif version.endswith('beta'):
         build_type = 'testing'
