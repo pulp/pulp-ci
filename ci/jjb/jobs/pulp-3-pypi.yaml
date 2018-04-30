@@ -47,6 +47,8 @@
           sudo systemctl restart pulp_resource_manager pulp_worker@1 pulp_worker@2
 
           # Start Pulp. By default, pulp_web.service only listens on localhost.
+          # The cloud spin of Fedora (as provided by OpenStack) doesn't include
+          # a firewall.
           sudo mkdir -p /etc/systemd/system/pulp_web.service.d
           sudo bash -c 'cat >/etc/systemd/system/pulp_web.service.d/override.conf <<EOF
           [Service]
@@ -55,7 +57,6 @@
           EOF'
           sudo systemctl daemon-reload
           sudo systemctl restart pulp_web
-          sudo firewall-cmd --add-port 8000/tcp
       # Install and run Pulp Smash.
       - shell:
           !include-raw-escape:
