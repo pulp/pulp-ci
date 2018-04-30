@@ -98,9 +98,8 @@
     name: qe-ownership
     properties:
         - ownership:
-            owner: pthomas
+            owner: jaudet
             co-owners:
-                - jaudet
                 - koliveir
 
 # Used in the "ci-workflow-runtest" defaults definition.
