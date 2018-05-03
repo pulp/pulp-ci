@@ -1,0 +1,7 @@
+---
+- hosts: all
+  roles:
+    - role: pulp-packer
+    - role: pulp-virtualbox
+    - role: pulp-libvirtd
+    - role: pulp-galaxy-ansible

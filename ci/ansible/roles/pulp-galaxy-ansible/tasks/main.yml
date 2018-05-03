@@ -1,0 +1,28 @@
+---
+- name: Download installation playbook
+  get_url:
+    url: https://raw.githubusercontent.com/pulp/devel/3.0-dev/ansible/deploy-pulp3.yml
+    dest: "{{ ansible_user_dir }}"
+
+- name: Download requirements.yml
+  get_url:
+    url: https://raw.githubusercontent.com/pulp/devel/3.0-dev/ansible/requirements.yml
+    dest: "{{ ansible_user_dir }}"
+
+- name: Install ansible
+  package:
+    name: ansible
+    state: installed
+
+- name: Install ansible galaxy roles
+  command: ansible-galaxy install -r requirements.yml
+
+- name: Export motd
+  copy:
+    src: motd
+    dest: "{{ ansible_user_dir }}/motd"
+
+- name: Export packer template
+  template:
+    src: pulpcore.json.jj2
+    dest: "{{ ansible_user_dir }}/pulpcore.json"

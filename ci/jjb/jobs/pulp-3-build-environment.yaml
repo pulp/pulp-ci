@@ -1,0 +1,52 @@
+- job:
+    name: pulp-3-build-environment
+    concurrent: true
+    node: 'fedora-np'
+    description: |
+      <p>
+        Prepare build environment for building Vagrant box pre-installed with Pulp 3 on the host identified by the job parameter
+        <code>HOSTNAME</code>.
+      </p>
+      <p>
+        This job requires two hosts: one for use as an Ansible control host, and
+        one on which to configure Packer and other necessary stuff. Jenkins is responsible
+        for providing the control host, and you are responsible for providing the build environment.
+        When this job is executed, Jenkins will configure the control host, by doing things 
+        like installing Ansible and configuring SSH keys. Then, the control host will reach out 
+        and configure Packer and other things onto the host identified by <code>HOSTNAME</code>.
+      </p>
+      <p>
+        Ensure the following is in <code>~/.ssh/authorized_keys</code> on the
+        Pulp 3 host:
+      </p>
+      <pre>
+        ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6DJ8fmd61DWPCMiOEuy96ajI7rL3rWu7C9NQhE9a4SfyaiBcghREHJNCz9LGJ57jtOmNV0+UEDhyvTckZI2YQeDqGCP/xO9B+5gQNlyGZ9gSmFz+68NhYQ0vRekikpb9jNdy6ZZbfZDLp1w7dxqDIKfoyu7QO3Qr3E/9CpiucQif2p+oQOVOCdKEjvGYNkYQks0jVTYNRscgmcezpfLKhqWzAre5+JaMB0kRD5Nqadm2uXKZ4cNYStrpZ4xUrnMvAqjormxW2VJNx+0716Wc2Byhg8Nva+bsOkxp/GewBWHfNPtzQGMsL7oYZPtOd/LrmyYeu/M5Uz7/6QCv4N90P pulp
+      </pre>
+      <p>
+        In addition, ensure the build environment satisfies the <a
+        href="http://docs.ansible.com/ansible/latest/intro_installation.html#managed-node-requirements">managed
+        node requirements</a>.
+      </p>
+    parameters:
+      - string:
+          name: HOSTNAME
+          default: 10.13.129.54
+      - string:
+          name: USER
+          default: root 
+    properties:
+        - dev-ownership
+    scm:
+      - git:
+          url: https://github.com/pulp/pulp-ci.git
+    wrappers:
+      - jenkins-ssh-credentials
+    builders:
+      - shell: |
+          sudo dnf -y install ansible
+          echo "${HOSTNAME} ansible_user=${USER}" > hosts
+          export ANSIBLE_HOST_KEY_CHECKING=False
+          ansible-playbook ci/ansible/pulp_build_environment.yml -i hosts 
+    publishers:
+        - email-notify-owners
+        - mark-node-offline

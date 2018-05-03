@@ -1,0 +1,20 @@
+---
+- name: Update box version
+  lineinfile:
+    path: pulpcore.json
+    regexp: 'version'
+    line: "\"version\": \"{{ '%Y%m%d' | strftime }}\""
+
+- name: Reboot Server
+  command: /sbin/shutdown -r
+  async: 0
+  poll: 0
+
+- name: Wait for remote host to reboot
+  wait_for_connection:
+    delay: 60
+
+- name: Build image
+  command: packer build -var 'vagrant_cloud_token'={{ vagrant_cloud_token }} -force -parallel=false {{ ansible_user_dir }}/pulpcore.json
+  async: 0
+  poll: 0

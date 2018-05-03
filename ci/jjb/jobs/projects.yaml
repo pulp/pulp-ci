@@ -112,6 +112,16 @@
       - pulp-3-installer
 
 - project:
+    name: pulp-3-build-box
+    jobs:
+      - pulp-3-build-box
+
+- project:
+    name: pulp-3-build-environment
+    jobs:
+      - pulp-3-build-environment
+      
+- project:
     name: pulp-upgrade
     os:
         - f24

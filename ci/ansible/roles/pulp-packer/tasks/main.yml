@@ -1,0 +1,45 @@
+---
+- name: Check if packer is already installed
+  stat:
+    path: "{{ packer_install_directory }}/packer_{{ packer_version }}/packer"
+  register: check_existing_packer
+
+- block:
+    - name: Create packer version directory
+      file:
+        name: "{{ packer_install_directory }}/packer_{{ packer_version }}"
+        state: directory
+
+    - name: Download packer archive
+      get_url:
+        url: "https://releases.hashicorp.com/packer/{{ packer_version }}/packer_{{ packer_version }}_linux_{{ ansible_architecture|regex_replace('x86_64','amd64') }}.zip"
+        dest: "{{ packer_install_directory }}/packer_{{ packer_version }}/"
+        timeout: 1000
+      register: download_packer_archive
+
+    - name: Install unzip
+      package:
+        name: unzip
+      when: download_packer_archive.changed
+
+    - name: Unarchive packer
+      unarchive:
+        src: "{{ packer_install_directory }}/packer_{{ packer_version }}/packer_{{ packer_version }}_linux_{{ ansible_architecture|regex_replace('x86_64','amd64') }}.zip"
+        dest: "{{ packer_install_directory }}/packer_{{ packer_version }}/"
+        remote_src: yes
+      when: download_packer_archive.changed
+
+    - name: Remove packer archive
+      file:
+        path: "{{ packer_install_directory }}/packer_{{ packer_version }}/packer_{{ packer_version }}_linux_{{ ansible_architecture|regex_replace('x86_64','amd64') }}.zip"
+        state: absent
+
+  when: not check_existing_packer.stat.exists
+
+- name: Symlink packer to correct version
+  file:
+    path: "{{ packer_install_directory }}/packer"
+    src: "{{ packer_install_directory }}/packer_{{ packer_version }}/packer"
+    state: link
+    force: yes
+    mode: 0777
