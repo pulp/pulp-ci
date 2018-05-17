@@ -17,7 +17,7 @@ cat >~/.config/pulp_smash/settings.json <<EOF
         "auth": ["admin", "admin"],
         "version": "3"
     },
-    "systems": [
+    "hosts": [
         {
             "hostname": "$(hostname --long)",
             "roles": {
