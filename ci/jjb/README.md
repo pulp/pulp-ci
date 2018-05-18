@@ -137,6 +137,10 @@ import ssl
 context = ssl._create_unverified_context()
 response = urlopen(req, context=context, timeout=self.timeout).read()
 ```
+This workaround was tested using the following packages versions:
+
+ - python-jenkins==0.4.16
+ - jenkins-job-builder==2.0.2
 
 In the Pulp Vagrant environment, the `__init__.py` file is located at:
 `/home/vagrant/.virtualenvs/jjb_env/lib/python2.7/site-packages/jenkins/__init__.py`
