@@ -136,10 +136,10 @@
 
             for setup in `find . -name setup.py`; do
                 pushd `dirname $setup`;
-                pip install -e .;
+                sudo pip install -e .;
                 popd;
             done;
-            python ./pulp-dev.py -I
+            sudo python ./pulp-dev.py -I
 
             cd $WORKSPACE/pulp
             export PYTHONUNBUFFERED=1
@@ -287,10 +287,10 @@
             cd $WORKSPACE/plugin
             for setup in `find . -name setup.py`; do
                 pushd `dirname $setup`;
-                python setup.py develop;
+                sudo python setup.py develop;
                 popd;
             done;
-            python ./pulp-dev.py -I
+            sudo python ./pulp-dev.py -I
 
             cd $WORKSPACE/plugin
             export PYTHONUNBUFFERED=1
