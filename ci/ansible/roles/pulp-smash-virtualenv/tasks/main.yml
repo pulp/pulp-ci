@@ -24,7 +24,7 @@
     shell: >
       source {{ ansible_user_dir }}/.virtualenvs/pulp-smash/bin/activate
       && (which pip || curl https://bootstrap.pypa.io/get-pip.py | python)
-    when: result|changed
+    when: result is changed
 
   when: ansible_distribution == "RedHat"
 

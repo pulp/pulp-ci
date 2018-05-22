@@ -34,7 +34,7 @@
   shell: >
     source "{{ ansible_user_dir }}/.venvs/pulp-migrate/bin/activate" &&
     pip install pytest https://github.com/PulpQE/pulp-migrate/archive/master.zip#egg=pulp-migrate
-  when: result|changed
+  when: result is changed
 
 - name: Create directory for pulp smash configuration file
   file:
