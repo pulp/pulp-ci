@@ -61,6 +61,12 @@ labels:
     providers:
       - name: ci-rhos
     ready-script: fix_hostname.sh
+  - name: f28-np
+    image: f28-np
+    min-ready: 0
+    providers:
+      - name: ci-rhos
+    ready-script: fix_hostname.sh
   - name: rhel6-np
     image: rhel6-np
     min-ready: 0
@@ -113,6 +119,12 @@ providers:
         min-ram: 3072
       - name: f27-np
         base-image: Fedora-Cloud-Base-27-1.6
+        username: jenkins
+        setup: prepare_node.sh
+        private-key: /etc/nodepool/pulp_rsa
+        min-ram: 3072
+      - name: f28-np
+        base-image: Fedora-Cloud-Base-28-compose-latest
         username: jenkins
         setup: prepare_node.sh
         private-key: /etc/nodepool/pulp_rsa
