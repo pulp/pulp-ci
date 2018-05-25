@@ -27,7 +27,6 @@ def parse_args():
 
 if __name__ == '__main__':
     opts = parse_args()
-    spec_file = promote.find_spec(opts.directory)
 
     # version and update_type are mutually exclusive and required
     # if one is not set, the other must be
@@ -35,9 +34,6 @@ if __name__ == '__main__':
         # user specified version so get it from there
         version, release = promote.split_version(opts.version)
     else:
-        # otherwise, pull it from the spec and update according to update type
-        spec_version = builder.get_version_from_spec(spec_file)
-        spec_release = builder.get_release_from_spec(spec_file)
-        version, release = promote.calculate_version(spec_version, spec_release, opts.update_type)
+        raise Exception("Must specify version")
 
     promote.update_versions(opts.directory, version, release)

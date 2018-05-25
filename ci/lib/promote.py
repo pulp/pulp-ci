@@ -353,21 +353,6 @@ def find_replace_in_files(root_directory, file_mask, new_version, version_regex)
         buf.close()
 
 
-def find_spec(directory):
-    # Find the spec
-    spec_files = glob.glob(os.path.join(directory, '*.spec'))
-    if not spec_files:
-        raise RuntimeError("Error, unable to find spec file in %s " % directory)
-
-    if len(spec_files) > 1:
-        raise RuntimeError('Multiple spec files in repository root!')
-
-    try:
-        return spec_files[0]
-    except IndexError:
-        raise RuntimeError('spec file not found in repository root!')
-
-
 def calculate_version(full_version, full_release, update_type):
     """
     Given a version, release, and update type, increment the version/release based on that type
@@ -464,12 +449,6 @@ def update_versions(project_dir, version, release):
     the sphinx conf.py
     """
     # Update the all the files
-    try:
-        spec_file = find_spec(project_dir)
-        set_spec_version(spec_file, version, release)
-    except RuntimeError:
-        # spec not found, most likely a pulp 3 project
-        pass
     python_version = to_python_version(version, release)
     find_replace_in_files(project_dir, 'setup.py', python_version, VERSION_REGEX)
     find_replace_in_files(project_dir, '__init__.py', python_version, VERSION_REGEX)
