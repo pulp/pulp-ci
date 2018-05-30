@@ -62,7 +62,7 @@
 
             obal release pulp_packages -t wait
             ssh root@koji.katello.org pulp-mash-split.py
-            ssh root@koji.katello.org "rsync -avz --delete /mnt/koji/releases/split/yum/pulp-nightly/pulp/ pulpadmin@repos.fedorapeople.org:/srv/repos/pulp/pulp/testing/automation/master/stage/"
+            ssh root@koji.katello.org "rsync -avz --delete /mnt/koji/releases/split/yum/pulp-nightly/pulp/ pulpadmin@repos.fedorapeople.org:/srv/repos/pulp/pulp/testing/automation/2-master/stage/"
 
     publishers:
       - email-notify-owners

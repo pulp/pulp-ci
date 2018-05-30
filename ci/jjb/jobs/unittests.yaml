@@ -56,7 +56,7 @@
             - 2.14-dev
             - 2.14-release
             - 2.15-release
-            - master
+            - 2-master
     wrappers:
         - jenkins-ssh-credentials
     builders:
@@ -243,9 +243,9 @@
             PLUGIN_SPECDIR=$WORKSPACE/pulp-packaging/packages/$PACKAGE_PLUGIN/
 
             if [ "$OS_NAME" == "RedHatEnterpriseServer" ]; then
-                REPO_URL="https://repos.fedorapeople.org/pulp/pulp/testing/automation/master/stage/\$releasever/\$basearch/"
+                REPO_URL="https://repos.fedorapeople.org/pulp/pulp/testing/automation/2-master/stage/\$releasever/\$basearch/"
             else
-                REPO_URL="https://repos.fedorapeople.org/pulp/pulp/testing/automation/master/stage/fedora-\$releasever/\$basearch/"
+                REPO_URL="https://repos.fedorapeople.org/pulp/pulp/testing/automation/2-master/stage/fedora-\$releasever/\$basearch/"
             fi
 
             cat > pulp-deps.repo<< EndOfMessage
