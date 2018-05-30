@@ -170,9 +170,9 @@ def main():
         if exit_code != 0:
             raise RuntimeError("An error occurred while pushing the 'latest' directory.")
 
-    # rsync the nightly "master" docs to an unversioned "nightly" dir for
+    # rsync the nightly "2-master" docs to an unversioned "nightly" dir for
     # easy linking to in-development docs: /en/nightly/
-    if build_type == 'nightly' and opts.release == 'master':
+    if build_type == 'nightly' and opts.release == '2-master':
         local_path_arg = os.sep.join([docs_directory, '_build', 'html']) + os.sep
         remote_path_arg = '%s@%s:%sen/%s/' % (USERNAME, HOSTNAME, SITE_ROOT, build_type)
         make_directory_with_rsync(['en', build_type])

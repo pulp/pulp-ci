@@ -3,7 +3,7 @@
     jobs:
      - 'pulp-packaging-{release_config}'
     release_config:
-      - master
+      - 2-master
 
 - project:
     name: ci-update-jobs
@@ -15,7 +15,7 @@
     jobs:
      - 'docs-builder-{release_config}'
     release_config:
-     - master
+     - 2-master
     trigger_times: '@midnight'
 
 - project:
@@ -43,9 +43,9 @@
       - 'f27'
       - 'rhel7'
     build_version:
-      - master:
+      - 2-master:
           pulp_version: '2.17'
-          reverse_trigger: 'master'
+          reverse_trigger: '2-master'
       - 2.16:
           pulp_version: '2.16'
       - 2.15:
