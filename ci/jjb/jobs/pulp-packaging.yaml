@@ -57,10 +57,10 @@
             echo "authtype = ssl" >> ~/.koji/config
             koji moshimoshi
 
-            sudo pip install obal==0.0.2
+            sudo pip install obal==0.0.4
             cd pulp-packaging/
 
-            obal release pulp_packages -t wait
+            obal release pulp_packages
             ssh root@koji.katello.org pulp-mash-split.py
             ssh root@koji.katello.org "rsync -avz --delete /mnt/koji/releases/split/yum/pulp-nightly/pulp/ pulpadmin@repos.fedorapeople.org:/srv/repos/pulp/pulp/testing/automation/2-master/stage/"
 
