@@ -15,7 +15,7 @@
       - git:
           url: https://github.com/pulp/devel.git
           branches:
-            - '3.0-dev'
+            - 'master'
           skip-tag: true
     wrappers:
       - config-file-provider:

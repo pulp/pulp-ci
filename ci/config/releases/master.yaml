@@ -8,5 +8,5 @@ repositories:
   - name: pulp
     external_deps: deps/external_deps.json
     git_url: git@github.com:pulp/pulp.git
-    git_branch: 3.0-dev
+    git_branch: master
     version: 3.0.0-0.0.beta

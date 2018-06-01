@@ -27,6 +27,7 @@
     repo: https://github.com/pulp/pulp.git
     dest: pulp
     depth: 1
+    version: 2-master
 
 - name: Install pip package
   action: "{{ ansible_pkg_mgr }} name=python-pip state=latest"
