@@ -16,8 +16,6 @@
     scm:
       - git:
           url: https://github.com/pulp/devel.git
-          branches:
-            - '3.0-dev'
           skip-tag: true
     triggers:
         - timed: "H 2 * * *"
