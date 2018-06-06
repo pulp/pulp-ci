@@ -4,4 +4,4 @@ install:
   - pip install ansible 'jenkins-job-builder<2'
 script:
   - ansible-playbook --syntax-check ci/ansible/*.yaml
-  - cd ci/jjb && jenkins-jobs --conf jenkins_jobs.ini test -r -o /tmp/jobs jobs
+  - cd ci/jjb && jenkins-jobs --conf jenkins_jobs.ini test -r -o "$(mktemp --directory)" jobs
