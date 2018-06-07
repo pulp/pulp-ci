@@ -260,11 +260,11 @@
             cd plugin
             if [ "$OS_NAME" == "Fedora" ]; then
               sudo dnf --setopt=install_weak_deps=False --best -y install --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel
-              sudo dnf -y --noautoremove remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\* pulp-deb\* python-pulp-deb\*
+              sudo dnf -y --noautoremove remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\* pulp-deb\* python-pulp-deb\* python-pulp-docker\* pulp-docker\*
             fi
             if [ "$OS_NAME" == "RedHatEnterpriseServer" ] && [ "$OS_VERSION"  \> "6" ]; then
               sudo yum -y install --nogpgcheck @pulp-server-qpid @pulp-admin @pulp-consumer python-pulp-devel
-              sudo yum --setopt=clean_requirements_on_remove=0 -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\*  pulp-deb\* python-pulp-deb\*
+              sudo yum --setopt=clean_requirements_on_remove=0 -y remove pulp-rpm\* python-pulp-rpm\* pulp-puppet\* python-pulp-puppet\*  pulp-deb\* python-pulp-deb\* python-pulp-docker\* pulp-docker\*
             fi
             if [ "$OS_VERSION" != "5" ]; then
               echo "Setting up virtualenv-wrapper"
