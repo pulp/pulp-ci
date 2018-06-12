@@ -132,7 +132,7 @@ Warning: allow ***insecure at your own risk***.
 
 To workaround SSL errors, you'll need to patch jenkins.
 
-```python
+```console
 (jjb) [vagrant@pulp3 pulp-ci]$ sed -n 522,530p  ~/.virtualenvs/jjb/lib/python2.7/site-packages/jenkins/__init__.py
     def _request(self, req):
 
