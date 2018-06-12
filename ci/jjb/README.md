@@ -1,8 +1,158 @@
-Jenkins Job Builder
-===================
+# Jenkins
 
-Job Definition Guidelines
--------------------------
+The Pulp project uses Jenkins for some of its testing and docs building. The goal of this guide is
+to provide a basic set of instructions to enable Pulp developers to investigate and problems that
+may arise with Jenkins, as well as a starting point to build new jobs. Jenkins is a complex
+toolset, and it is not within the scope of this guide to document all of it. This guide will help
+you to identify and fix problems as well as build new jobs. Much of this guide relies on a
+connection
+to the Red Hat VPN.
+
+#### Dashboard
+
+The Jenkins Dashboard is the central location for Pulp's Jenkins system. There is a lot of
+information on this page, so if you are getting started, there are a few items to pay extra
+attention to:
+ - Log in. If you are not logged in, you will not have all the available data and options.
+ - Jobs List.
+   - Order by "Last Triggered" is recommended.
+   - Flashing Jobs are currently running
+   - The clock with the green "play" button allows you to start this job manually, without
+       requiring a hook like "ok test".
+ - Build Queue. If your jobs are not running, check the build queue first to make sure that the job
+     is being deployed to the queue and isn't held back by other jobs.
+ - Build Exectutor Status shows all of the machines and what they are running. If machines are
+     offline, they cannot pick up new jobs.
+
+#### Job Page
+
+A job page can be accessed by clicking the job from the dashboard. If your job failed and did not
+provide a link to output, this is where you will start. The Console Output shows the output from
+the most recent build of this job, and on the left side of the screen is a list of each of the
+builds. Clicking on the arrow to the right of each job can provide the console output, parameters,
+a restart button, etc.
+
+For debugging, a useful place to check is "Configure" on a Job Page. There, you can see parameters,
+configuration, triggers, and the code executed on the box. Warning! Use this page for viewing only,
+the jenkins job builder should be used to update.
+
+## Jenkins Job Builder
+
+The Jenkins Job builder is used to build and update all Jenkins jobs, and should be used instead of
+manipulating the configuration on the Jenkins web UI.
+
+#### Installation
+
+In a virtual environment, install jenkins job builder with pip:
+
+    pip install jenkins-job-builder
+
+#### Configuration
+
+JJB requires a configuration file to function. It searches for a configuration
+file in the following locations, in order:
+
+1. `~/.config/jenkins_jobs/jenkins_jobs.ini`
+2. `/etc/jenkins_jobs/jenkins_jobs.ini`
+
+Bootstrap your configuration file:
+
+```sh
+install -Dm600 jenkins_jobs.ini ~/.config/jenkins_jobs/jenkins_jobs.ini
+vim ~/.config/jenkins_jobs/jenkins_jobs.ini
+```
+
+Set your configuration username and password to match the API Token from Jenkins to put into your
+configuation file.
+
+On the Jenkins page:
+1. Go to your account by clicking your login
+1. "Configure"
+1. "Show API Token"
+
+
+For more information, see the [configuration
+file](https://docs.openstack.org/infra/jenkins-job-builder/execution.html)
+documentation.
+
+##### Configure SSL
+
+Choose one of these options:
+
+__Option 1:__ Add the Jenkins CA in your system CA Pack.
+
+https://mojo.redhat.com/docs/DOC-1122706-configure-ca-cert-in-rhel-and-fedora
+
+__Option 2 (Insecure):__ Workaround Patch
+
+As an alternative to adding the CA, you can workaround the problem by patching the job builder
+code in your site-packages.
+
+This example shows a patch for jenkins-job-builder installed into a virtualenv named jjb.
+
+Before change:
+
+```python
+_settings = self._session.merge_environment_settings(
+    r.url, {}, None, self._session.verify, None)
+```
+
+After change:
+
+```console
+(jjb) [vagrant@pulp3 pulp-ci]$ sed -n 522,530p  ~/.virtualenvs/jjb/lib/python2.7/site-packages/jenkins/__init__.py
+    def _request(self, req):
+
+        r = self._session.prepare_request(req)
+        # requests.Session.send() does not honor env settings by design
+        # see https://github.com/requests/requests/issues/2807
+        _settings = self._session.merge_environment_settings(
+            r.url, {}, None, False, None)
+        _settings['timeout'] = self.timeout
+        return self._session.send(r, **_settings)
+```
+
+This workaround was tested using the following packages versions:
+
+ - jenkins-job-builder==2.0.9
+ - python-jenkins==1.0.1
+
+In the Pulp Vagrant environment, the `__init__.py` file is located at:
+`/home/vagrant/.virtualenvs/jjb_env/lib/python2.7/site-packages/jenkins/__init__.py`
+
+
+#### JJB Usage
+
+The Jenkins Job Builder updates the configuration of jobs on Jenkins to match the jobs locally.
+This means that merging to `pulp/pulp-ci` does not automatically update the jobs, and that
+Jenkins jobs can be updated before the changes are merged. Generally, it is recommended to update
+jobs to test them on Jenkins before merging to the git repo.
+
+Two of the most important things one can do with JJB are to generate jobs and print them to stdout,
+and to generate jobs and send them to a Jenkins instance:
+
+```sh
+jenkins-jobs test jobs
+jenkins-jobs update jobs
+```
+
+To update a specific job add the full name:
+
+```sh
+jenkins-jobs update ci/jjb/jobs 'unittest-pulp_docker-pr`
+```
+
+Or, to update a set of jobs specify a glob:
+
+```sh
+jenkins-jobs update ci/jjb/jobs 'unittest*`
+```
+
+You can also update a sub-set of jobs, delete jobs, remove outdated jobs, and
+more. For more information, start with the [quick start
+guide](https://docs.openstack.org/infra/jenkins-job-builder/quick-start.html).
+
+#### Job Definition Guidelines
 
 When defining jobs in this directory, please organize files according to JJB's
 [recommended
@@ -41,8 +191,7 @@ When creating any new definition, please use descriptive and accurate names so
 that you don't necessarily need, for example, to consult a macro definition to
 know what a macro does.
 
-Job template
-------------
+#### Job template
 
 The job template `template.yaml` can be used to create new job definitions. The
 template defines some required and minimal set of options:
@@ -63,8 +212,7 @@ just one job. Otherwise, give the job a meaningful name that describes the set
 of jobs that will be defined on the file. For more information about naming
 conventions, see the previous section.
 
-SSH Agent Configuration
------------------------
+## SSH Agent Configuration
 
 The [Jenkins SSH-Agent
 Plugin](https://wiki.jenkins-ci.org/display/JENKINS/SSH+Agent+Plugin) allows the
@@ -85,70 +233,3 @@ template can define one or more private credentials to be installed in the
 [`ssh-agent-credentials`
 docs](http://docs.openstack.org/infra/jenkins-job-builder/wrappers.html#wrappers.ssh-agent-credentials)
 for examples.
-
-JJB Configuration
------------------
-
-JJB requires a configuration file to function. It searches for a configuration
-file in the following locations, in order:
-
-1. `~/.config/jenkins_jobs/jenkins_jobs.ini`
-2. `/etc/jenkins_jobs/jenkins_jobs.ini`
-
-Thus, an easy way to configure JJB is as follows:
-
-```sh
-install -Dm600 jenkins_jobs.ini ~/.config/jenkins_jobs/jenkins_jobs.ini
-vim ~/.config/jenkins_jobs/jenkins_jobs.ini
-```
-
-For details, see the [configuration
-file](https://docs.openstack.org/infra/jenkins-job-builder/execution.html)
-documentation.
-
-JJB Usage
----------
-
-Two of the most important things one can do with JJB are to generate jobs and
-print them to stdout, and to generate jobs and send them to a Jenkins instance:
-
-```sh
-jenkins-jobs test jobs
-jenkins-jobs update jobs
-```
-
-You can also update a sub-set of jobs, delete jobs, remove outdated jobs, and
-more. For more information, start with the [quick start
-guide](https://docs.openstack.org/infra/jenkins-job-builder/quick-start.html).
-
-SSL Issues
-----------
-
-If you don't have the CA that secures our Jenkins instance in your system CA
-pack JJB will complain about SSL issues. To fix this add the CA to your system
-CA pack. Alternatively, you can modify the JJB check to allow insecure usage.
-Warning: allow ***insecure at your own risk***.
-
-
-To workaround SSL errors, you'll need to patch jenkins.
-
-```console
-(jjb) [vagrant@pulp3 pulp-ci]$ sed -n 522,530p  ~/.virtualenvs/jjb/lib/python2.7/site-packages/jenkins/__init__.py
-    def _request(self, req):
-
-        r = self._session.prepare_request(req)
-        # requests.Session.send() does not honor env settings by design
-        # see https://github.com/requests/requests/issues/2807
-        _settings = self._session.merge_environment_settings(
-            r.url, {}, None, False, None)
-        _settings['timeout'] = self.timeout
-        return self._session.send(r, **_settings)
-```
-
-This workaround was tested using the following packages versions:
-
- - jenkins-job-builder==2.0.9
- - python-jenkins==1.0.1
-
-In the Pulp Vagrant environment, the `__init__.py` file is located at:
-`/home/vagrant/.virtualenvs/jjb_env/lib/python2.7/site-packages/jenkins/__init__.py`
