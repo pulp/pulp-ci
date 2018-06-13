@@ -100,6 +100,7 @@
         - ownership:
             owner: jaudet
             co-owners:
+                - brocha
                 - koliveir
 
 # Used in the "ci-workflow-runtest" defaults definition.
