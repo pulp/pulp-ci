@@ -129,18 +129,26 @@ pack JJB will complain about SSL issues. To fix this add the CA to your system
 CA pack. Alternatively, you can modify the JJB check to allow insecure usage.
 Warning: allow ***insecure at your own risk***.
 
-To workaround SSL errors, patch line 431 of
-`/usr/lib/python2.7/site-packages/jenkins/__init__.py`:
 
-```python
-import ssl
-context = ssl._create_unverified_context()
-response = urlopen(req, context=context, timeout=self.timeout).read()
+To workaround SSL errors, you'll need to patch jenkins.
+
+```console
+(jjb) [vagrant@pulp3 pulp-ci]$ sed -n 522,530p  ~/.virtualenvs/jjb/lib/python2.7/site-packages/jenkins/__init__.py
+    def _request(self, req):
+
+        r = self._session.prepare_request(req)
+        # requests.Session.send() does not honor env settings by design
+        # see https://github.com/requests/requests/issues/2807
+        _settings = self._session.merge_environment_settings(
+            r.url, {}, None, False, None)
+        _settings['timeout'] = self.timeout
+        return self._session.send(r, **_settings)
 ```
+
 This workaround was tested using the following packages versions:
 
- - python-jenkins==0.4.16
- - jenkins-job-builder==2.0.2
+ - jenkins-job-builder==2.0.9
+ - python-jenkins==1.0.1
 
 In the Pulp Vagrant environment, the `__init__.py` file is located at:
 `/home/vagrant/.virtualenvs/jjb_env/lib/python2.7/site-packages/jenkins/__init__.py`
