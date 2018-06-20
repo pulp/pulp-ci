@@ -102,6 +102,7 @@
             co-owners:
                 - brocha
                 - koliveir
+                - ragbalak
 
 # Used in the "ci-workflow-runtest" defaults definition.
 - publisher:
