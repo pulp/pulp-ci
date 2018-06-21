@@ -1,0 +1,29 @@
+# Example: GRUB_CMDLINE_LINUX="crashkernel=auto rd.lvm.lv=rhel/root quiet ..."
+- name: Enable FIPS at boot
+  lineinfile:
+    path: /etc/default/grub
+    backrefs: true
+    regexp: '^(GRUB_CMDLINE_LINUX=")(.*")'
+    line: '\1fips=1 boot=UUID={{ (ansible_mounts | selectattr("mount", "equalto", "/boot") | list)[0]["uuid"] }} \2'
+  become: true
+
+- name: Check whether system was booted in EFI mode
+  stat:
+    path: /sys/firmware/efi
+  register: result
+
+- name: Make grub2 config in BIOS mode
+  command: grub2-mkconfig -o /etc/grub2.cfg
+  become: true
+  when: result.stat.exists == false
+  notify:
+  - Restart host
+  - Wait for host to become available
+
+- name: Make grub2 config in EFI mode
+  command: grub2-mkconfig -o /etc/grub2-efi.cfg
+  become: true
+  when: result.stat.exists == true
+  notify:
+  - Restart host
+  - Wait for host to become available

@@ -4,6 +4,10 @@
   roles:
     - role: subscription-manager
       when: ansible_distribution == 'RedHat'
+    - role: pulp-fips
+      when:
+        - enable_fips is defined
+        - enable_fips
     - role: pulp
     - role: lazy
       when: pulp_version | version_compare('2.8', '>=')

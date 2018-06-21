@@ -1,0 +1,17 @@
+- name: Generate initramfs
+  command: dracut -f
+  become: true
+
+- name: Restart host
+  shell: sleep 5 && systemctl reboot
+  async: 1
+  poll: 0
+  ignore_errors: true
+  become: true
+
+- name: Wait for host to become available
+  wait_for_connection:
+    delay: 30
+    timeout: 300
+    connect_timeout: 20
+    sleep: 5
