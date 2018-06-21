@@ -114,8 +114,7 @@
 - project:
     name: pulp-upgrade
     os:
-        - f24
-        - f25
+        - f27
         - rhel6
         - rhel7
     pulp_version:
@@ -125,6 +124,7 @@
         - 2.13-stable
         - 2.14-stable
         - 2.15-stable
+        - 2.16-stable
     upgrade_pulp_version:
         - 2.15-beta
         - 2.16-beta
