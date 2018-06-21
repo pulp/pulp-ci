@@ -1,0 +1,42 @@
+- name: Install the dracut FIPS package
+  yum:
+    name: dracut-fips
+    state: present
+  become: true
+  notify: Generate initramfs
+
+- name: Get CPU information
+  slurp:
+    src: /proc/cpuinfo
+  register: result
+
+- name: Install dracut AES
+  yum:
+    name: dracut-fips-aesni
+    state: present
+  become: true
+  when: '"aes" in result["content"] | b64decode'
+  notify: Generate initramfs
+
+- name: Get the options grub passes to the kernel at boot
+  command: bash -c 'source /etc/default/grub && echo "$GRUB_CMDLINE_LINUX"'
+  changed_when: false
+  check_mode: false
+  register: result
+
+# This "when" is only applied to this "include_tasks" task, not to all of the
+# tasks in the included file. See:
+# https://docs.ansible.com/ansible/2.4/playbooks_reuse.html
+- include_tasks: configure-grub.yml
+  when: not ("fips" in result.stdout)
+
+- meta: flush_handlers
+
+- name: Check whether FIPS is supported
+  slurp:
+    src: /proc/sys/crypto/fips_enabled
+  register: result
+
+- name: Assert that FIPS is enabled
+  assert:
+    that: (result["content"] | b64decode).strip() == '1'
