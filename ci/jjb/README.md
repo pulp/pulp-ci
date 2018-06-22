@@ -88,38 +88,19 @@ __Option 2 (Insecure):__ Workaround Patch
 As an alternative to adding the CA, you can workaround the problem by patching the job builder
 code in your site-packages.
 
-This example shows a patch for jenkins-job-builder installed into a virtualenv named jjb.
-
-Before change:
+Assuming you are using a virtual env under `~/.virtualenvs/jjb_env`, replace line 431 of
+`~/.virtualenvs/jjb_env/lib/python3.6/site-packages/jenkins/__init__.py` with
 
 ```python
-_settings = self._session.merge_environment_settings(
-    r.url, {}, None, self._session.verify, None)
+import ssl
+context = ssl._create_unverified_context()
+response = urlopen(req, context=context, timeout=self.timeout).read()
 ```
 
-After change:
+This workaround was tested using the following packages versions(in Python 3.6):
 
-```console
-(jjb) [vagrant@pulp3 pulp-ci]$ sed -n 522,530p  ~/.virtualenvs/jjb/lib/python2.7/site-packages/jenkins/__init__.py
-    def _request(self, req):
-
-        r = self._session.prepare_request(req)
-        # requests.Session.send() does not honor env settings by design
-        # see https://github.com/requests/requests/issues/2807
-        _settings = self._session.merge_environment_settings(
-            r.url, {}, None, False, None)
-        _settings['timeout'] = self.timeout
-        return self._session.send(r, **_settings)
-```
-
-This workaround was tested using the following packages versions:
-
- - jenkins-job-builder==2.0.9
- - python-jenkins==1.0.1
-
-In the Pulp Vagrant environment, the `__init__.py` file is located at:
-`/home/vagrant/.virtualenvs/jjb_env/lib/python2.7/site-packages/jenkins/__init__.py`
-
+ - python-jenkins==0.4.16
+ - jenkins-job-builder==2.0.2
 
 #### JJB Usage
 
