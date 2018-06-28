@@ -20,7 +20,7 @@
         - shell: |
             sudo dnf -y install \
               createrepo \
-              fedpkg
+              fedpkg \
               gpg \
               jq \
               make \
