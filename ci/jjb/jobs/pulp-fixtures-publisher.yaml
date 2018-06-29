@@ -29,7 +29,7 @@
               python3-jinja2-cli \
               rpm-build \
               rpm-sign
-            make fixtures base_url=https://repos.fedorapeople.org/pulp/pulp
+            make fixtures base_url=https://repos.fedorapeople.org/pulp/pulp/
             rsync -arvze "ssh -o StrictHostKeyChecking=no" --delete \
                 fixtures/* \
                 pulpadmin@repos.fedorapeople.org:/srv/repos/pulp/pulp/fixtures
