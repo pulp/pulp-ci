@@ -225,7 +225,7 @@
           min_coverage: 87
           unittest_branches:
             - 2.15-release
-            - master
+            - 2-master
           unittest_platforms:
             - f26-np
             - f27-np
@@ -289,7 +289,7 @@
       - pulp_rpm:
           docs_branches:
             - 2.14-dev
-            - master
+            - 2-master
           docs_platforms:
             - f27-np
           docs_whitelist: ""
