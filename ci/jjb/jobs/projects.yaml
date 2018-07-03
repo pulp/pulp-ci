@@ -176,7 +176,7 @@
       - pulp_docker:
           min_coverage: 100
           unittest_branches:
-            - master
+            - 2-master
             - 3.1-release
           unittest_platforms:
             - f26-np
@@ -261,7 +261,7 @@
             - mibanescu
       - pulp_docker:
           docs_branches:
-            - master
+            - 2-master
             - 2.5-dev
           docs_platforms:
             - f27-np
