@@ -188,7 +188,7 @@
       - pulp_ostree:
           min_coverage: 100
           unittest_branches:
-            - master
+            - 2-master
             - 1.3-release
           unittest_platforms:
             - f26-np
@@ -201,7 +201,7 @@
           min_coverage: 95
           unittest_branches:
             - 2.15-release
-            - master
+            - 2-master
           unittest_platforms:
             - f26-np
             - f27-np
@@ -213,7 +213,7 @@
           min_coverage: 100
           unittest_branches:
             - 2.0-release
-            - master
+            - 2-master
           unittest_platforms:
             - f26-np
             - f27-np
@@ -242,7 +242,7 @@
       - pulp_python:
           docs_branches:
             - 2.0-dev
-            - master
+            - 2-master
           docs_platforms:
             - f27-np
           docs_whitelist: ""
@@ -261,8 +261,8 @@
             - mibanescu
       - pulp_docker:
           docs_branches:
-            - 2-master
             - 2.5-dev
+            - 2-master
           docs_platforms:
             - f27-np
           docs_whitelist: ""
@@ -270,8 +270,8 @@
             - pulpbot
       - pulp_ostree:
           docs_branches:
-            - master
             - 1.3-dev
+            - 2-master
           docs_platforms:
             - f27-np
           docs_whitelist: ""
@@ -280,7 +280,7 @@
       - pulp_puppet:
           docs_branches:
             - 2.14-dev
-            - master
+            - 2-master
           docs_platforms:
             - f27-np
           docs_whitelist: ""
