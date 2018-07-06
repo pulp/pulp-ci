@@ -4,7 +4,7 @@
 - job:
     name: 'rebase-analysis'
     defaults: ci-workflow-runtest
-    node: 'f25-np'
+    node: 'f28-np'
     properties:
         - satellite-ownership
     scm:
