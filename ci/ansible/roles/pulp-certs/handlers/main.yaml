@@ -1,0 +1,12 @@
+---
+- name: Restart all services
+  loop:
+    - httpd
+    - pulp_workers
+    - pulp_celerybeat
+    - pulp_resource_manager
+    - qpidd
+  service:
+    name: "{{ item }}"
+    state: restarted
+  
