@@ -183,6 +183,17 @@
                 manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)
             } catch(NullPointerException ex) {}
 
+- publisher:
+    name: delete-slave-node
+    publishers:
+      - groovy-postbuild:
+          # Open Stack plugins spins up instance in the cloud. We need a post build groovy script
+          # to clear these nodes that was spinned up.
+          script: |
+            try {
+                manager.build.getBuiltOn().toComputer().deleteSlave()
+            } catch(NullPointerException ex) {}
+
 - scm:
     name: pulp-ci-github
     scm:

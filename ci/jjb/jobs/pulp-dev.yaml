@@ -1,6 +1,6 @@
 - job-template:
     name: 'pulp-{build_version}-dev-{os}'
-    node: '{os}-np'
+    node: '{os}-os'
     properties:
         - qe-ownership
     scm:
@@ -20,6 +20,9 @@
             jobs: 'pulp-packaging-{reverse_trigger}'
             result: 'success'
     builders:
+        - shell:
+            !include-raw-escape:
+                - 'fix_hostname.sh'
         - shell:
             !include-raw-escape:
                 - 'ssh-setup.sh'
@@ -103,4 +106,4 @@
             artifacts: "*.tar.gz"
             allow-empty: true
         - email-notify-owners
-        - mark-node-offline
+        - delete-slave-node
