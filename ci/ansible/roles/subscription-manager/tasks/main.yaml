@@ -60,4 +60,6 @@
   when: ansible_distribution_major_version|int >= 7
 
 - name: Enable EPEL repository
-  action: "{{ ansible_pkg_mgr }} name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+  package:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm
+    state: present
