@@ -36,40 +36,50 @@
      - 2.16-release
     trigger_times: ''
 
+# Jobs using pulp-dev.yaml for Pulp 2.15+.
 - project:
-    name: pulp-dev
-    os:
-      - 'f26'
-      - 'f27'
-      - 'rhel7'
+    name: pulp-dev-2-15
     build_version:
-      - 2-master:
-          pulp_version: '2.17'
-          reverse_trigger: '2-master'
-      - 2.16:
-          pulp_version: '2.16'
-      - 2.15:
-          pulp_version: '2.15'
+    - 2.15:
+        pulp_version: '2.15'
+    - 2.16:
+        pulp_version: '2.16'
+    os:
+    - 'f26'
+    - 'f27'
+    - 'rhel7'
     reverse_trigger: '{build_version}-dev'
     jobs:
-        - pulp-{build_version}-dev-{os}
+    - pulp-{build_version}-dev-{os}
+
+# Jobs using pulp-dev.yaml for Pulp 2.17+.
+- project:
+    name: pulp-dev-2-17
+    build_version:
+    - 2-master:
+        pulp_version: '2.17'
+        reverse_trigger: '2-master'
+    os:
+    - 'f27'
+    - 'rhel7'
+    reverse_trigger: '{build_version}-dev'
+    jobs:
+    - pulp-{build_version}-dev-{os}
 
 - project:
     name: pulp-3-pypi
     os:
-        - f26
-        - f27
+    - f27
     jobs:
-        - pulp-3-pypi-{os}
+    - pulp-3-pypi-{os}
 
 - project:
     name: pulp-3-devel
     os:
-        - f26
-        - f27
-        - rhel7
+    - f27
+    - rhel7
     jobs:
-        - pulp-3-devel-{os}
+    - pulp-3-devel-{os}
 
 - project:
     name: pulp-restore
