@@ -165,7 +165,6 @@
             - master
             - 1.6-release
           unittest_platforms:
-            - f26-np
             - f27-np
             - rhel7-np
           unittest_whitelist:
