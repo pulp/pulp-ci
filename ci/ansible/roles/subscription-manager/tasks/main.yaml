@@ -43,20 +43,20 @@
     - rhn_organization is defined
 
 - name: Subscription Manager disable all repositories
-  shell: "subscription-manager repos --disable \"*\""
+  command: subscription-manager repos --disable *
 
 - name: Enable main repository
-  shell: "subscription-manager repos --enable rhel-{{ ansible_distribution_major_version }}-server-rpms"
+  command: subscription-manager repos --enable rhel-{{ ansible_distribution_major_version }}-server-rpms
 
 - name: Enable optional repository
-  shell: "subscription-manager repos --enable rhel-{{ ansible_distribution_major_version }}-server-optional-rpms"
+  command: subscription-manager repos --enable rhel-{{ ansible_distribution_major_version }}-server-optional-rpms
 
 - name: Enable extras repository
-  shell: "subscription-manager repos --enable rhel-{{ ansible_distribution_major_version }}-server-extras-rpms"
+  command: subscription-manager repos --enable rhel-{{ ansible_distribution_major_version }}-server-extras-rpms
   when: ansible_distribution_major_version|int >= 7
 
 - name: Enable atomic host repository
-  shell: "subscription-manager repos --enable rhel-atomic-host-rpms"
+  command: subscription-manager repos --enable rhel-atomic-host-rpms
   when: ansible_distribution_major_version|int >= 7
 
 - name: Enable EPEL repository
