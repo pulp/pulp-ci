@@ -1,0 +1,16 @@
+curl:
+gcc:
+docker:
+git:
+libffi-devel:
+openssl-devel:
+python-devel:
+python-pip:
+java:
+redhat-lsb-core:
+redhat-rpm-config:
+vim:
+wget:
+ansible:
+attr:
+libselinux-python:
