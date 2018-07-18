@@ -8,21 +8,18 @@ cat >~/.config/pulp_smash/settings.json <<EOF
 {
     "pulp": {
         "auth": ["admin", "admin"],
+        "selinux enabled": false,
         "version": "3"
     },
     "hosts": [
         {
             "hostname": "$(hostname --long)",
             "roles": {
-                "amqp broker": {"service": "rabbitmq"},
-                "api": {"port": 8000, "scheme": "http"},
-                "mongod": {},
-                "pulp celerybeat": {},
-                "pulp cli": {},
+                "api": {"port": 8000, "scheme": "http", "service": "nginx"},
                 "pulp resource manager": {},
                 "pulp workers": {},
-                "shell": {},
-                "squid": {}
+                "redis": {},
+                "shell": {}
             }
         }
     ]
