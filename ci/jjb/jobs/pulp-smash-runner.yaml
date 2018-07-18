@@ -100,10 +100,10 @@
             if [ -f PULP_SMASH_CUSTOM_SETTINGS ]; then
                 sed -i -e "s|{PULP_CA_CERT_PATH}|${PULP_CA_CERT_PATH}|" \
                     PULP_SMASH_CUSTOM_SETTINGS
-                ansible-playbook --connection local -i "localhost," ci/ansible/pulp_smash.yaml \
+                ansible-playbook --connection local --inventory "localhost," ci/ansible/pulp_2_tests.yaml \
                     -e pulp_smash_custom_settings="${PWD}/PULP_SMASH_CUSTOM_SETTINGS"
             else
-                ansible-playbook --connection local -i "localhost," ci/ansible/pulp_smash.yaml \
+                ansible-playbook --connection local --inventory "localhost," ci/ansible/pulp_2_tests.yaml \
                     -e pulp_smash_system_hostname="${PULP_SMASH_SYSTEM_HOSTNAME}" \
                     -e pulp_smash_shell_transport="ssh" \
                     -e pulp_smash_amqp_broker_service="${PULP_SMASH_AMQP_BROKER_SERVICE}" \
@@ -113,9 +113,9 @@
                     -e pulp_smash_pulp_password="${PULP_SMASH_PULP_PASSWORD}" \
                     -e pulp_smash_pulp_version="${PULP_SMASH_PULP_VERSION}"
             fi
-            source ~/.virtualenvs/pulp-smash/bin/activate
+            source ~/.virtualenvs/pulp-2-tests/bin/activate
             set +e
-            py.test -v --color=yes --junit-xml=junit-report.xml --pyargs pulp_smash.tests
+            py.test -v --color=yes --junit-xml=junit-report.xml --pyargs pulp_2_tests.tests
             set -e
             test -f junit-report.xml
     publishers:

@@ -1,4 +1,4 @@
-# Pulp system hostname
+# Pulp host hostname
 pulp_smash_system_hostname: "localhost"
 
 # If Pulp's API is published over HTTPS or HTTP
