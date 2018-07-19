@@ -33,6 +33,10 @@
 # [1] https://github.com/pypa/virtualenv/issues/463#issuecomment-41204800
 # [2] http://stackoverflow.com/a/26314477
 
+- name: Print path to virtualenv
+  debug:
+    msg:  '{{ ansible_user_dir }}/.virtualenvs/pulp-2-tests'
+
 - block:
 
   - name: Create a Pulp 2 Tests virtualenv (RHEL)
