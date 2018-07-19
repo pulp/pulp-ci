@@ -68,6 +68,9 @@
         - timestamps
     builders:
         - shell: |
+            # Useful for debugging
+            getent passwd "$(id -u)"
+
             # Setup ssh config and private key
             mkdir ~/.ssh/controlmasters
             if [ -f SSH_CUSTOM_CONFIG ]; then
