@@ -67,6 +67,11 @@
     - pulp-{build_version}-dev-{os}
 
 - project:
+    name: disk-image-builder-base
+    jobs:
+        - disk-image-builder-base
+
+- project:
     name: pulp-3-pypi
     os:
     - f27

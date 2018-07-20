@@ -1,0 +1,73 @@
+#!/bin/bash
+# This script runs inside the image being build.
+set -exuo pipefail
+
+# Use /etc/os-release if available or fallback to Python in order to collect
+# the DISTRIBUTION and DISTRIBUTION_MAJOR_VERSION information.
+if [ -f /etc/os-release ]; then
+    source /etc/os-release
+
+    if [ -z "${ID}" ] || [ -z "${VERSION_ID}" ]; then
+        echo "ID and VERSION_ID not set in /etc/os-release"
+        return 1
+    fi
+
+    # set DISTRIBUTION based on ID: If it's rhel or centos,
+    # make it the common "redhat". Otherwise, use ID directly.
+    # For our purposes, this means it should either be "redhat" or "fedora".
+    if [[ $ID == 'centos' ]] || [[ $ID == 'rhel' ]]; then
+        DISTRIBUTION=redhat
+    else
+        DISTRIBUTION="$ID"
+    fi
+
+    # We only care about the major version, so split on the dots
+    # and only take the first field (7.1 and 7 are stored as 7).
+    DISTRIBUTION_MAJOR_VERSION=$(echo "${VERSION_ID}"|cut -d . -f 1)
+else
+    # Using Python to get the distribution information is more general but it
+    # does not work on Fedora 24. That said, fallback to Python if the
+    # /etc/os-release file is not present, this will cover old OS versions like
+    # RHEL 6.
+    DISTRIBUTION=$(python -c "import platform, sys
+sys.stdout.write(platform.dist()[0])")
+    DISTRIBUTION_MAJOR_VERSION=$(python -c "import platform, sys
+sys.stdout.write(platform.dist()[1].split('.')[0])")
+fi
+
+echo "Bootstrapping jenkins for ${DISTRIBUTION} ${DISTRIBUTION_MAJOR_VERSION}"
+
+# Create the jenkins user in the jenkins group
+if  [ "${DISTRIBUTION}" == "redhat" ] && [ "${DISTRIBUTION_MAJOR_VERSION}" == "5" ]; then
+    sudo useradd --create-home --home-dir /home/jenkins jenkins
+    cat >> /etc/sudoers <<EOF
+    jenkins ALL=(ALL) NOPASSWD: ALL
+EOF
+else
+    sudo useradd --user-group --create-home --home-dir /home/jenkins jenkins
+    cat >> /etc/sudoers.d/00-jenkins<<EOF
+    jenkins ALL=(ALL) NOPASSWD: ALL
+EOF
+fi
+
+echo jenkins | sudo passwd --stdin jenkins
+
+# The SSH key gets copied in the extra data step
+# The SSH key would have been copied from /tmp/in_target.d
+PUBLIC_SSH_KEY_PATH=/tmp/in_target.d/jenkins-public-ssh-key
+
+# Authorize Jenkins to ssh into
+sudo mkdir -p /home/jenkins/.ssh
+sudo cp ${PUBLIC_SSH_KEY_PATH} /home/jenkins/.ssh/authorized_keys
+sudo chmod 700 /home/jenkins/.ssh
+sudo chmod 600 /home/jenkins/.ssh/authorized_keys
+sudo chown -R jenkins:jenkins /home/jenkins/.ssh
+
+# Create a soft link from this home directory so that jenkins can use this
+sudo ln -s /home/jenkins /var/lib/jenkins
+
+IS_FIPS=${IS_FIPS:-false}
+if [ "${IS_FIPS}" = true ];then
+    sudo yum install -y dracut-fips
+    sudo yum install -y dracut-fips-aesni
+fi

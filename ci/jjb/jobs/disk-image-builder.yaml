@@ -1,0 +1,20 @@
+- job-template:
+    name: 'disk-image-builder-base'
+    node: 'disk-image-builder'
+    properties:
+        - qe-ownership
+    scm:
+        - pulp-ci-github
+    wrappers:
+        - config-file-provider:
+            files:
+                - file-id: rhn_credentials
+                  variable: RHN_CREDENTIALS
+                - file-id: Open_Stack_Credentials
+                  variable: Open_Stack_Credentials
+
+    builders:
+        - shell:
+            !include-raw-escape:
+                - 'disk-image-builder.sh'
+
