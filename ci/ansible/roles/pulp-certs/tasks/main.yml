@@ -60,7 +60,6 @@
     chdir: /etc/pki/tls/
     creates: certs/apachecert.pem
 
-# In the distant future when Ansible sets everything up, this should notify httpd
 - name: Configure Apache TLS certificate
   lineinfile:
     backrefs: yes
@@ -74,3 +73,10 @@
     dest: /etc/httpd/conf.d/ssl.conf
     regexp: '^SSLCertificateKeyFile '
     line: 'SSLCertificateKeyFile /etc/pki/tls/private/apachekey.pem'
+
+- name: Configure QPID SSL
+  import_tasks: qpid.yml
+
+-  debug: msg="trigger services restart"
+   notify: Restart all services
+   changed_when: true
