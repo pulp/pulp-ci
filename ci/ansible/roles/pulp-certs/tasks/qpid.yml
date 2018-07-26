@@ -243,4 +243,11 @@
       cacert: {{ ca_path }}
       keyfile: {{ instdir }}/client.crt
       certfile: {{ instdir }}/client.crt
+
+- name: Set https_retrieval in lazy section
+  lineinfile:
+    backrefs: yes
+    dest: /etc/pulp/server.conf
+    regexp: '^#\s*https_retrieval: true.*$'
+    line: 'https_retrieval: true'
 ...
