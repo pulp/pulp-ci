@@ -71,3 +71,16 @@ if [ "${IS_FIPS}" = true ];then
     sudo yum install -y dracut-fips
     sudo yum install -y dracut-fips-aesni
 fi
+
+DOCKER=${DOCKER:-false}
+if [ "${DOCKER}" = true ]; then
+    echo "installing docker"
+    sudo yum install -y docker
+    sudo systemctl enable docker
+
+    echo "Allowing jenkins user access to docker"
+    sudo groupadd docker
+    sudo gpasswd -a jenkins docker
+    # add -G docker to docker's OPTIONS in /etc/sysconfig/docker
+    sudo sed -i "s/^\(OPTIONS=.*\)'/\1 -G docker'/" /etc/sysconfig/docker
+fi

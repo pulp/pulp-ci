@@ -4,4 +4,4 @@
         - {dev,qe,...}-ownership
     publishers:
         - email-notify-owners
-        - mark-node-offline
+        - delete-slave-node

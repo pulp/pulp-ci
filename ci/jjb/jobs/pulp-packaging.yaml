@@ -5,7 +5,7 @@
 - job-template:
     name: 'pulp-packaging-{release_config}'
     defaults: ci-workflow-runtest
-    node: 'rhel7-np'
+    node: 'rhel7-os'
     properties:
         - build-ownership
     scm:
@@ -31,6 +31,7 @@
             fail: true
         - timestamps
     builders:
+        - fix-hostname
         - shell: |
             #!/bin/bash
             git config --global user.email "pulp-infra@redhat.com"
@@ -66,4 +67,4 @@
 
     publishers:
       - email-notify-owners
-      - mark-node-offline
+      - delete-slave-node

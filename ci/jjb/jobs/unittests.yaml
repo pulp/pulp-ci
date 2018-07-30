@@ -8,8 +8,8 @@
           type: label-expression
           name: node-type
           values:
-            - f27-np
-            - rhel7-np
+            - f27-os
+            - rhel7-os
     parameters:
         - string:
             name: sha1
@@ -60,6 +60,7 @@
         - jenkins-ssh-credentials
     builders:
         - pr-tester-deps
+        - fix-hostname
         - shell: |
             #!/bin/bash
             echo "Setting up after source control extract"

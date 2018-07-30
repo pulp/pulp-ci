@@ -30,6 +30,12 @@ init(){
     # The jenkins public key must be present in the following location
     export JENKINS_PUBLIC_SSH_KEY_PATH=~/.ssh/jenkins/id_rsa.pub
 
+    # Identifier for the images
+    identifier=common
+    if [[ ( ! -z "${DOCKER}" ) && ( "${DOCKER}" = true) ]]; then
+        identifier='docker'
+    fi
+
     # initiallizing the output directories
     recreate_input_output_image_dirs
 }
@@ -39,7 +45,7 @@ conditional_init(){
 # This is used when an image is to be build separately.
 # This is used for avoiding duplicate initializations in the builder script.
 
-    if [[ -z $BASH_ARGV ]];then
+    if [[ -z "$BASH_ARGV" ]];then
         init
     fi
 }
@@ -86,10 +92,10 @@ remove_existing_image(){
 
     echo "removing ${1}_${2}_${3}_DIB_updated"
     value="${1}_${2}_${3}_DIB_updated"
-    get_image_id_from_name ${value}
+    get_image_id_from_name "${value}"
     if [[ ${_image_id_temp} ]];then
         echo "deleting existing image ${_image_id_temp}"
-        glance image-delete ${_image_id_temp}
+        glance image-delete "${_image_id_temp}"
     fi
 }
 
@@ -124,12 +130,14 @@ build_fedora_images(){
 
     conditional_init
     local OS="fedora"
-    for DIB_RELEASE in 27; do
+    FEDORA_RELEASES="${FEDORA_RELEASES:-$fedora_default}"
+    for DIB_RELEASE in "${FEDORA_RELEASES}"; do
        export DIB_RELEASE
-       download_base_image $OS $DIB_RELEASE
+       download_base_image "$OS" "$DIB_RELEASE"
        export DIB_LOCAL_IMAGE="$scripts_dir/input_images/${OS}_${DIB_RELEASE}_base.img"
        disk-image-create -o "${scripts_dir}/output_images/template-${OS}${DIB_RELEASE}-os" fedora redhat-common vm growroot jenkins-slave
-       upload_image $OS $DIB_RELEASE 'common'
+       upload_image "$OS" "$DIB_RELEASE" "$identifier"
+       unset DOCKER # unsetting docker
     done
 }
 
@@ -138,11 +146,14 @@ build_centos_images(){
 
     conditional_init
     local OS='centos'
-    export DIB_RELEASE=7
-    download_base_image $OS $DIB_RELEASE
-    export DIB_LOCAL_IMAGE="$scripts_dir/input_images/${OS}_${DIB_RELEASE}_base.img"
-    disk-image-create -o "${scripts_dir}/output_images/template-${OS}${DIB_RELEASE}-os" centos7 grub2 bootloader selinux-permissive jenkins-slave vm simple-init growroot epel
-    upload_image $OS $DIB_RELEASE 'common'
+    CENTOS_RELEASES="${CENTOS_RELEASES:-$centos_default}"
+    for DIB_RELEASE in "${CENTOS_RELEASES}"; do
+        export DIB_RELEASE
+        download_base_image $OS $DIB_RELEASE
+        export DIB_LOCAL_IMAGE="$scripts_dir/input_images/${OS}_${DIB_RELEASE}_base.img"
+        disk-image-create -o "${scripts_dir}/output_images/template-${OS}${DIB_RELEASE}-os" centos7 grub2 bootloader selinux-permissive jenkins-slave vm simple-init growroot epel
+        upload_image "$OS" "$DIB_RELEASE" "$identifier"
+    done
 }
 
 
@@ -152,15 +163,18 @@ build_rhelos_images(){
     conditional_init
     check_rhel_params_present
     local OS='rhel'
-    export DIB_RELEASE=7
-    download_base_image $OS $DIB_RELEASE
-    export DIB_LOCAL_IMAGE="$scripts_dir/input_images/${OS}_${DIB_RELEASE}_base.img"
-    export REG_USER=$RHN_USERNAME
-    export REG_PASSWORD=$RHN_PASSWORD
-    export REG_POOL_ID=$RHN_SKU_POOLID
-    export REG_METHOD=portal
-    disk-image-create -o "${scripts_dir}/output_images/template-${OS}${DIB_RELEASE}-os" rhel7 rhel-common simple-init vm growroot jenkins-slave epel
-    upload_image $OS $DIB_RELEASE 'common'
+    RHEL_RELEASES="${RHEL_RELEASES:-$rhel_default}"
+    for DIB_RELEASE in "${RHEL_RELEASES}"; do
+        export DIB_RELEASE
+        download_base_image "$OS" "$DIB_RELEASE"
+        export DIB_LOCAL_IMAGE="$scripts_dir/input_images/${OS}_${DIB_RELEASE}_base.img"
+        export REG_USER="$RHN_USERNAME"
+        export REG_PASSWORD="$RHN_PASSWORD"
+        export REG_POOL_ID="$RHN_SKU_POOLID"
+        export REG_METHOD=portal
+        disk-image-create -o "${scripts_dir}/output_images/template-${OS}${DIB_RELEASE}-os" rhel7 rhel-common simple-init vm growroot jenkins-slave epel
+        upload_image "$OS" "$DIB_RELEASE" "$identifier"
+    done
 }
 
 
@@ -170,20 +184,23 @@ build_rhel_fips_images(){
     conditional_init
     check_rhel_params_present
     local OS='rhel'
-    export DIB_RELEASE=7
-    download_base_image $OS $DIB_RELEASE
-    export DIB_LOCAL_IMAGE="$scripts_dir/input_images/${OS}_${DIB_RELEASE}_base.img"
-    export DIB_BOOTLOADER_DEFAULT_CMDLINE="fips=1"
-    export REG_USER=$RHN_USERNAME
-    export REG_PASSWORD=$RHN_PASSWORD
-    export REG_POOL_ID=$RHN_SKU_POOLID
-    export REG_METHOD=portal
-    export IS_FIPS=true # This flag will set the necessary boot cmd line parameters in the install.d and finalise.d steps
-    disk-image-create -o "${scripts_dir}/output_images/template-${OS}${DIB_RELEASE}-os" rhel7 rhel-common simple-init vm growroot jenkins-slave bootloader epel
-    upload_image $OS $DIB_RELEASE 'fips'
+    RHEL_RELEASES="${RHEL_RELEASES:-$rhel_default}"
+    for DIB_RELEASE in "${RHEL_RELEASES}"; do
+        export DIB_RELEASE
+        download_base_image "$OS" "$DIB_RELEASE"
+        export DIB_LOCAL_IMAGE="$scripts_dir/input_images/${OS}_${DIB_RELEASE}_base.img"
+        export DIB_BOOTLOADER_DEFAULT_CMDLINE="fips=1"
+        export REG_USER="$RHN_USERNAME"
+        export REG_PASSWORD="$RHN_PASSWORD"
+        export REG_POOL_ID="$RHN_SKU_POOLID"
+        export REG_METHOD=portal
+        export IS_FIPS=true # This flag will set the necessary boot cmd line parameters in the install.d and finalise.d steps
+        disk-image-create -o "${scripts_dir}/output_images/template-${OS}${DIB_RELEASE}-os" rhel7 rhel-common simple-init vm growroot jenkins-slave bootloader epel
+        upload_image "$OS" "$DIB_RELEASE" 'fips'
+    done
 }
 
-if [[ ( ! -z "${1}" ) && ( $1 = "all" ) ]];then
+if [[ ( ! -z "${1}" ) && ( "$1" = "all" ) ]];then
     init
     build_fedora_images
     build_rhelos_images

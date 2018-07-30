@@ -72,7 +72,7 @@
 #
 - job-template:
     name: '{stream}-satellite6-upgrade-pulp'
-    node: fedora-np
+    node: f27-os
     properties:
         - qe-ownership
     wrappers:
@@ -119,4 +119,4 @@
             fi
     publishers:
         - email-notify-owners
-        - mark-node-offline
+        - delete-slave-node

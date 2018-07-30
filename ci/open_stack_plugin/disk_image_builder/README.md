@@ -105,7 +105,7 @@ filesystem.  For example we copy the jenkins sshkey into the image in
 ### install.d
 
 This phase runs scripts after the OS is provisioned For example, we create the
-jenkins user in 
+jenkins user in
 [`elements/jenkins-slave/install.d/20-jenkins-slave`](https://github.com/quipucords/ci/blob/ed1d9d040bcfc6bca9543fd1b528e036983772ed/ansible/roles/nodepool/files/elements/jenkins-slave/install.d/20-jenkins-slave#L7).
 
 ### How to define dependencies on other elements for an element
@@ -286,5 +286,26 @@ export RHN_PASSWORD="..."
 export RHN_SKU_POOLID="..."
 ```
 
+The default versions of rhel images that gives build is rhel-7 and 27 for fedora. This makes use of base images that
+are configured in the following place `ci/open_stack_plugin/disk_image_builder/scripts/base_image_config.conf`
+
+If a new version of Rhel/fedora has to be build, the user should export the required version as follows
+```bash
+# can build a single imager version using this
+export FEDORA_RELEASES="28"
+
+# It can be multiple image versions of the same flavor
+export FEDORA_RELEASES="25 26 27 28 "
+
+# For building different version of Rhel
+export RHEL_RELEASES="6"
+
+# The user also has to make sure the corresponding base image name is configured in the
+# `ci/open_stack_plugin/disk_image_builder/scripts/base_image_config.conf`
+# The base image should be present in the openstack location
+# For eg. Rhel 6 images can be build by configuring as
+echo "rhel_6=rhel_6_image_name" >> base_image_config.conf
+
+```
 
 These commands can also be present in a file `env_variables.sh` in the `$PWD` where the script is run from.

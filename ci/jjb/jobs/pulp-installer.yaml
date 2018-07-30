@@ -3,7 +3,7 @@
 - job:
     name: 'pulp-installer'
     concurrent: true
-    node: 'fedora-np'
+    node: 'f27-os'
     description: |
         <p>
           Install Pulp on the host identified by the job parameter
@@ -67,6 +67,7 @@
                   variable: RHN_CREDENTIALS
         - jenkins-ssh-credentials
     builders:
+        - fix-hostname
         - shell: |
             sudo yum install -y ansible
             export ANSIBLE_HOST_KEY_CHECKING=False
@@ -82,4 +83,4 @@
                 -e "rhn_pool=${RHN_POOL}"
     publishers:
         - email-notify-owners
-        - mark-node-offline
+        - delete-slave-node

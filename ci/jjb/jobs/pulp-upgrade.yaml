@@ -3,7 +3,7 @@
 
 - job-template:
     name: 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-{os}'
-    node: '{os}-np'
+    node: '{os}-os'
     properties:
         - qe-ownership
     scm:
@@ -35,6 +35,7 @@
             echo "UPGRADE_PULP_BUILD=$(cut -d- -f2 <<< ${{UPGRADE_PULP_VERSION}})" >> pulp_version.properties
         - inject:
             properties-file: pulp_version.properties
+        - fix-hostname
         - shell:
             !include-raw-escape:
                 - 'ssh-setup.sh'
@@ -98,4 +99,4 @@
       - junit:
           results: junit-report.xml
       - email-notify-owners
-      - mark-node-offline
+      - delete-slave-node

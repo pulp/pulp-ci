@@ -2,7 +2,7 @@
 - job:
     name: pulp-3-installer
     concurrent: true
-    node: 'fedora-np'
+    node: 'f27-os'
     description: |
       <p>
         Install Pulp on the host identified by the job parameter
@@ -49,6 +49,7 @@
     wrappers:
       - jenkins-ssh-credentials
     builders:
+      - fix-hostname
       - shell: |
           sudo dnf -y install ansible
           export ANSIBLE_HOST_KEY_CHECKING=False
@@ -74,4 +75,4 @@
             --inventory "$HOSTNAME",
     publishers:
       - email-notify-owners
-      - mark-node-offline
+      - delete-slave-node

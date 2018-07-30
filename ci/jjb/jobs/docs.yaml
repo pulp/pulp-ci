@@ -4,7 +4,7 @@
 - job-template:
     name: 'docs-builder-{release_config}'
     defaults: ci-workflow-runtest
-    node: 'fedora-np'
+    node: 'f27-os'
     properties:
         - docs-ownership
     scm:
@@ -32,6 +32,7 @@
             timeout-var: 'BUILD_TIMEOUT'
             fail: true
     builders:
+        - fix-hostname
         - shell: |
             #!/bin/bash
             # install packages deps required to build docs
@@ -63,7 +64,7 @@
             python3 docs-builder.py --release {release_config}
     publishers:
       - email-notify-owners
-      - mark-node-offline
+      - delete-slave-node
 
 
 # This set of Jenkins jobs which build the Pulp platform and plugin documentation and publishes
@@ -72,7 +73,7 @@
 - job-template:
     name: 'docs-builder-3.0-dev'
     defaults: ci-workflow-runtest
-    node: 'fedora-np'
+    node: 'f27-os'
     properties:
         - docs-ownership
     scm:
@@ -107,6 +108,7 @@
             timeout-var: 'BUILD_TIMEOUT'
             fail: true
     builders:
+        - fix-hostname
         - shell: |
             #!/bin/bash
             # install packages deps required to build docs
@@ -177,6 +179,6 @@
             python3 docs-builder.py --release 3.0-dev
     publishers:
       - email-notify-owners
-      - mark-node-offline
+      - delete-slave-node
 
 

@@ -4,7 +4,7 @@
     properties:
         - copyartifact:
             projects: pulp-*-dev-*
-    node: pulp-smash-np
+    node: f27-os
     parameters:
         - string:
             name: PULP_SMASH_SYSTEM_HOSTNAME
@@ -67,6 +67,7 @@
             abort: true
         - timestamps
     builders:
+        - fix-hostname
         - shell: |
             # Useful for debugging
             getent passwd "$(id -u)"
@@ -125,4 +126,4 @@
         - archive:
             artifacts: 'junit-report.xml'
         - email-notify-owners
-        - mark-node-offline
+        - delete-slave-node

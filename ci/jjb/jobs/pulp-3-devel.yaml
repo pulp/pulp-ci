@@ -1,7 +1,7 @@
 # This code assumes that Pulp and Pulp Smash are to be installed on localhost.
 - job-template:
     name: pulp-3-devel-{os}
-    node: '{os}-np'
+    node: '{os}-os'
     description: |
       <p>Install a Pulp 3 development environment on a host, and smash it.</p>
       <p>
@@ -28,6 +28,7 @@
     triggers:
         - timed: "H 2 * * *"
     builders:
+      - fix-hostname
       - shell: |
           sudo yum -y install ansible
           cd ansible
@@ -80,4 +81,4 @@
             artifacts: "*.tar.gz"
             allow-empty: true
         - email-notify-owners
-        - mark-node-offline
+        - delete-slave-node

@@ -3,7 +3,7 @@
 # This code assumes that Pulp and Pulp Smash are to be installed on localhost.
 - job-template:
     name: pulp-3-pypi-{os}
-    node: '{os}-np'
+    node: '{os}-os'
     description: |
       <p>Install Pulp 3 from PyPI on a host, and smash it.</p>
       <p>
@@ -20,6 +20,7 @@
     triggers:
         - timed: "H 2 * * *"
     builders:
+      - fix-hostname
       # Install and start Pulp 3.
       - shell: |
           # Pulp 3 can't deal with SELinux.
@@ -74,4 +75,4 @@
             artifacts: "*.tar.gz"
             allow-empty: true
         - email-notify-owners
-        - mark-node-offline
+        - delete-slave-node

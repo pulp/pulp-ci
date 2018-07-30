@@ -3,7 +3,7 @@
 
 - job-template:
     name: 'pulp-fixtures-publisher'
-    node: 'docker-np'
+    node: 'docker-os'
     properties:
         - qe-ownership
     scm:
@@ -17,6 +17,7 @@
     wrappers:
         - jenkins-ssh-credentials
     builders:
+        - fix-hostname
         - shell: |
             sudo dnf -y install \
               createrepo \
@@ -35,4 +36,4 @@
                 pulpadmin@repos.fedorapeople.org:/srv/repos/pulp/pulp/fixtures
     publishers:
       - email-notify-owners
-      - mark-node-offline
+      - delete-slave-node

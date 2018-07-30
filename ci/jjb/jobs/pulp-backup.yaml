@@ -1,6 +1,6 @@
 - job-template:
     name: 'pulp-{pulp_version}-{pulp_build}-backup-{os}'
-    node: '{os}-np'
+    node: '{os}-os'
     properties:
         - qe-ownership
         # don't want to build up too many artifacts because they are of
@@ -25,6 +25,7 @@
     triggers:
         - timed: '@midnight'
     builders:
+        - fix-hostname
         - shell:
             !include-raw-escape:
                 - 'ssh-setup.sh'
@@ -47,4 +48,4 @@
       - junit:
           results: "*.xml"
       - email-notify-owners
-      - mark-node-offline
+      - delete-slave-node

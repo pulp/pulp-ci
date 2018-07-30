@@ -20,9 +20,7 @@
             jobs: 'pulp-packaging-{reverse_trigger}'
             result: 'success'
     builders:
-        - shell:
-            !include-raw-escape:
-                - 'fix_hostname.sh'
+        - fix-hostname
         - shell:
             !include-raw-escape:
                 - 'ssh-setup.sh'
