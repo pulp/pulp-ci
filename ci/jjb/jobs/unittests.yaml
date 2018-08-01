@@ -170,7 +170,7 @@
           results: 'test/*.xml'
           keep-long-stdio: true
           test-stability: true
-      - mark-node-offline
+      - delete-slave-node
 
 - job-template:
     name: 'unittest-{pulp_plugin}-pr'
@@ -325,7 +325,7 @@
           keep-long-stdio: true
           test-stability: true
       - email-notify-owners
-      - mark-node-offline
+      - delete-slave-node
 
 - job-group:
     name: 'unittest-plugins-pr-jobs'

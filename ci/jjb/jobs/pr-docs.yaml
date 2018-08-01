@@ -84,7 +84,7 @@
             exit $docs_exit_code
 
     publishers:
-      - mark-node-offline
+      - delete-slave-node
 
 - job-group:
     name: 'docs-plugins-pr-jobs'
