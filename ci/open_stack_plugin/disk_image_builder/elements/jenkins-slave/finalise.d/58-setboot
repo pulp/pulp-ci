@@ -3,12 +3,12 @@
 # This script will get the UUID of the boot filesystem and append that information with the fips flag to the
 # bootloader commandline for FIPS to be enabled.
 
-IS_FIPS=${IS_FIPS:-false}
+IS_FIPS="${IS_FIPS:-false}"
 if [ "${IS_FIPS}" = true ];then
     echo "Setting up Fips environment"
     dracut --force
-    boot_dev=$(df /boot --output=source |tail -n+2)
-	uuid_dev=$(blkid $boot_dev -o export |grep -i UUID)
-	grubby --update-kernel=DEFAULT --args="boot=${uuid_dev}"
+    boot_dev="$(df /boot --output=source | tail -n+2)"
+    uuid_dev="$(blkid "${boot_dev}" -o export | grep -i UUID)"
+    grubby --update-kernel=DEFAULT --args="boot=${uuid_dev}"
 fi
 
