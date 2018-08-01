@@ -1,13 +1,13 @@
 #!/bin/bash
 # This script runs on the host machine in which the disk image builder is running 
-if [ ${DIB_DEBUG_TRACE:-0} -gt 0 ]; then
+if [ "${DIB_DEBUG_TRACE:-0}" -gt 0 ]; then
     set -x
 fi
 set -euo pipefail
 
-echo "JENKINS ssh key path $JENKINS_PUBLIC_SSH_KEY_PATH"
+echo "JENKINS ssh key path ${JENKINS_PUBLIC_SSH_KEY_PATH}"
 echo "JENKINS ssh key real path "
-echo "$(realpath $JENKINS_PUBLIC_SSH_KEY_PATH)"
+echo "$(realpath ${JENKINS_PUBLIC_SSH_KEY_PATH})"
 JENKINS_PUBLIC_SSH_KEY_PATH="${JENKINS_PUBLIC_SSH_KEY_PATH:-/home/jenkins/.ssh/id_rsa.pub}"
 
 if [ ! -f "${JENKINS_PUBLIC_SSH_KEY_PATH}" ]; then
