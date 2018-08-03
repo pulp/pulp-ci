@@ -73,21 +73,6 @@
         - disk-image-builder-base
 
 - project:
-    name: pulp-3-pypi
-    os:
-    - f27
-    jobs:
-    - pulp-3-pypi-{os}
-
-- project:
-    name: pulp-3-devel
-    os:
-    - f27
-    - rhel7
-    jobs:
-    - pulp-3-devel-{os}
-
-- project:
     name: pulp-restore
     os:
         - 'rhel7'
@@ -121,11 +106,6 @@
     name: pulp-installer
     jobs:
         - pulp-installer
-
-- project:
-    name: pulp-3-installer
-    jobs:
-      - pulp-3-installer
 
 - project:
     name: pulp-upgrade
