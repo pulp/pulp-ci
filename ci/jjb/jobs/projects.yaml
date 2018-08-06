@@ -30,22 +30,17 @@
     jobs:
      - 'docs-builder-{release_config}'
     release_config:
-     - 2.15-build
-     - 2.15-release
      - 2.16-build
      - 2.16-release
     trigger_times: ''
 
-# Jobs using pulp-dev.yaml for Pulp 2.15+.
+# Jobs using pulp-dev.yaml for Pulp 2.16+.
 - project:
-    name: pulp-dev-2-15
+    name: pulp-dev-2-16
     build_version:
-    - 2.15:
-        pulp_version: '2.15'
     - 2.16:
         pulp_version: '2.16'
     os:
-    - 'f26'
     - 'f27'
     - 'rhel7'
     reverse_trigger: '{build_version}-dev'
@@ -92,23 +87,23 @@
     os:
         - 'rhel7'
     pulp_version:
-        - '2.13'
+        - '2.16'
     pulp_build:
         - 'stable'
-    backup_version: '2.11'
+    backup_version: '2.15'
     backup_build: 'stable'
-    backup_os: 'rhel6'
+    backup_os: 'rhel7'
     jobs:
         - pulp-{pulp_version}-{pulp_build}-restore-{os}
 
 - project:
     name: pulp-backup
     os:
-        - 'rhel6'
+        - 'rhel7'
     pulp_build:
         - 'stable'
     pulp_version:
-        - '2.11'
+        - '2.15'
     jobs:
         - pulp-{pulp_version}-{pulp_build}-backup-{os}
 
@@ -130,25 +125,13 @@
 - project:
     name: pulp-upgrade
     os:
-        - f24
-        - f25
-        - rhel6
+        - f27
         - rhel7
     pulp_version:
-        - 2.10-stable
-        - 2.11-stable
-        - 2.12-stable
-        - 2.13-stable
-        - 2.14-stable
         - 2.15-stable
+        - 2.16-stable
     upgrade_pulp_version:
-        - 2.15-beta
         - 2.16-beta
-    exclude:
-        - os: f25
-          pulp_version: 2.10-stable
-        - os: rhel6
-          upgrade_pulp_version: 2.15-beta
     jobs:
         - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-{os}'
 
