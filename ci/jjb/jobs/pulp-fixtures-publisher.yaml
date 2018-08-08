@@ -25,6 +25,7 @@
               gpg \
               jq \
               make \
+              mock \
               patch \
               puppet \
               python3-jinja2-cli \
