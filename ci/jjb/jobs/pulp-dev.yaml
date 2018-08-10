@@ -3,6 +3,7 @@
     node: '{os}-os'
     properties:
         - qe-ownership
+        - discard-old-builds
     scm:
         - pulp-ci-github
     wrappers:

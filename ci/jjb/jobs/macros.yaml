@@ -124,6 +124,13 @@
                 - koliveir
                 - ragbalak
 
+# Discard old builds that are month old for the job
+- property:
+    name: discard-old-builds
+    properties:
+    - build-discarder:
+        num-to-keep: 100
+
 # Used in the "ci-workflow-runtest" defaults definition.
 - publisher:
     name: default-ci-workflow-publishers

@@ -56,6 +56,7 @@
                 where the CA certificate was installed.
     properties:
         - qe-ownership
+        - discard-old-builds
     scm:
         - pulp-ci-github
     wrappers:
