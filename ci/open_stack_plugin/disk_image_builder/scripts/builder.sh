@@ -131,12 +131,12 @@ build_fedora_images(){
     conditional_init
     local OS="fedora"
     FEDORA_RELEASES="${FEDORA_RELEASES:-${fedora_default}}"
-    for DIB_RELEASE in "${FEDORA_RELEASES}"; do
-       export DIB_RELEASE
-       download_base_image "${OS}" "${DIB_RELEASE}"
-       export DIB_LOCAL_IMAGE="${scripts_dir}/input_images/${OS}_${DIB_RELEASE}_base.img"
-       disk-image-create -o "${scripts_dir}/output_images/template-${OS}${DIB_RELEASE}-os" fedora redhat-common vm growroot jenkins-slave
-       upload_image "${OS}" "${DIB_RELEASE}" "${identifier}"
+    IFS=',' read -ra RELEASES <<< "${FEDORA_RELEASES}"
+    for RELEASE in "${RELEASES[@]}"; do
+       download_base_image "${OS}" "${RELEASE}"
+       export DIB_LOCAL_IMAGE="${scripts_dir}/input_images/${OS}_${RELEASE}_base.img"
+       disk-image-create -o "${scripts_dir}/output_images/template-${OS}${RELEASE}-os" fedora redhat-common vm growroot jenkins-slave
+       upload_image "${OS}" "${RELEASE}" "${identifier}"
        unset DOCKER # unsetting docker
     done
 }
@@ -147,12 +147,12 @@ build_centos_images(){
     conditional_init
     local OS='centos'
     CENTOS_RELEASES="${CENTOS_RELEASES:-${centos_default}}"
-    for DIB_RELEASE in "${CENTOS_RELEASES}"; do
-        export DIB_RELEASE
-        download_base_image "${OS}" "${DIB_RELEASE}"
-        export DIB_LOCAL_IMAGE="${scripts_dir}/input_images/${OS}_${DIB_RELEASE}_base.img"
-        disk-image-create -o "${scripts_dir}/output_images/template-${OS}${DIB_RELEASE}-os" centos7 grub2 bootloader selinux-permissive jenkins-slave vm simple-init growroot epel
-        upload_image "${OS}" "${DIB_RELEASE}" "${identifier}"
+    IFS=',' read -ra RELEASES <<< "${CENTOS_RELEASES}"
+    for RELEASE in "${RELEASES[@]}"; do
+        download_base_image "${OS}" "${RELEASE}"
+        export DIB_LOCAL_IMAGE="${scripts_dir}/input_images/${OS}_${RELEASE}_base.img"
+        disk-image-create -o "${scripts_dir}/output_images/template-${OS}${RELEASE}-os" centos7 grub2 bootloader selinux-permissive jenkins-slave vm simple-init growroot epel
+        upload_image "${OS}" "${RELEASE}" "${identifier}"
     done
 }
 
@@ -164,16 +164,16 @@ build_rhelos_images(){
     check_rhel_params_present
     local OS='rhel'
     RHEL_RELEASES="${RHEL_RELEASES:-${rhel_default}}"
-    for DIB_RELEASE in "${RHEL_RELEASES}"; do
-        export DIB_RELEASE
-        download_base_image "${OS}" "${DIB_RELEASE}"
-        export DIB_LOCAL_IMAGE="${scripts_dir}/input_images/${OS}_${DIB_RELEASE}_base.img"
+    IFS=',' read -ra RELEASES <<< "${RHEL_RELEASES}"
+    for RELEASE in "${RELEASES[@]}"; do
+        download_base_image "${OS}" "${RELEASE}"
+        export DIB_LOCAL_IMAGE="${scripts_dir}/input_images/${OS}_${RELEASE}_base.img"
         export REG_USER="${RHN_USERNAME}"
         export REG_PASSWORD="${RHN_PASSWORD}"
         export REG_POOL_ID="${RHN_SKU_POOLID}"
         export REG_METHOD=portal
-        disk-image-create -o "${scripts_dir}/output_images/template-${OS}${DIB_RELEASE}-os" rhel7 rhel-common simple-init vm growroot jenkins-slave epel
-        upload_image "${OS}" "${DIB_RELEASE}" "${identifier}"
+        disk-image-create -o "${scripts_dir}/output_images/template-${OS}${RELEASE}-os" rhel7 rhel-common simple-init vm growroot jenkins-slave epel
+        upload_image "${OS}" "${RELEASE}" "${identifier}"
     done
 }
 
@@ -185,18 +185,18 @@ build_rhel_fips_images(){
     check_rhel_params_present
     local OS='rhel'
     RHEL_RELEASES="${RHEL_RELEASES:-${rhel_default}}"
-    for DIB_RELEASE in "${RHEL_RELEASES}"; do
-        export DIB_RELEASE
-        download_base_image "${OS}" "${DIB_RELEASE}"
-        export DIB_LOCAL_IMAGE="${scripts_dir}/input_images/${OS}_${DIB_RELEASE}_base.img"
+    IFS=',' read -ra RELEASES <<< "${RHEL_RELEASES}"
+    for RELEASE in "${RELEASES[@]}"; do
+        download_base_image "${OS}" "${RELEASE}"
+        export DIB_LOCAL_IMAGE="${scripts_dir}/input_images/${OS}_${RELEASE}_base.img"
         export DIB_BOOTLOADER_DEFAULT_CMDLINE="fips=1"
         export REG_USER="${RHN_USERNAME}"
         export REG_PASSWORD="${RHN_PASSWORD}"
         export REG_POOL_ID="${RHN_SKU_POOLID}"
         export REG_METHOD=portal
         export IS_FIPS=true # This flag will set the necessary boot cmd line parameters in the install.d and finalise.d steps
-        disk-image-create -o "${scripts_dir}/output_images/template-${OS}${DIB_RELEASE}-os" rhel7 rhel-common simple-init vm growroot jenkins-slave bootloader epel
-        upload_image "${OS}" "${DIB_RELEASE}" 'fips'
+        disk-image-create -o "${scripts_dir}/output_images/template-${OS}${RELEASE}-os" rhel7 rhel-common simple-init vm growroot jenkins-slave bootloader epel
+        upload_image "${OS}" "${RELEASE}" 'fips'
     done
 }
 
