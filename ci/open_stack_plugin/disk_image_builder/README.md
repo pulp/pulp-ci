@@ -291,11 +291,11 @@ are configured in the following place `ci/open_stack_plugin/disk_image_builder/s
 
 If a new version of Rhel/fedora has to be build, the user should export the required version as follows
 ```bash
-# can build a single imager version using this
+# can build a single image version using this
 export FEDORA_RELEASES="28"
 
 # It can be multiple image versions of the same flavor
-export FEDORA_RELEASES="25 26 27 28 "
+export FEDORA_RELEASES="27,28"
 
 # For building different version of Rhel
 export RHEL_RELEASES="6"
