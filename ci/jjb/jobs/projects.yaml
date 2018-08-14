@@ -58,6 +58,7 @@
         reverse_trigger: '2-master'
     os:
     - 'f27'
+    - 'f28'
     - 'rhel7'
     - 'rhel7-fips'
     reverse_trigger: '{build_version}-dev'
