@@ -16,11 +16,12 @@
     notify:
       - Save IPv4 iptables configuration
 
-  - name: Install required packages for RHEL 6
+  - name: Install required packages for RHEL
     action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
     with_items:
         - libselinux-python
         - policycoreutils-python
+        - attr
 
   - name: Setup qpid custom repo
     get_url: url=https://copr.fedorainfracloud.org/coprs/g/qpid/qpid/repo/epel-6/irina-qpid-epel-6.repo dest=/etc/yum.repos.d/copr-qpid.repo
