@@ -175,11 +175,11 @@
 
 - name: Generate RSA key pair
   shell: "sudo pulp-gen-key-pair"
-  when: pulp_version | version_compare('2.13', '>=')
+  when: pulp_version is version('2.13', '>=')
 
 - name: Generate SSL CA certificate
   shell: "sudo pulp-gen-ca-certificate"
-  when: pulp_version | version_compare('2.13', '>=')
+  when: pulp_version is version('2.13', '>=')
 
 - name: Check if Pulp's DB was initialized
   stat:
@@ -197,7 +197,7 @@
 
 - name: Enable pulp_manage_rsync SELinux boolean
   shell: sudo semanage boolean --modify --on pulp_manage_rsync
-  when: pulp_version | version_compare('2.10', '>=')
+  when: pulp_version is version('2.10', '>=')
 
 - name: Ensure Apache server is started
   service:

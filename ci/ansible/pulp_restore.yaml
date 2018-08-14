@@ -8,7 +8,7 @@
       when: ansible_distribution == 'RedHat'
     - role: pulp
     - role: lazy
-      when: pulp_version | version_compare('2.8', '>=')
+      when: pulp_version is version('2.8', '>=')
     - role: pulp-certs
     - role: pulp-crane
     - role: pulp-restore-backup
