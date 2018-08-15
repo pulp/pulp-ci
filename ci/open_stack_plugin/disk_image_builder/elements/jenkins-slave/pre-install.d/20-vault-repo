@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set_vault_repo_rhel_7_6(){
+echo "adding vault repo to RHEL 7.6"
+cat >/etc/yum.repos.d/vault.repo <<EOL
+[vault_repo]
+name=Vault Repository
+baseurl=http://download.devel.redhat.com/composes/nightly/latest-RHEL-7.6/compose/Server/x86_64/os/
+enabled=1
+gpgcheck=0
+EOL
+
+}
+
+RHEL_VER="${RHEL_VER:-7}"
+if [ "${RHEL_VER}" = "7_6" ];then
+    set_vault_repo_rhel_7_6
+    yum -y update
+fi
