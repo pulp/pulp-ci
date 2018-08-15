@@ -26,8 +26,10 @@
             !include-raw-escape:
                 - 'ssh-setup.sh'
         - shell:
+            !include-raw:
+                - 'pulp-install{script-var}.sh'
+        - shell:
             !include-raw-escape:
-                - 'pulp-install.sh'
                 - 'pulp-coverage-setup.sh'
                 - 'pulp-smash-parameters.sh'
         - inject:

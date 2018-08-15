@@ -57,7 +57,7 @@
     package:
       name:
         - firewalld
-        - python-firewall
+        - "python{{ ansible_python.version.major }}-firewall"
       state: present
 
   - name: Start and enable firewalld
