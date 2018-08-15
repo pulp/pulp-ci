@@ -1,5 +1,6 @@
 ---
 - block:
+
   - name: Open firewall ports (iptables)
     iptables:
       action: insert
@@ -8,23 +9,29 @@
       protocol: "{{ item.protocol }}"
       destination_port: "{{ item.port }}"
       jump: ACCEPT
-    with_items:
-      - { port: 'http', protocol: 'tcp' }
-      - { port: 'https', protocol: 'tcp' }
-      - { port: 'amqps', protocol: 'tcp' }
-      - { port: 'amqp', protocol: 'tcp' }
-    notify:
-      - Save IPv4 iptables configuration
+    loop:
+      - port: 'http'
+        protocol: 'tcp'
+      - port: 'https'
+        protocol: 'tcp'
+      - port: 'amqps'
+        protocol: 'tcp'
+      - port: 'amqp'
+        protocol: 'tcp'
+    notify: Save IPv4 iptables configuration
 
   - name: Install required packages for RHEL
-    action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
-    with_items:
+    package:
+      name:
+        - attr
         - libselinux-python
         - policycoreutils-python
-        - attr
+      state: present
 
   - name: Setup qpid custom repo
-    get_url: url=https://copr.fedorainfracloud.org/coprs/g/qpid/qpid/repo/epel-6/irina-qpid-epel-6.repo dest=/etc/yum.repos.d/copr-qpid.repo
+    get_url:
+      url: https://copr.fedorainfracloud.org/coprs/g/qpid/qpid/repo/epel-6/irina-qpid-epel-6.repo
+      dest: /etc/yum.repos.d/copr-qpid.repo
 
   - name:  Allow Apache to listen on tcp port 5000
     seport:
@@ -32,18 +39,25 @@
       proto: tcp
       setype: http_port_t
       state: present
+
   when:
-      - (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
+    - ansible_distribution == "RedHat"
+    - ansible_distribution_major_version|int == 6
 
 - block:
+
   - name: Install firewalld and python bindings
-    action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
-    with_items:
-      - firewalld
-      - python-firewall
+    package:
+      name:
+        - firewalld
+        - python-firewall
+      state: present
 
   - name: Start and enable firewalld
-    service: name=firewalld state=started enabled=yes
+    service:
+      name: firewalld
+      state: started
+      enabled: true
 
   - name: Open firewall ports (firewalld)
     firewalld:
@@ -51,7 +65,7 @@
       state: enabled
       permanent: true
       immediate: true
-    with_items:
+    loop:
       # As of this writing, firewalld knows about a miniscule number of services
       # out of the box. `firewall-cmd --get-services | wc -w` returns "103", and
       # the list of services doesn't include amqp or amqps, among many others.
@@ -61,34 +75,47 @@
       - "5671/tcp" # amqps
       - "5672/tcp" # amqp
 
-  when:
-    - not (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
+  when: not (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
 
 - name: Install MongoDB server
-  action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
-  with_items:
-    - mongodb-server
-    - mongodb
+  package:
+    name:
+      - mongodb-server
+      - mongodb
+    state: present
 
 - name: Start and enable MongoDB server service
-  service: name=mongod state=started enabled=yes
+  service:
+    name: mongod
+    state: started
+    enabled: true
 
 - name: Install qpid-cpp server
-  action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
-  with_items:
-    - qpid-cpp-server
-    - qpid-cpp-server-linearstore
+  package:
+    name:
+      - qpid-cpp-server
+      - qpid-cpp-server-linearstore
+    state: present
 
 - name: Install python-saslwrapper
-  action: "{{ ansible_pkg_mgr }} name=python-saslwrapper state=latest"
+  package:
+    name: python-saslwrapper
+    state: present
   when: ansible_os_family == "RedHat"
 
 - name: Start and enable qpid-cpp server service
-  service: name=qpidd state=started enabled=yes
+  service:
+    name: qpidd
+    state: started
+    enabled: true
 
 - name: Explicitly install python-django (https://bugzilla.redhat.com/show_bug.cgi?id=1524560)
-  action: "{{ ansible_pkg_mgr }} name=python-django state=latest"
-  when:  (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 7)
+  package:
+    name: python-django
+    state: present
+  when:
+    - ansible_distribution == "RedHat"
+    - ansible_distribution_major_version|int == 7
 
 - name: Setup Pulp nightly repository
   template:
@@ -98,7 +125,6 @@
     pulp:
       name: Pulp Project repository
       baseurl: "https://repos.fedorapeople.org/pulp/pulp/testing/automation/{{ pulp_version }}/stage/{% if ansible_distribution == 'Fedora' %}fedora-{% endif %}$releasever/$basearch/"
-
       gpgcheck: 0
   when: pulp_build == "nightly"
 
@@ -124,61 +150,48 @@
       gpgcheck: 0
   when: pulp_build == "beta" or pulp_build == "stable"
 
-# https://github.com/ansible/ansible/issues/26868
-- block:
-  - name: Install Pulp Server (Fedora 26)
-    command: dnf -y install @pulp-server-qpid
-    notify:
-      - Restart Apache service
-      - Restart Pulp workers service
-      - Restart Pulp celerybeat service
-      - Restart Pulp resource manager service
+- name: Install Pulp Server
+  package:
+    name: '@pulp-server-qpid'
+    state: present
+  notify:
+    - Restart qpidd service
+    - Restart Apache service
+    - Restart Pulp workers service
+    - Restart Pulp celerybeat service
+    - Restart Pulp resource manager service
 
-  - name: Install Pulp Admin (RPM, Puppet, Docker) (Fedora 26)
-    command: dnf -y install @pulp-admin
-
-  when: (ansible_distribution == "Fedora" and ansible_distribution_major_version|int == 26)
-
-- block:
-  - name: Install Pulp Server
-    action: "{{ ansible_pkg_mgr }} name=@pulp-server-qpid"
-    notify:
-      - Restart qpidd service
-      - Restart Apache service
-      - Restart Pulp workers service
-      - Restart Pulp celerybeat service
-      - Restart Pulp resource manager service
-
-  - name: Install Pulp Admin (RPM, Puppet, Docker)
-    action: "{{ ansible_pkg_mgr }} name=@pulp-admin"
-
-  when: not (ansible_distribution == "Fedora" and ansible_distribution_major_version|int == 26)
+- name: Install Pulp Admin (RPM, Puppet, Docker)
+  package:
+    name: '@pulp-admin'
+    state: present
 
 - name: Install OSTree
-  action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
-  with_items:
-    - pulp-ostree-plugins
-    - pulp-ostree-admin-extensions
+  package:
+    name:
+      - pulp-ostree-plugins
+      - pulp-ostree-admin-extensions
+    state: present
   when: (ansible_distribution == "RedHat" and ansible_distribution_major_version|int >= 7) or
         (ansible_distribution == "Fedora" and ansible_distribution_major_version|int >= 23)
 
 - name: Install Pulp Python plugin
-  action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
-  with_items:
-    - pulp-python-plugins
-    - pulp-python-admin-extensions
-  notify:
-    - Restart Apache service
+  package:
+    name:
+      - pulp-python-plugins
+      - pulp-python-admin-extensions
+    state: present
+  notify: Restart Apache service
 
 - name: Configure pulp-admin
-  shell: "sudo sed -i 's/# verify_ssl: True/verify_ssl: False/g' /etc/pulp/admin/admin.conf"
+  command: "sed -i 's/# verify_ssl: True/verify_ssl: False/g' /etc/pulp/admin/admin.conf"
 
 - name: Generate RSA key pair
-  shell: "sudo pulp-gen-key-pair"
+  command: pulp-gen-key-pair
   when: pulp_version is version('2.13', '>=')
 
 - name: Generate SSL CA certificate
-  shell: "sudo pulp-gen-ca-certificate"
+  command: pulp-gen-ca-certificate
   when: pulp_version is version('2.13', '>=')
 
 - name: Check if Pulp's DB was initialized
@@ -196,29 +209,29 @@
   when: not db_init.stat.exists
 
 - name: Enable pulp_manage_rsync SELinux boolean
-  shell: sudo semanage boolean --modify --on pulp_manage_rsync
+  command: semanage boolean --modify --on pulp_manage_rsync
   when: pulp_version is version('2.10', '>=')
 
 - name: Ensure Apache server is started
   service:
     name: httpd
-    enabled: yes
     state: started
+    enabled: true
 
 - name: Ensure Pulp workers are started
   service:
     name: pulp_workers
-    enabled: yes
     state: started
+    enabled: true
 
 - name: Ensure Pulp celerybeat is started
   service:
     name: pulp_celerybeat
-    enabled: yes
     state: started
+    enabled: true
 
 - name: Ensure Pulp resource manager is started
   service:
     name: pulp_resource_manager
-    enabled: yes
     state: started
+    enabled: true
