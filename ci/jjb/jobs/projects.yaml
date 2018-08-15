@@ -41,8 +41,9 @@
     - 2.16:
         pulp_version: '2.16'
     os:
-    - 'f27'
-    - 'rhel7'
+    - f27
+    - rhel7
+    script-var: ''
     reverse_trigger: '{build_version}-dev'
     jobs:
     - pulp-{build_version}-dev-{os}
@@ -57,13 +58,16 @@
         pulp_version: '2.18'
         reverse_trigger: '2-master'
     os:
-    - 'f27'
-    - 'f28'
-    - 'rhel7'
-    - 'rhel7-fips'
+    - f27
+    - f28:
+        script-var: '-f28'
+    - rhel7
+    - rhel7-fips
     reverse_trigger: '{build_version}-dev'
+    script-var: ''
     jobs:
     - pulp-{build_version}-dev-{os}
+
 
 - project:
     name: disk-image-builder-base
