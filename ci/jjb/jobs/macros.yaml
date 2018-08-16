@@ -52,9 +52,9 @@
     # This hostname can be connected from other open stack vms.
     builders:
         - shell: |
-            # Hostnames that are set
-            echo "$(hostname --all-fqdn)"
-            echo "$(hostname)"
+            # This information can aid in debugging failed jobs.
+            hostname --all-fqdn
+            hostname
             # Setting the hostname of the system to enable connectivity
             hostname="$(hostname --all-fqdn | grep openstacklocal | head -n 1)"
             hostname="$(echo ${hostname})"
