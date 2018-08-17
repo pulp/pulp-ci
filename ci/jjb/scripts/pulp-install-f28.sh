@@ -1,4 +1,5 @@
-setenforce permissive
+# Setting SELinux in permissive as squid start fails in SELinux enabled F28
+sudo setenforce permissive
 sudo yum -y install ansible attr git libselinux-python
 echo 'localhost' > hosts
 source "${RHN_CREDENTIALS}"
