@@ -1,4 +1,11 @@
 ---
+# Pulp 2 requires Python 2.
+- name: Install Python 2 (Fedora)
+  package:
+    name: python
+    state: present
+  when: ansible_distribution == "Fedora"
+
 - block:
 
   - name: Open firewall ports (iptables)
