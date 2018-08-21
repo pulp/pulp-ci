@@ -10,30 +10,6 @@
     jobs:
      - ci-update-jobs
 
-- project:
-    name: docs-build-nightly
-    jobs:
-     - 'docs-builder-{release_config}'
-    release_config:
-     - 2-master
-    trigger_times: '@midnight'
-
-- project:
-    name: docs-build-nightly-3.0-dev
-    jobs:
-     - 'docs-builder-3.0-dev'
-    trigger_times: '@midnight'
-
-
-- project:
-    name: docs-build-manually
-    jobs:
-     - 'docs-builder-{release_config}'
-    release_config:
-     - 2.16-build
-     - 2.16-release
-    trigger_times: ''
-
 # Jobs using pulp-dev.yaml for Pulp 2.16+.
 - project:
     name: pulp-dev-2-16
