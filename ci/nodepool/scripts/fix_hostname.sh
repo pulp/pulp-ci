@@ -13,3 +13,7 @@ if [ -n "${hostname:-}" ]; then
         sudo tee /etc/hostname <<< "${hostname}"
     fi
 fi
+
+# Adding the OS information for debugging purposes
+echo "OS versions"
+cat /etc/os-release
