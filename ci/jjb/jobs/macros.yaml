@@ -121,10 +121,9 @@
     name: qe-ownership
     properties:
         - ownership:
-            owner: jaudet
+            owner: koliveir
             co-owners:
                 - brocha
-                - koliveir
                 - ragbalak
 
 # Discard old builds that are month old for the job
