@@ -35,16 +35,10 @@
         - choice:
             name: PULP_VERSION
             choices:
+                - '2.17'
                 - '2.16'
                 - '2.15'
                 - '2.14'
-                - '2.13'
-                - '2.12'
-                - '2.11'
-                - '2.10'
-                - '2.9'
-                - '2.8'
-                - '2.7'
         - choice:
             name: PULP_BUILD
             choices:
