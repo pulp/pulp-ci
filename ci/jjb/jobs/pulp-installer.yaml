@@ -3,7 +3,7 @@
 - job:
     name: 'pulp-installer'
     concurrent: true
-    node: 'f27-os'
+    node: 'f28-os'
     description: |
         <p>
           Install Pulp on the host identified by the job parameter
@@ -37,8 +37,6 @@
             choices:
                 - '2.17'
                 - '2.16'
-                - '2.15'
-                - '2.14'
         - choice:
             name: PULP_BUILD
             choices:
