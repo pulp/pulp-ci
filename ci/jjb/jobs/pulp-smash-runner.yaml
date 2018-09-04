@@ -4,7 +4,7 @@
     properties:
         - copyartifact:
             projects: pulp-*-dev-*
-    node: f27-os
+    node: f28-os
     parameters:
         - string:
             name: PULP_SMASH_SYSTEM_HOSTNAME
