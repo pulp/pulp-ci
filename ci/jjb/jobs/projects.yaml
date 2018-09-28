@@ -30,8 +30,10 @@
     build_version:
     - 2.17:
         pulp_version: '2.17'
-    - 2-master:
+    - 2.18:
         pulp_version: '2.18'
+    - 2-master:
+        pulp_version: '2.19'
         reverse_trigger: '2-master'
     os:
     - f27
