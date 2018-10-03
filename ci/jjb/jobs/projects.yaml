@@ -10,20 +10,6 @@
     jobs:
      - ci-update-jobs
 
-# Jobs using pulp-dev.yaml for Pulp 2.16+.
-- project:
-    name: pulp-dev-2-16
-    build_version:
-    - 2.16:
-        pulp_version: '2.16'
-    os:
-    - f27
-    - rhel7
-    script-var: ''
-    reverse_trigger: '{build_version}-dev'
-    jobs:
-    - pulp-{build_version}-dev-{os}
-
 # Jobs using pulp-dev.yaml for Pulp 2.17+.
 - project:
     name: pulp-dev-2-17
@@ -57,10 +43,10 @@
     os:
         - 'rhel7'
     pulp_version:
-        - '2.16'
+        - '2.17'
     pulp_build:
         - 'stable'
-    backup_version: '2.15'
+    backup_version: '2.16'
     backup_build: 'stable'
     backup_os: 'rhel7'
     jobs:
