@@ -1,6 +1,6 @@
 - job-template:
     name: 'disk-image-builder-base'
-    node: 'disk-image-builder'
+    node: 'disk-image-builder-os'
     properties:
         - qe-ownership
     scm:
@@ -20,3 +20,6 @@
             !include-raw-escape:
                 - 'disk-image-builder.sh'
 
+    publishers:
+        - email-notify-owners
+        - delete-slave-node

@@ -309,3 +309,27 @@ echo "rhel_6=rhel_6_image_name" >> base_image_config.conf
 ```
 
 These commands can also be present in a file `env_variables.sh` in the `$PWD` where the script is run from.
+
+### Provisioning new images/distros
+
+New Images/distros can be added in OpenStack and used in jenkins by using the following steps.
+
+1) Edit the ``scripts/disk_image_builder.conf`` file as follows.
+
+   example: If a new image is available in OpenStack for Fedora 29, add the line
+   ``fedora_29=<image_name_in_open_stack>`` in the file.And also append the value
+   ``29`` to fedora_default seperated by ``,``. Thus if the value of fedora_default
+   was ``27,28`` , it should be changed to ``27,28,29``.
+
+2) This configuration change will add a new image in the openstack under the name
+   ``fedora_29_common_DIB_updated``.
+
+3) Once an image is available, Jenkins has to be configured so that a new instance
+   of this image can be provisioned.
+
+4) For jenkins configuration, go to Jenkins > Manage Jenkins > Configure System
+   \> Cloud (Openstack) > Add the cloud information(These data can be obtained
+   from OpenStack) > Ensure the name of the image is the ``fedora_29_common_DIB_updated``.
+
+5) Set an appropriate label. All the jenkins jobs that has to run on this image instance
+   should use this label.

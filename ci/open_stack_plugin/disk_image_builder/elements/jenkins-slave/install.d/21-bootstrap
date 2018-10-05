@@ -84,3 +84,6 @@ if [ "${DOCKER}" = true ]; then
     # add -G docker to docker's OPTIONS in /etc/sysconfig/docker
     sudo sed -i "s/^\(OPTIONS=.*\)'/\1 -G docker'/" /etc/sysconfig/docker
 fi
+
+# Installing virtualenv within the creating image
+sudo pip install virtualenv

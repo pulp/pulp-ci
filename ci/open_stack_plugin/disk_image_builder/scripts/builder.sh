@@ -28,7 +28,9 @@ init(){
     source "${scripts_dir}/base_image_config.conf"
 
     # The jenkins public key must be present in the following location
-    export JENKINS_PUBLIC_SSH_KEY_PATH=~/.ssh/jenkins/id_rsa.pub
+    # These keys will be copied to the image being built, which allows ssh
+    # access to those image instances.
+    export JENKINS_PUBLIC_SSH_KEY_PATH=~/.ssh/authorized_keys
 
     # Identifier for the images
     identifier=common
