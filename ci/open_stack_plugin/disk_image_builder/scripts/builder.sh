@@ -169,6 +169,7 @@ build_rhelos_images(){
     IFS=',' read -ra RELEASES <<< "${RHEL_RELEASES}"
     for RELEASE in "${RELEASES[@]}"; do
         download_base_image "${OS}" "${RELEASE}"
+        export RHEL_VER="${RELEASE}"
         export DIB_LOCAL_IMAGE="${scripts_dir}/input_images/${OS}_${RELEASE}_base.img"
         export REG_USER="${RHN_USERNAME}"
         export REG_PASSWORD="${RHN_PASSWORD}"
