@@ -1,6 +1,6 @@
 - name: Install required packages
   action: "{{ ansible_pkg_mgr }} name={{ item }} state=present"
-  with_items:
+  loop:
     - mod_wsgi
     - python-crane
   notify: restart apache # for mod_wsgi
