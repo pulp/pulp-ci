@@ -1,10 +1,10 @@
 ---
 - name: Install lazy packages
   action: "{{ ansible_pkg_mgr }} name={{ item }} state=latest"
-  with_items:
-      - squid
-      - httpd
-      - python-pulp-streamer
+  loop:
+    - squid
+    - httpd
+    - python-pulp-streamer
 
 - name: Install squid proxy configuration
   copy: src=squid.conf dest=/etc/squid/squid.conf

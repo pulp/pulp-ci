@@ -56,7 +56,7 @@
 
 - name: Output ca certificate to ca.crt file
   command: >
-    certutil -L -d {{ tempdir }} -n "{{ ca_name }}" -a 
+    certutil -L -d {{ tempdir }} -n "{{ ca_name }}" -a
     -o {{ tempdir }}/ca.crt
   args:
     creates: "{{ tempdir }}/ca.crt"
@@ -73,7 +73,7 @@
 
 - name: Sign the broker cert w/ CA
   command: >
-    certutil -C -d {{ tempdir }} -c "{{ ca_name }}" -v {{ valid }} 
+    certutil -C -d {{ tempdir }} -c "{{ ca_name }}" -v {{ valid }}
     -uV -m1 -a -i {{ tempdir }}/broker.req -o {{ tempdir }}/broker.crt
 
 - name: Import the broker cert
@@ -98,12 +98,12 @@
 
 - name: Create client cert signing request
   command: >
-    certutil -R -d {{ clientdir }} -s {{ client_subject }} -a 
+    certutil -R -d {{ clientdir }} -s {{ client_subject }} -a
     -o {{ tempdir }}/client.req -z {{ seedfile }}
 
 - name: Sign the client cert w/ CA
   command: >
-    certutil -C -d {{ tempdir }} -c "{{ ca_name }}" -v {{ valid }} 
+    certutil -C -d {{ tempdir }} -c "{{ ca_name }}" -v {{ valid }}
     -uC -m2 -a -i {{ tempdir }}/client.req -o {{ tempdir }}/tmp_client_cert.crt
   args:
     creates: "{{ tempdir }}/tmp_client_cert.crt"
@@ -115,14 +115,14 @@
 
 - name: Export client p12
   command: >
-    pk12util -d {{ clientdir }} -n "{{ client_nickname }}" 
+    pk12util -d {{ clientdir }} -n "{{ client_nickname }}"
     -o {{ tempdir }}/client.p12 -w {{ pwdfile }} -W {{ db_password }}
   args:
-    creates: "{{ tempdir }}/client.p12" 
+    creates: "{{ tempdir }}/client.p12"
 
 - name: Generates a new client key & cert
   command: >
-    openssl pkcs12 -in {{ tempdir }}/client.p12 -nodes 
+    openssl pkcs12 -in {{ tempdir }}/client.p12 -nodes
     -out {{ tempdir }}/client.crt -password file:{{ pwdfile }}
   args:
     creates: "{{ tempdir }}/client.crt"
@@ -136,7 +136,7 @@
     mode: "755"
     owner: root
     group: apache
-  
+
 - name: Create nss db dir
   file:
     path: "{{ instdir }}/nss"
@@ -196,14 +196,14 @@
     path: /etc/qpid/qpidd.conf
     insertafter: "auth=no"
     # marker: "# {mark} ANSIBLE MANAGED BLOCK"
-    block: | 
+    block: |
       require-encryption=yes
       ssl-require-client-authentication=yes
       ssl-cert-db={{ instdir }}/nss
       #ssl-cert-password-file={{ instdir }}/nss/password
       ssl-cert-name=broker
       ssl-port=5671
-    
+
 # Pulp CONFIG
 
 - name: Comment out existing messaging section

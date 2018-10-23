@@ -9,4 +9,3 @@
   service:
     name: "{{ item }}"
     state: restarted
-  

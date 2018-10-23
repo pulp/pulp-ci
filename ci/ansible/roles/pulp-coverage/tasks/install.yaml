@@ -3,7 +3,7 @@
   service:
     name: "{{ item }}"
     state: stopped
-  with_items: "{{ pulp_coverage_services }}"
+  loop: "{{ pulp_coverage_services }}"
 
 - name: Clean up previous coverage data
   file:
@@ -44,4 +44,4 @@
   service:
     name: "{{ item }}"
     state: started
-  with_items: "{{ pulp_coverage_services }}"
+  loop: "{{ pulp_coverage_services }}"

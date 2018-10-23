@@ -1,7 +1,7 @@
 # rhel6 pulp 2.11.z backup
 - name: Stop Pulp
   service: "name={{ item }} state=stopped"
-  with_items:
+  loop:
     - httpd
     - pulp_celerybeat
     - pulp_resource_manager
@@ -12,7 +12,7 @@
 
 - name: Install dependencies
   action: "{{ ansible_pkg_mgr }} name={{ item }} state=present"
-  with_items:
+  loop:
     - tar
     - bzip2
     - bzip2-libs

@@ -13,4 +13,4 @@
   service:
     name: "{{ item }}"
     state: restarted
-  with_items: "{{ pulp_coverage_services }}"
+  loop: "{{ pulp_coverage_services }}"

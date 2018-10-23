@@ -1,7 +1,7 @@
 ---
 - name: Start Pulp
   service: "name={{ item }} state=started"
-  with_items:
+  loop:
     - httpd
     - pulp_celerybeat
     - pulp_resource_manager
