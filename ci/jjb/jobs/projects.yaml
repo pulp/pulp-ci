@@ -22,9 +22,6 @@
         pulp_version: '2.19'
         reverse_trigger: '2-master'
     os:
-    - f27
-    - f28:
-        script-var: '-f28'
     - rhel7
     - rhel7-fips
     reverse_trigger: '{build_version}-dev'
@@ -76,7 +73,6 @@
 - project:
     name: pulp-upgrade
     os:
-        - f28
         - rhel7
     pulp_version:
         - 2.16-stable
