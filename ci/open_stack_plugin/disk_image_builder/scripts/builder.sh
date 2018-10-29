@@ -66,10 +66,10 @@ recreate_input_output_image_dirs(){
 }
 
 get_image_id_from_name(){
-# Retrieve Image IDs of images in OpenStack
+# Retrieve image ID for a given image name from OpenStack.
+# Since many images can have the same name, We select the id from one of the images.
 # param $1: Image_name
-
-    _image_id_temp="$(openstack image show -c id -f value ${1} 2> /dev/null)"
+    _image_id_temp="$(openstack image list --name "${1}" -c ID -f value | tail -1)"
 }
 
 
