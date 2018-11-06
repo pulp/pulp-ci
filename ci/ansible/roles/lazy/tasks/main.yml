@@ -5,7 +5,7 @@
       - squid
       - httpd
       - python-pulp-streamer
-    state: present
+    state: latest
 
 - name: Install squid proxy configuration
   copy: src=squid.conf dest=/etc/squid/squid.conf
