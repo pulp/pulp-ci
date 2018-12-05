@@ -2,29 +2,6 @@
 
 pulp-admin login -u "${PULP_USER:-admin}" -p "${PULP_PASSWORD:-admin}"
 
-if [[ -f "${CDN_CERTIFICATES}" ]]; then
-    tar -zxvf "${CDN_CERTIFICATES}"
-
-    pulp-admin rpm repo create \
-        --feed https://cdn.redhat.com/content/dist/rhel/rhui/server/6/6.7/x86_64/kickstart/ \
-        --feed-ca-cert cdn/cdn.redhat.com-chain.crt \
-        --feed-cert cdn/914f702153514b06c1ef279db9dcadce.crt \
-        --feed-key cdn/914f702153514b06c1ef279db9dcadce.key \
-        --remove-missing true \
-        --repo-id rhel6 \
-        --serve-http true
-    pulp-admin rpm repo sync run --repo-id rhel6
-
-    pulp-admin rpm repo create \
-        --feed https://cdn.redhat.com/content/dist/rhel/rhui/server/7/7Server/x86_64/rhn-tools/os/ \
-        --feed-ca-cert cdn/cdn.redhat.com-chain.crt \
-        --feed-cert cdn/914f702153514b06c1ef279db9dcadce.crt \
-        --feed-key cdn/914f702153514b06c1ef279db9dcadce.key \
-        --repo-id rhel7-rhn-tools \
-        --skip erratum
-    pulp-admin rpm repo sync run --repo-id rhel7-rhn-tools
-fi
-
 pulp-admin rpm repo create \
     --feed https://repos.fedorapeople.org/pulp/pulp/fixtures/drpm-unsigned/ \
     --relative-url drpm \

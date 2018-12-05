@@ -16,10 +16,6 @@
             files:
                 - file-id: rhn_credentials
                   variable: RHN_CREDENTIALS
-        - credentials-binding:
-            - file:
-                credential-id: c7fb90a7-154c-45d6-b820-a742cf300615
-                variable: CDN_CERTIFICATES
         - inject:
             properties-content: |
                 OS={os}
