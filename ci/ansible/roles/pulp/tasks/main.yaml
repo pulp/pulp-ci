@@ -79,16 +79,27 @@
       # Thus, we have to explicitly write out port/transport pairs here.
       - "80/tcp"   # http
       - "443/tcp"  # https
+      - "27017/tcp" #mongo
       - "5671/tcp" # amqps
       - "5672/tcp" # amqp
 
   when: not (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
+  
+- name: Add MongoDB3.4 repo
+  yum_repository:
+    name: mongo34
+    description: mongo34 repo
+    file: mongodb34
+    baseurl: https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.4/x86_64/
+    enabled: yes
+    gpgcheck: yes
+    gpgkey: https://www.mongodb.org/static/pgp/server-3.4.asc
 
 - name: Install MongoDB server
   package:
     name:
-      - mongodb-server
-      - mongodb
+      - mongodb-org
+      - mongodb-org-server
     state: present
 
 - name: Start and enable MongoDB server service
