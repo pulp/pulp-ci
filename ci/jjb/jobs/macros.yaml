@@ -186,33 +186,6 @@
             send-to:
                 - recipients
 
-# Mark this node offline so that jenkins does not assign jobs to it.
-# This avoids a race condition created by nodepool:
-#   Nodepool receives a notification that a job is finished on a node, and begins to destroy
-#   the instance in openstack. Because the node is not marked offline and jenkins is not aware
-#   of nodepool, jenkins assigns a job to the node that has been waiting for a node with this
-#   label to become available in the short span of time when the single job executor on the
-#   nodepool node is not running a job and has not yet been removed from the slave pool by
-#   nodepool. The job fails because its slave mysteriously disappears from jenkins. Marking
-#   the slave node as offline in a post-build step prevents jenkins from assigning jobs to
-#   the node.
-#
-# Marking the slave offline should be the last post-build step on a job, since nodepool
-# also terminates nodes that are marked offline in jenkins. This creates another potential
-# race condition where a slave is deleted before later post-build steps can finish, which
-# also causes the job to fail.
-- publisher:
-    name: mark-node-offline
-    publishers:
-      - groovy-postbuild:
-          # An NPE happens when the slave we're trying to mark offline is null,
-          # meaning we don't need to mark it offline, because it's already gone.
-          # http://javadoc.jenkins-ci.org/hudson/model/AbstractBuild.html#getBuiltOn()
-          script: |
-            try {
-                manager.build.getBuiltOn().toComputer().setTemporarilyOffline(true)
-            } catch(NullPointerException ex) {}
-
 - publisher:
     name: delete-slave-node
     publishers:
