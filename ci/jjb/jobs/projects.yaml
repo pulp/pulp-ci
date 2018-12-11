@@ -40,10 +40,10 @@
     os:
         - 'rhel7'
     pulp_version:
-        - '2.17'
+        - '2.18'
     pulp_build:
         - 'stable'
-    backup_version: '2.16'
+    backup_version: '2.17'
     backup_build: 'stable'
     backup_os: 'rhel7'
     jobs:
@@ -56,7 +56,7 @@
     pulp_build:
         - 'stable'
     pulp_version:
-        - '2.15'
+        - '2.18'
     jobs:
         - pulp-{pulp_version}-{pulp_build}-backup-{os}
 
