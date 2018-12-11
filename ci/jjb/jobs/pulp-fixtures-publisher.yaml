@@ -13,7 +13,7 @@
                 - '*/master'
             skip-tag: true
     triggers:
-        - timed: '@midnight'
+        - timed: 'H H * * 6'
     wrappers:
         - jenkins-ssh-credentials
     builders:
