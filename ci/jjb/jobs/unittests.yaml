@@ -9,7 +9,7 @@
           name: node-type
           values:
             - f27-os
-            - rhel7-os
+            - rhel7-np
     parameters:
         - string:
             name: sha1
