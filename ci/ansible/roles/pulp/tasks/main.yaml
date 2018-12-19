@@ -127,14 +127,6 @@
     state: started
     enabled: true
 
-- name: Explicitly install python-django (https://bugzilla.redhat.com/show_bug.cgi?id=1524560)
-  package:
-    name: python-django
-    state: present
-  when:
-    - ansible_distribution == "RedHat"
-    - ansible_distribution_major_version|int == 7
-
 - name: Setup Pulp nightly repository
   template:
     src: yum_repo.j2
