@@ -89,17 +89,10 @@ download_base_image(){
 
 remove_existing_image(){
 # remove existing images in OpenStack
-# param $1: OS name
-# param $2: OS version
-# param $3: OS identifier : `fips` or `common`
+# param $1 : Image Id to be deleted
 
-    echo "removing ${1}_${2}_${3}_DIB_updated"
-    value="${1}_${2}_${3}_DIB_updated"
-    get_image_id_from_name "${value}"
-    if [[ "${_image_id_temp}" ]];then
-        echo "deleting existing image ${_image_id_temp}"
-        glance image-delete "${_image_id_temp}"
-    fi
+    echo "deleting existing image ${1}"
+    glance image-delete "${1}"
 }
 
 
@@ -109,13 +102,27 @@ upload_image(){
 # param $2: OS version
 
     temp="${1}_${2}"
-    remove_existing_image "${1}" "${2}" "${3}"
     echo "uploading ${temp}"
+    # exit if the image is not created
     if [[ ! -f "${scripts_dir}/output_images/template-${1}${2}-os.qcow2" ]];then
         echo >&2 "Image File ${temp} not created"
         exit 1
     fi
+
+    value="${1}_${2}_${3}_DIB_updated"
+    get_image_id_from_name "${value}"
+    prev_image="${_image_id_temp}"
     glance image-create --progress  --disk-format qcow2 --container-format bare --visibility private --file "${scripts_dir}/output_images/template-${1}${2}-os.qcow2" --name "${1}_${2}_${3}_DIB_updated"
+
+    get_image_id_from_name "${value}"
+    new_image="${_image_id_temp}"
+
+    # If a newer image is present and it differs from the older image
+    # We delete the older image
+    if [ "${prev_image}" != "${new_image}" ]; then
+        remove_existing_image "${prev_image}"
+    fi
+
     recreate_input_output_image_dirs
 }
 
