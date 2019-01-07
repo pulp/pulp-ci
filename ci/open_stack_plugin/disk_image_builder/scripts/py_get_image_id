@@ -38,5 +38,5 @@ IMAGES = [
     if image['name'] == sys.argv[1]
 ]
 # Get the latest image
-sorted(IMAGES, key=lambda x: x[1])
+IMAGES = sorted(IMAGES, key=lambda x: x[1])
 print(IMAGES[-1][0])
