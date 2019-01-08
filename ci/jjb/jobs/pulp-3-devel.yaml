@@ -1,0 +1,18 @@
+# Job that install Pulp 3 on any machine, and run functional tests.
+- job:
+    name: 'pulp-3-devel'
+    node: 'f28-os'
+    wrappers:
+        - jenkins-ssh-credentials
+    triggers:
+      - timed: "H 2 * * *"
+    builders:
+        - fix-hostname
+        - shell:
+            !include-raw-escape:
+                - pulp3-install.sh
+        - shell:
+            !include-raw-escape:
+              - pulp-3-devel-smasher.sh
+    publishers:
+        - delete-slave-node
