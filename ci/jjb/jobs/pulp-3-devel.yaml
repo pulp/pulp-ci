@@ -1,18 +1,42 @@
 # Job that install Pulp 3 on any machine, and run functional tests.
 - job:
-    name: 'pulp-3-devel'
-    node: 'f28-os'
+    name: pulp-3-devel
+    node: f28-os
+    description: |
+      <p>Install a Pulp 3 development environment on a host, and smash it.</p>
+      <p>
+        The installation procedure assumes that Pulp and Pulp Smash should be
+        installed on localhost. As a result, actions like SSH configuration are
+        skipped.
+      </p>
+    properties:
+        - qe-ownership
+        - discard-old-builds
+    scm:
+        - pulp-ci-github
     wrappers:
+        - ansicolor
+        - timestamps
         - jenkins-ssh-credentials
+        - timeout:
+            # pulp-smash usually takes about an hour or two, so time it out
+            # after 7:40 hours. This gives room to some tasks time out.
+            timeout: 460
+            abort: true
     triggers:
       - timed: "H 2 * * *"
     builders:
         - fix-hostname
         - shell:
-            !include-raw-escape:
+            !include-raw:
                 - pulp3-install.sh
         - shell:
-            !include-raw-escape:
+            !include-raw:
               - pulp-3-devel-smasher.sh
     publishers:
+        - junit:
+            results: 'junit-report.xml'
+        - archive:
+            artifacts: '*.tar.gz'
+            allow-empty: true
         - delete-slave-node
