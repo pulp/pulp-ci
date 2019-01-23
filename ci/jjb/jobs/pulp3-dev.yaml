@@ -1,0 +1,70 @@
+- job-template:
+    name: 'pulp3-{build_version}-dev-{os}'
+    node: '{os}-os'
+    properties:
+        - qe-ownership
+        - discard-old-builds
+    scm:
+        - pulp-ci-github
+    wrappers:
+        - config-file-provider:
+            files:
+                - file-id: rhn_credentials
+                  variable: RHN_CREDENTIALS
+        - inject:
+            properties-content: |
+                OS={os}
+                PULP_BUILD=nightly
+                PULP_VERSION={pulp_version}
+    triggers:
+      - timed: "H 2 * * *"
+    builders:
+        - fix-hostname
+        - shell:
+            !include-raw-escape:
+                - 'ssh-setup.sh'
+        - shell:
+            !include-raw:
+                - 'pulp3-install{script-var}.sh'
+        - shell:
+            !include-raw-escape:
+                - 'pulp3-smash-parameters.sh'
+        - inject:
+            properties-file: parameters.txt
+        - trigger-builds:
+            - project:
+                - pulp3-smash-runner
+              block: true
+              predefined-parameters: |
+                  PULP_SMASH_SYSTEM_HOSTNAME=$PULP_SMASH_SYSTEM_HOSTNAME
+              block-thresholds:
+                  build-step-failure-threshold: never
+                  unstable-threshold: never
+                  failure-threshold: never
+              parameter-factories:
+                  - factory: binaryfile
+                    parameter-name: PRIVATE_KEY
+                    file-pattern: pulp_server_key
+                    no-files-found-action: FAIL
+        - copyartifact:
+            project: pulp3-smash-runner
+            which-build: specific-build
+            build-number: ${{TRIGGERED_BUILD_NUMBER_PULP3_SMASH_RUNNER}}
+            flatten: true
+        - capture-logs
+    publishers:
+        - postbuildscript:
+            script-only-if-succeeded: False
+            script-only-if-failed: False
+            builders:
+              - shell: |
+                  if [[ "${{OS}}" =~ "rhel" ]]; then
+                      sudo subscription-manager unregister
+                  fi
+        - junit:
+            results: junit-report.xml
+        - archive:
+            artifacts: "*.tar.gz,report.html"
+            allow-empty: true
+        - email-notify-owners
+        - delete-slave-node

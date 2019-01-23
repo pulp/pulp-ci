@@ -1,6 +1,6 @@
 #!/bin/bash
 sudo dnf -y update
-sudo dnf -y install ansible git sed
+sudo dnf -y install ansible git
 
 # make a temp dir to clone all the things
 tempdir="$(mktemp --directory)"
@@ -20,7 +20,8 @@ echo "Available roles."
 ansible-galaxy list
 
 echo "Create hosts file."
-echo "$HOSTNAME" > hosts
+echo 'localhost' > hosts
+source "${RHN_CREDENTIALS}"
 
 echo "Starting Pulp 3 Installation."
-ansible-playbook --connection local -i hosts -u root install.yml -v -e pulp_pip_editable=no
+ansible-playbook --connection local -i hosts -u root install.yml -v -e pulp_pip_editable=no -e pulp_content_host="$(hostname --long):8080"
