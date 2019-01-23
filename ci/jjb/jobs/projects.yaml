@@ -27,7 +27,22 @@
     jobs:
     - pulp-{build_version}-dev-{os}
 
-# Job to install and test pulp 3
+# Jobs using pulp3-dev.yaml for Pulp 3+.
+- project:
+    name: pulp3-dev
+    build_version:
+    - master:
+        pulp_version: '3.0'
+        reverse_trigger: '3-master'
+    os:
+    - f28
+    - f29
+    reverse_trigger: '{build_version}-dev'
+    script-var: ''
+    jobs:
+    - pulp3-{build_version}-dev-{os}
+
+# Job to install and test pulp 3 in a single node
 - project:
     name: pulp-3-devel
     jobs:

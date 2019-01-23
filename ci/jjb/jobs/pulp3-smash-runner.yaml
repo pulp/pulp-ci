@@ -1,0 +1,114 @@
+- job:
+    name: pulp3-smash-runner
+    concurrent: true
+    properties:
+        - copyartifact:
+            projects: pulp3-*-dev-*
+    node: f29-os
+    parameters:
+        - string:
+            name: PULP_SMASH_SYSTEM_HOSTNAME
+    properties:
+        - qe-ownership
+        - discard-old-builds
+    scm:
+        - pulp-ci-github
+    wrappers:
+        - ansicolor
+        - timeout:
+            # pulp-smash usually takes about an hour or two, so time it out
+            # after 7:40 hours. This gives room to some tasks time out.
+            timeout: 460
+            abort: true
+        - timestamps
+    builders:
+        - fix-hostname
+        - shell: |
+            # Useful for debugging
+            getent passwd "$(id -u)"
+
+            # Setup ssh config and private key
+            mkdir ~/.ssh/controlmasters
+            cat > ~/.ssh/config <<EOF
+            Host ${PULP_SMASH_SYSTEM_HOSTNAME}
+                User jenkins
+                StrictHostKeyChecking no
+                UserKnownHostsFile /dev/null
+                IdentityFile ${PWD}/PRIVATE_KEY
+                ControlMaster auto
+                ControlPersist 5m
+                ControlPath ~/.ssh/controlmasters/%C
+            EOF
+            chmod 600 PRIVATE_KEY ~/.ssh/config
+
+            echo "Is pulp working?"
+            curl -u admin:admin ${PULP_SMASH_SYSTEM_HOSTNAME}:80/pulp/api/v3/status/ | python3 -m json.tool
+
+            echo "Make the venv"
+            mkdir -p ~/.virtualenvs/
+            python3 -m venv ~/.virtualenvs/pulp-smash/
+            source ~/.virtualenvs/pulp-smash/bin/activate
+
+            echo "Install Pulp Smash"
+            pip install --upgrade pip
+            pip install git+https://github.com/PulpQE/pulp-smash.git#egg=pulp-smash
+            pip install pytest
+            pip install pytest-sugar
+            pip install pytest-html
+
+            echo "Configure smash"
+            mkdir -p ~/.config/pulp_smash
+            cat >~/.config/pulp_smash/settings.json <<EOF
+            {
+            "hosts": [
+                {
+                "hostname": "${PULP_SMASH_SYSTEM_HOSTNAME}",
+                "roles": {
+                    "api": {
+                    "port": 80,
+                    "scheme": "http",
+                    "service": "nginx",
+                    "verify": false
+                    },
+                    "pulp resource manager": {},
+                    "pulp workers": {},
+                    "redis": {},
+                    "shell": {
+                    "transport": "local"
+                    }
+                }
+                }
+            ],
+            "pulp": {
+                "auth": [
+                "admin",
+                "admin"
+                ],
+                "selinux enabled": false,
+                "version": "3.0"
+            }
+            }
+            EOF
+            pulp-smash settings path
+            pulp-smash settings show
+            pulp-smash settings validate
+
+            echo "Clone the repos"
+            git clone https://github.com/pulp/pulp --branch master
+            git clone https://github.com/pulp/pulp_file --branch master
+            git clone https://github.com/pulp/pulp_rpm.git --branch master
+            git clone https://github.com/pulp/pulp_docker.git --branch master
+
+            echo "Run pytest"
+            set +e
+            py.test -v --color=yes --html=report.html --self-contained-html --junit-xml=junit-report.xml pulp/pulpcore/tests/functional pulp_file/pulp_file/tests/functional pulp_rpm/pulp_rpm/tests/functional pulp_docker/pulp_docker/tests/functional
+            set -e
+
+            # check the report file exists
+            test -f junit-report.xml
+        - capture-logs
+    publishers:
+        - archive:
+            artifacts: '*.tar.gz,junit-report.xml,report.html'
+        - email-notify-owners
+        - delete-slave-node
