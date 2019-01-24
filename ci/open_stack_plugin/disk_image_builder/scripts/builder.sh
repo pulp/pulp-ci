@@ -118,9 +118,12 @@ upload_image(){
     new_image="${_image_id_temp}"
 
     # If a newer image is present and it differs from the older image
+    # If there is a proper older image
     # We delete the older image
     if [ "${prev_image}" != "${new_image}" ]; then
-        remove_existing_image "${prev_image}"
+        if [ "${prev_image}" != "0" ]; then
+            remove_existing_image "${prev_image}"
+        fi
     fi
 
     recreate_input_output_image_dirs
