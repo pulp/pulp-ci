@@ -48,7 +48,7 @@
 
             # Consider adding this as an option
 
-            sudo yum -y install ansible rpm-build redhat-rpm-config koji mock rpmdevtools rpmlint tito createrepo python2-pip git-annex
+            sudo yum -y install ansible rpm-build redhat-rpm-config koji mock rpmdevtools rpmlint tito createrepo python2-pip git-annex || exit $?
 
             # Confirm koji is accessible
             cp -v -R $KOJI_CONFIG/.koji ~/
@@ -61,7 +61,7 @@
             sudo pip install obal==0.0.4
             cd pulp-packaging/
 
-            obal release pulp_packages
+            obal release pulp_packages || exit $?
             ssh root@koji.katello.org pulp-mash-split.py
             ssh root@koji.katello.org "rsync -avz --delete /mnt/koji/releases/split/yum/pulp-nightly/pulp/ pulpadmin@repos.fedorapeople.org:/srv/repos/pulp/pulp/testing/automation/2-master/stage/"
 
