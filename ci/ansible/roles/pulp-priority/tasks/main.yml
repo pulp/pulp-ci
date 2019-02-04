@@ -1,0 +1,5 @@
+---
+- name: Install yum-plugin-priorities
+  package:
+    name: yum-plugin-priorities
+    state: present
