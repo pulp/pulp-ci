@@ -1,3 +1,4 @@
+---
 - name: Generate initramfs
   command: dracut -f
   become: true
@@ -15,3 +16,8 @@
     timeout: 300
     connect_timeout: 20
     sleep: 5
+
+- name: Install yum-plugin-priorities
+  package:
+    name: yum-plugin-priorities
+    state: present

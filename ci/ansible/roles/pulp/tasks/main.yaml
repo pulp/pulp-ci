@@ -40,7 +40,7 @@
       url: https://copr.fedorainfracloud.org/coprs/g/qpid/qpid/repo/epel-6/irina-qpid-epel-6.repo
       dest: /etc/yum.repos.d/copr-qpid.repo
 
-  - name:  Allow Apache to listen on tcp port 5000
+  - name: Allow Apache to listen on tcp port 5000
     seport:
       ports: 5000
       proto: tcp
@@ -73,18 +73,19 @@
       permanent: true
       immediate: true
     loop:
-      # As of this writing, firewalld knows about a miniscule number of services
-      # out of the box. `firewall-cmd --get-services | wc -w` returns "103", and
-      # the list of services doesn't include amqp or amqps, among many others.
-      # Thus, we have to explicitly write out port/transport pairs here.
-      - "80/tcp"   # http
-      - "443/tcp"  # https
-      - "27017/tcp" #mongo
-      - "5671/tcp" # amqps
-      - "5672/tcp" # amqp
+      # As of this writing, firewalld knows about a miniscule number of
+      # services out of the box. `firewall-cmd --get-services | wc -w`
+      # returns "103", and the list of services doesn't include amqp or amqps,
+      # among many others. Thus, we have to explicitly write out
+      # port/transport pairs here.
+      - "80/tcp"     # http
+      - "443/tcp"    # https
+      - "27017/tcp"  # mongo
+      - "5671/tcp"   # amqps
+      - "5672/tcp"   # amqp
 
   when: not (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
-  
+
 - name: Add MongoDB3.4 repo
   yum_repository:
     name: mongo34
@@ -136,6 +137,7 @@
       name: Pulp Project repository
       baseurl: "https://repos.fedorapeople.org/pulp/pulp/testing/automation/{{ pulp_version }}/stage/{% if ansible_distribution == 'Fedora' %}fedora-{% endif %}$releasever/$basearch/"
       gpgcheck: 0
+      priority: 50
   when: pulp_build == "nightly"
 
 - name: Setup Pulp nightly koji repository
@@ -147,6 +149,7 @@
       name: Pulp Project repository
       baseurl: "http://koji.katello.org/releases/yum/pulp-nightly/pulp/{% if ansible_distribution == 'Fedora' %}fedora-{% endif %}$releasever/$basearch/"
       gpgcheck: 0
+      priority: 50
   when: pulp_build == "nightly_koji"
 
 - name: Setup Pulp beta or stable repository
@@ -158,7 +161,18 @@
       name: Pulp Project repository
       baseurl: "https://repos.fedorapeople.org/pulp/pulp/{{ pulp_build }}/{{ pulp_version }}/{% if ansible_distribution == 'Fedora' %}fedora-{% endif %}$releasever/$basearch/"
       gpgcheck: 0
+      priority: 50
   when: pulp_build == "beta" or pulp_build == "stable"
+
+- name: Check fips state
+  shell: cat /proc/sys/crypto/fips_enabled
+  register: fips_state
+
+- name: Install yum-plugin-priorities
+  package:
+    name: yum-plugin-priorities
+    state: present
+  when: fips_state.stdout == '1'
 
 - name: Install Pulp Server
   package:
