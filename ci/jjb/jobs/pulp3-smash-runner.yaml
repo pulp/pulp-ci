@@ -73,9 +73,7 @@
                     "pulp resource manager": {},
                     "pulp workers": {},
                     "redis": {},
-                    "shell": {
-                    "transport": "local"
-                    }
+                    "shell": {}
                 }
                 }
             ],
