@@ -82,7 +82,7 @@
 - name: Install pytest
   pip:
     virtualenv: '{{ ansible_user_dir }}/.virtualenvs/pulp-2-tests'
-    name: pytest
+    name: pytest==4.1.0
     state: present
 
 - name: Create a Pulp Smash configuration directory
