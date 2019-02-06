@@ -164,16 +164,6 @@
       priority: 50
   when: pulp_build == "beta" or pulp_build == "stable"
 
-- name: Check fips state
-  shell: cat /proc/sys/crypto/fips_enabled
-  register: fips_state
-
-- name: Install yum-plugin-priorities
-  package:
-    name: yum-plugin-priorities
-    state: present
-  when: fips_state.stdout == '1'
-
 - name: Install Pulp Server
   package:
     name: '@pulp-server-qpid'
