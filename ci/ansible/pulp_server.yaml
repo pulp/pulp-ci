@@ -4,6 +4,7 @@
   roles:
     - role: subscription-manager
       when: ansible_distribution == 'RedHat'
+    - role: pulp-priority
     - role: pulp-fips
       when:
         - enable_fips is defined
