@@ -14,5 +14,5 @@ pip install python-swiftclient
 pip install python-openstackclient
 
 # Installing the disk_image_builder
-pip install diskimage-builder
+pip install diskimage-builder==2.17.0
 

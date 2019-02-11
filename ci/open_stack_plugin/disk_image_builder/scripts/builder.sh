@@ -27,6 +27,9 @@ init(){
     source "${scripts_dir}/local_dependencies.sh"
     source "${scripts_dir}/base_image_config.conf"
 
+    # Patching the Disk image builder for fixing venv issues
+    patch -d ~/.venvs/openstack/lib64/python3.6/site-packages/diskimage_builder/ < "${scripts_dir}/diskimage-builder.patch"
+
     # The jenkins public key must be present in the following location
     # These keys will be copied to the image being built, which allows ssh
     # access to those image instances.

@@ -86,4 +86,4 @@ if [ "${DOCKER}" = true ]; then
 fi
 
 # Installing virtualenv within the creating image
-sudo pip install virtualenv
+# sudo pip install virtualenv
