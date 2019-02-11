@@ -5,7 +5,7 @@
 - job-template:
     name: 'pulp-packaging-{release_config}'
     defaults: ci-workflow-runtest
-    node: 'rhel7-os'
+    node: 'rhel7-np'
     properties:
         - build-ownership
     scm:
