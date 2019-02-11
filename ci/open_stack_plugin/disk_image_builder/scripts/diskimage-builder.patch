@@ -1,0 +1,128 @@
+commit f5755d83e87ea0ecf5e29f876a1c9992bdc2b9ff
+Author: Jeremy Audet <ichimonji10@gmail.com>
+Date:   Fri Feb 2 11:22:28 2018 -0500
+
+    Change how venv is activated in disk-image-create
+    
+    The `disk-image-create` entry point calls module `disk_image_create`.
+    When this module executes, it unconditionally activates the virtualenv
+    in use, if one is detected. Unfortunately, the module makes some
+    assumptions about the virtualenv that my not be valid. Specifically, the
+    module assumes that the virtualenv's `bin` directory contains a script
+    named `activate_this.py`. While this is true for virtualenvs created by
+    `virtualenv2` and `virtualenv3`, it's not true for virtualenvs created
+    by `python -m venv`. As a result, `disk_image_create` throws a traceback
+    when called from a virtualenvs of the latter kind.
+    
+    Re-write the virtualenv activation logic in module `disk_image_create`.
+    Rather than sourcing `activate_this.py`, append the virtualenv's `bin`
+    directory to `os.environ['PATH']`. This approach should be compatible
+    with all three types of virtualenvs listed above.
+    
+    In addition, this change has the tertiary benefit of not polluting
+    `disk_image_create`'s namespace dictionary with unnecessary names such
+    as:
+    
+    * base
+    * item
+    * new_sys_path
+    * old_os_path
+    * prev_sys_path
+    * site
+    * site_packages
+    
+    This change also prevents `sys.real_prefix` from being monkey-patched
+    into `disk_image_create`'s namespace dictionary.
+
+diff --git a/diskimage_builder/disk_image_create.py b/diskimage_builder/disk_image_create.py
+index 67da2045..9e549c25 100644
+--- a/diskimage_builder/disk_image_create.py
++++ b/diskimage_builder/disk_image_create.py
+@@ -14,46 +14,60 @@
+ 
+ import os
+ import os.path
+-import runpy
+ import sys
+ 
+ import diskimage_builder.paths
+ 
+ 
+-# borrowed from pip:locations.py
+ def running_under_virtualenv():
+     """Return True if we're running inside a virtualenv, False otherwise."""
+-    if hasattr(sys, 'real_prefix'):
+-        return True
+-    elif sys.prefix != getattr(sys, "base_prefix", sys.prefix):
+-        return True
+-    return False
++    return sys.prefix != getattr(sys, "base_prefix", sys.prefix)
+ 
+ 
+-def activate_venv():
++def maybe_extend_path():
++    """Maybe add the virtualenv's ``bin`` dir to ``os.environ['PATH']``.
++
++    Add the virtualenv's ``bin`` directory to ``os.environ['PATH']`` if:
++
++    * The Python interpreter is in a virtualenv.
++    * The virtualenv's bin/ dir isn't already in os.environ['PATH'].
++
++    .. NOTE:: This search path modification is not persistent. After this
++        script exits, the calling process' search path will not contain the
++        virtualenv's ``bin`` directory.
++    """
+     if running_under_virtualenv():
+-        activate_this = os.path.join(sys.prefix, "bin", "activate_this.py")
+-        globs = runpy.run_path(activate_this, globals())
+-        globals().update(globs)
+-        del globs
++        bin_dir = os.path.abspath(os.path.join(sys.prefix, 'bin'))
++        paths = os.environ['PATH'].split(':')
++        if bin_dir not in paths:
++            # If a dependent executable (like dib-block-device) is installed in
++            # several locations, we want to find the one in the virtualenv's
++            # bin directory. Thus, prepend to PATH, instead of appending.
++            os.environ['PATH'] = bin_dir + os.pathsep + os.environ['PATH']
+ 
+ 
+ def main():
+-    # If we are called directly from a venv install
+-    # (/path/venv/bin/disk-image-create) then nothing has added the
+-    # virtualenv bin/ dir to $PATH.  the exec'd script below will be
+-    # unable to find call other dib tools like dib-run-parts.
+-    #
+-    # One solution is to say that you should only ever run
+-    # disk-image-create in a shell that has already sourced
+-    # bin/activate.sh (all this really does is add /path/venv/bin to
+-    # $PATH).  That's not a great interface as resulting errors will
+-    # be very non-obvious.
+-    #
+-    # We can detect if we are running in a virtualenv and use
+-    # virtualenv's "activate_this.py" script to activate it ourselves
+-    # before we call the script.  This ensures we have the path setting
+-    activate_venv()
++    """Call ``disk-image-create``, passing along arguments.
++
++    Imagine a scenario where:
++
++    1. A user creates a virtualenv.
++    2. The user installs diskimage-builder into the virtualenv.
++    3. The user spawns a new shell and executes
++       ``"${env_path}/bin/disk-image-builder"``.
++
++    In this case, the virtualenv's ``bin`` directory will not be in
++    ``os.environ['PATH']``. This will break ``disk-image-create``, as this
++    application calls other executables in the ``bin`` directory, such as
++    ``dib-block-device``.
++
++    One solution is to declare that users should only call
++    ``disk-image-create`` from a shell that has already added the virtualenv's
++    ``bin`` directory to its search path. But when a user violates this
++    declaration, non-obvious error are emitted. Our solution is to call
++    ``maybe_extend_path``.
++    """
++    maybe_extend_path()
+ 
+     environ = os.environ
+ 
