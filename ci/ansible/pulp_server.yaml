@@ -1,10 +1,16 @@
 ---
 
 - hosts: all
+  pre_tasks:
+    - name: Check fips state
+      shell: cat /proc/sys/crypto/fips_enabled
+      register: fips_state
+  vars:
+    repo_priority: "{{ '50' if fips_state.stdout == '1'  else '99' }}"
+
   roles:
     - role: subscription-manager
       when: ansible_distribution == 'RedHat'
-    - role: pulp-priority
     - role: pulp-fips
       when:
         - enable_fips is defined
