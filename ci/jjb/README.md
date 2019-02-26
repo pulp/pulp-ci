@@ -180,7 +180,7 @@ template defines some required and minimal set of options:
 - All jobs should have a owner.
 - All owners should receive an email if his/her jobs fail or are not built.
 - Before finishing the job, the node should be marked offline in order to avoid
-  issues with Jenkins reusing a node that is about to be deleted by Nodepool.
+  issues with Jenkins reusing a node.
 
 To start a new job from the template `cp` it into an YAML file:
 
