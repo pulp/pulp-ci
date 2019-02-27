@@ -1,4 +1,13 @@
 ---
+# Must check fips state here as pulp-fips could have
+- name: Check fips state
+  shell: cat /proc/sys/crypto/fips_enabled
+  register: fips_state
+
+- name: Set the repo_priority based on fips_state 
+  set_fact:
+    repo_priority: "{{  fips_priority if fips_state.stdout == '1'  else default_priority }}"
+
 # Pulp 2 requires Python 2.
 - name: Install Python 2 (Fedora)
   package:
