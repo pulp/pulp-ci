@@ -70,6 +70,12 @@
                     "service": "nginx",
                     "verify": false
                     },
+                    "content": {
+                    "port": 8080,
+                    "scheme": "http",
+                    "service": "pulp_content_app",
+                    "verify": false
+                    },
                     "pulp resource manager": {},
                     "pulp workers": {},
                     "redis": {},
@@ -96,6 +102,23 @@
             git clone https://github.com/pulp/pulp_file --branch master
             git clone https://github.com/pulp/pulp_rpm.git --branch master
             git clone https://github.com/pulp/pulp_docker.git --branch master
+
+            # Configure podman for docker tests 
+            sudo yum install -y podman
+
+            sudo cat <<EOF | sudo tee /etc/containers/registries.conf
+            [registries.search]
+            registries = ["docker.io", "registry.fedoraproject.org", "quay.io", "registry.access.redhat.com", "registry.centos.org"]
+
+            [registries.insecure]
+            registries = ["${PULP_SMASH_SYSTEM_HOSTNAME}:8080"]
+
+            [registries.block]
+            registries = []
+            EOF
+
+            # outputs podman info
+            sudo podman info
 
             echo "Run pytest"
             set +e
