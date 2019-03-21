@@ -16,11 +16,11 @@ pulp-admin rpm repo sync run --repo-id srpm
 
 pulp-admin rpm repo create \
     --checksum-type sha \
-    --feed http://mirror.centos.org/centos-5/5/os/x86_64/ \
-    --repo-id centos5 \
+    --feed http://mirror.centos.org/centos-7/7/os/x86_64/ \
+    --repo-id centos7 \
     --serve-http true \
     --skip erratum
-pulp-admin rpm repo sync run --repo-id centos5
+pulp-admin rpm repo sync run --repo-id centos7
 
 pulp-admin rpm repo create \
     --feed https://repos.fedorapeople.org/pulp/pulp/fixtures/rpm-signed/ \
@@ -55,7 +55,7 @@ pulp-admin puppet repo create \
 pulp-admin puppet repo sync run --repo-id forge
 
 pulp-admin iso repo create \
-    --feed https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/test_file_repo/ \
+    --feed https://repos.fedorapeople.org/pulp/pulp/fixtures/file-large/ \
     --repo-id filerepo
 pulp-admin iso repo sync run --repo-id filerepo
 
