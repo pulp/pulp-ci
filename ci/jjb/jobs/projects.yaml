@@ -96,6 +96,7 @@
     pulp_version:
         - 2.18-stable
     upgrade_pulp_version:
+        - 2.19-beta
         - 2.19-stable
     jobs:
         - 'pulp-upgrade-{pulp_version}-{upgrade_pulp_version}-{os}'
