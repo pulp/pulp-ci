@@ -9,7 +9,7 @@ pulp-admin iso repo list --repo-id filerepo
 pulp-admin puppet repo list --repo-id forge
 pulp-admin python repo list --repo-id pypi
 pulp-admin python repo list --repo-id python-upload
-pulp-admin rpm repo list --repo-id centos5
+pulp-admin rpm repo list --repo-id centos7
 pulp-admin rpm repo list --repo-id drpm
 pulp-admin rpm repo list --repo-id file-feed
 pulp-admin rpm repo list --repo-id rpm-signed
