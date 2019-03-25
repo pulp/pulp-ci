@@ -6,15 +6,15 @@ sudo dnf -y install ansible git
 tempdir="$(mktemp --directory)"
 pushd "$tempdir"
 
-git clone https://github.com/pulp/ansible-pulp3.git
+git clone https://github.com/pulp/ansible-pulp.git
 
 # get the playbook locally
 curl https://raw.githubusercontent.com/PulpQE/pulp-qe-tools/master/pulp3/install_pulp3/ansible.cfg > ansible.cfg
 curl https://raw.githubusercontent.com/PulpQE/pulp-qe-tools/master/pulp3/install_pulp3/source-install-plugins.yml > install.yml
 
 echo "Installing roles."
-export ANSIBLE_ROLES_PATH="./ansible-pulp3/roles/"
-ansible-galaxy install -r ./ansible-pulp3/requirements.yml
+export ANSIBLE_ROLES_PATH="./ansible-pulp/roles/"
+ansible-galaxy install -r ./ansible-pulp/requirements.yml
 
 echo "Available roles."
 ansible-galaxy list
