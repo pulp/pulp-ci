@@ -127,7 +127,7 @@
       - pulp_deb:
           min_coverage: 100
           unittest_branches:
-            - master
+            - 2-master
             - 1.6-release
           unittest_platforms:
             - f27-os
@@ -210,7 +210,7 @@
       - pulp_deb:
           docs_branches:
             - 1.5-dev
-            - master
+            - 2-master
           docs_platforms:
             - f27-os
           docs_whitelist:
