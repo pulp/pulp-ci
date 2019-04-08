@@ -42,12 +42,6 @@
     jobs:
     - pulp3-{build_version}-dev-{os}
 
-# Job to install and test pulp 3 in a single node
-- project:
-    name: pulp-3-devel
-    jobs:
-      - pulp-3-devel
-
 - project:
     name: disk-image-builder-base
     jobs:
