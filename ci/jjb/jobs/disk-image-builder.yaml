@@ -5,8 +5,6 @@
         - qe-ownership
     scm:
         - pulp-ci-github
-    triggers:
-        - timed: 'H H * * 6'
     wrappers:
         - config-file-provider:
             files:
