@@ -26,7 +26,7 @@ fi
 
 if ! openstack security group rule list "${KEY_NAME}" | grep -q "0.0.0.0/0"; then
     openstack security group rule create --protocol icmp "${KEY_NAME}"
-    for tcp_port in 22 80 443 5000 5646 5647 5671 8000 8140 8443 9090; do
+    for tcp_port in 22 80 443 5000 5646 5647 5671 24817 8140 8443 9090; do
         openstack security group rule create --protocol tcp --dst-port "${tcp_port}" "${KEY_NAME}"
     done
     for udp_port in 53 69; do

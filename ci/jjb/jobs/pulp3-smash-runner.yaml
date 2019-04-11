@@ -71,7 +71,7 @@
                     "verify": false
                     },
                     "content": {
-                    "port": 8080,
+                    "port": 24816,
                     "scheme": "http",
                     "service": "pulp_content_app",
                     "verify": false
@@ -111,7 +111,7 @@
             registries = ["docker.io", "registry.fedoraproject.org", "quay.io", "registry.access.redhat.com", "registry.centos.org"]
 
             [registries.insecure]
-            registries = ["${PULP_SMASH_SYSTEM_HOSTNAME}:8080"]
+            registries = ["${PULP_SMASH_SYSTEM_HOSTNAME}:24816"]
 
             [registries.block]
             registries = []

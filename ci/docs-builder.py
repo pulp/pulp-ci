@@ -141,7 +141,7 @@ def main():
 
     # Get the latest api.yaml file to build the rest api docs
     if is_pulp3:
-        with urllib.request.urlopen("http://localhost:8000/pulp/api/v3/docs/api.yaml") as response, \
+        with urllib.request.urlopen("http://localhost:24817/pulp/api/v3/docs/api.yaml") as response, \
                 open(os.path.join(docs_directory, "api.yaml"), 'wb') as api_file:
             data = response.read()
             api_file.write(data)
