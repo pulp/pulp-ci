@@ -71,7 +71,7 @@
                     "verify": false
                     },
                     "content": {
-                    "port": 8080,
+                    "port": 24816,
                     "scheme": "http",
                     "service": "pulp_content_app",
                     "verify": false
@@ -102,6 +102,8 @@
             git clone https://github.com/pulp/pulp_file --branch master
             git clone https://github.com/pulp/pulp_rpm.git --branch master
             git clone https://github.com/pulp/pulp_docker.git --branch master
+            git clone https://github.com/pulp/pulp_ansible.git --branch master
+            git clone https://github.com/pulp/pulp-certguard.git --branch master
 
             # Configure podman for docker tests 
             sudo yum install -y podman
@@ -111,7 +113,7 @@
             registries = ["docker.io", "registry.fedoraproject.org", "quay.io", "registry.access.redhat.com", "registry.centos.org"]
 
             [registries.insecure]
-            registries = ["${PULP_SMASH_SYSTEM_HOSTNAME}:8080"]
+            registries = ["${PULP_SMASH_SYSTEM_HOSTNAME}:24816"]
 
             [registries.block]
             registries = []
@@ -122,7 +124,15 @@
 
             echo "Run pytest"
             set +e
-            py.test -v --color=yes --html=report.html --self-contained-html --junit-xml=junit-report.xml pulpcore/pulpcore/tests/functional pulp_file/pulp_file/tests/functional pulp_rpm/pulp_rpm/tests/functional pulp_docker/pulp_docker/tests/functional
+            py.test -v --color=yes \
+              --html=report.html --self-contained-html \
+              --junit-xml=junit-report.xml \
+              pulpcore/pulpcore/tests/functional \
+              pulp_file/pulp_file/tests/functional \
+              pulp_rpm/pulp_rpm/tests/functional \
+              pulp_docker/pulp_docker/tests/functional \
+              pulp-certguard/pulp_certguard/tests/functional \
+              pulp_ansible/pulp_ansible/tests/functional
             set -e
 
             # check the report file exists
