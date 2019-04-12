@@ -35,8 +35,8 @@
         pulp_version: '3.0'
         reverse_trigger: '3-master'
     os:
-    - f28
     - f29
+    - rhel7
     reverse_trigger: '{build_version}-dev'
     script-var: ''
     jobs:
