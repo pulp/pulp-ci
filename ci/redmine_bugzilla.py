@@ -182,7 +182,7 @@ def main():
                 if external_bug['type']['description'] == 'Pulp Redmine':
                     if bug.status in ['NEW', 'ASSIGNED']:
                         if external_bug['ext_status'] in ['MODIFIED', 'ON_QA', 'VERIFIED',
-                                                 'CLOSED - CURRENTRELEASE', 'CLOSED - COMPLETE']:
+                                                 'CLOSED - CURRENTRELEASE', 'CLOSED - COMPLETE', 'CLOSED - DUPLICATE']:
                             if 'FailedQA' in bug.cf_verified:
                                 external_bug_id = external_bug['ext_bz_bug_id']
                                 redmine_issue = redmine.issue.get(external_bug_id)
