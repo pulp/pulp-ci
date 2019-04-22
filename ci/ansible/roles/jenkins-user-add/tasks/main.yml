@@ -1,0 +1,70 @@
+---
+- name: Include jenkins variable information
+  include_vars:
+    file: ../files/jenkins.yaml
+    name: jenkins
+
+- name: Create the {{ ci_user }} group
+  group:
+      name: "{{ ci_user }}"
+      state: present
+  become: yes
+
+- name: Create the {{ ci_user }} User
+  user:
+      name: "{{ ci_user }}"
+      comment: Jenkins CI user
+      group: "{{ ci_user }}"
+      password: "{{ jenkins.ci_password }}"
+  become: yes
+
+- name: Create symbolic link for jenkins agent to user home
+  file:
+    src: /home/{{ ci_user }}/
+    dest: /var/lib/jenkins
+    state: link
+    force: yes
+
+- name: Create {{ ci_user }} .ssh directory 
+  file:
+    path: /home/{{ ci_user }}/.ssh/
+    state: directory
+    mode: "u=rwx"
+    group: "{{ ci_user }}"
+    owner: "{{ ci_user }}"
+    recurse: yes
+  become: yes
+
+- name: Create {{ ci_user }} User Authorized Keys
+  file:
+    path: /home/{{ ci_user }}/.ssh/authorized_keys
+    state: touch
+    mode: 0600
+    group: "{{ ci_user }}"
+    owner: "{{ ci_user }}"
+  become: yes
+
+- name: Set jenkins key in authorized_keys
+  lineinfile:
+    dest: /home/{{ci_user}}/.ssh/authorized_keys
+    line: "{{ jenkins.key }}"
+    state: present
+  become: yes
+
+- name: Set includedir in sudoers
+  lineinfile:
+    dest: /etc/sudoers
+    line: "#includedir /etc/sudoers.d"
+    state: present
+    validate: "/usr/sbin/visudo -cf %s"
+  become: yes
+
+- name: Add user {{ ci_user }} to sudo
+  lineinfile:
+    path: /etc/sudoers.d/{{ ci_user }}
+    line: '{{ ci_user }} ALL=(ALL) NOPASSWD: ALL'
+    state: present
+    mode: 0440
+    create: yes
+    validate: 'visudo -cf %s'
+  become: yes

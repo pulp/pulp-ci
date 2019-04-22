@@ -4,20 +4,4 @@
   become: true
 
 - name: Restart host
-  shell: sleep 5 && systemctl reboot
-  async: 1
-  poll: 0
-  ignore_errors: true
-  become: true
-
-- name: Wait for host to become available
-  wait_for_connection:
-    delay: 30
-    timeout: 300
-    connect_timeout: 20
-    sleep: 5
-
-- name: Install yum-plugin-priorities
-  package:
-    name: yum-plugin-priorities
-    state: present
+  reboot:
