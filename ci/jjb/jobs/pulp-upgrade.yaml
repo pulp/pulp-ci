@@ -92,7 +92,5 @@
       - archive:
           artifacts: "*.tar.gz"
           allow-empty: true
-      - junit:
-          results: junit-report.xml
       - email-notify-owners
       - delete-slave-node
