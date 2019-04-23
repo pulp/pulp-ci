@@ -36,7 +36,6 @@
         reverse_trigger: '3-master'
     os:
     - f29
-    - rhel7
     reverse_trigger: '{build_version}-dev'
     script-var: ''
     jobs:
