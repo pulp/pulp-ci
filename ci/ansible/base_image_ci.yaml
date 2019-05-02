@@ -9,7 +9,6 @@
 #       - NOTE: All Pulp QE playbooks will fail if subscription manager is not disabled.
 #
 # Assumptions:
-# - If using RHEL, the `rhel_clean` must be set to `true`. Playbooks like `pulp-install` require no exsiting subscriptions
 # - For FIPS installs, `enable_fips` will configure FIPS as long as `/boot` or `/` exists
 # 
 # Result:
@@ -17,14 +16,18 @@
 # - For more information on how to export the image to Openstack, please see the Pulp QE Google Drive documentation
 #
 # Run Time:
-# - Non-FIPS:
+#
+# Fedora: 3 - 5 mins
+#
+# RHEL: 
+# - Non-FIPS: 10 - 15 mins
 # - FIPS: 18 - 30 mins
 #
 # Example Usage:
 #
 # - Openstack with Cloud User and Setting FIPS on RHEL:
 #       - ansible-playbook -i 10.0.149.73, -u cloud-user base_image_ci.yaml -e "rhn_password=${RHN_PASSWORD}" -e "rhn_pool=${RHN_POOL}" -e "rhn_username=${RHN_USERNAME}" \
-#       -e "enable_fips=True" -e "rhel_clean=True"
+#       -e "enable_fips=True"
 #
 # Local VirtManager install on RHEL:
 #       - ansible-playbook -i 192.168.122.6, -u root base_image_ci.yaml -e "rhn_password=${RHN_PASSWORD}" \
@@ -38,7 +41,6 @@
 - hosts: all
   vars:
     enable_fips: false
-    ci_user: jenkins
 
   roles:
     - role: subscription-manager

@@ -1,7 +1,19 @@
+# Role:
+# jenkins-user-add
+#
+# Objective:
+#
+# This role's sole objective is to properly setup the `jenkins` user on a 
+# new OS environment to be used with Pulp QE Jenkins.
+#
+# All Key information is maintained within an encrypted ansible-vault.
+#
+# Default user variable information is maintained in the `defaults/`
+# directory. 
 ---
 - name: Include jenkins variable information
-  include_vars:
-    file: ../files/jenkins.yaml
+  include_vars: 
+    file: vars/jenkins.yaml
     name: jenkins
 
 - name: Create the {{ ci_user }} group
@@ -29,7 +41,7 @@
   file:
     path: /home/{{ ci_user }}/.ssh/
     state: directory
-    mode: "u=rwx"
+    mode: 0700
     group: "{{ ci_user }}"
     owner: "{{ ci_user }}"
     recurse: yes
@@ -47,7 +59,23 @@
 - name: Set jenkins key in authorized_keys
   lineinfile:
     dest: /home/{{ci_user}}/.ssh/authorized_keys
-    line: "{{ jenkins.key }}"
+    line: "{{ jenkins.public_key }}"
+    state: present
+  become: yes
+
+- name: Create pulpadmin private key for rsync with fedorapeople.com
+  file:
+    path: /home/{{ ci_user }}/.ssh/id_rsa
+    state: touch
+    mode: 0600
+    group: "{{ ci_user }}"
+    owner: "{{ ci_user }}"
+  become: yes
+
+- name: Set pulpadmin key in id_rsa
+  lineinfile:
+    dest: /home/{{ci_user}}/.ssh/id_rsa
+    line: "{{ jenkins.private_key }}"
     state: present
   become: yes
 

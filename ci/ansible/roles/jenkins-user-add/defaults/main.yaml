@@ -1,0 +1,3 @@
+---
+# Default ci user to create
+ci_user: jenkins
