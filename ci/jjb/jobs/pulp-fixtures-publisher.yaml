@@ -3,7 +3,7 @@
 
 - job-template:
     name: 'pulp-fixtures-publisher'
-    node: 'docker-os'
+    node: 'f30-os'
     properties:
         - qe-ownership
     scm:
@@ -21,6 +21,7 @@
         - shell: |
             sudo dnf -y install \
               createrepo \
+              docker \
               fedpkg \
               gpg \
               jq \
@@ -31,9 +32,10 @@
               python3-jinja2-cli \
               rpm-build \
               rpm-sign
+            sudo systemctl start docker
             sudo gpasswd --add "$(whoami)" mock
             newgrp -
-            make fixtures base_url=https://repos.fedorapeople.org/pulp/pulp/
+            sudo make fixtures base_url=https://repos.fedorapeople.org/pulp/pulp/
             rsync -arvze "ssh -o StrictHostKeyChecking=no" --delete \
                 fixtures/* \
                 pulpadmin@repos.fedorapeople.org:/srv/repos/pulp/pulp/fixtures
