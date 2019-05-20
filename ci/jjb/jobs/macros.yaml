@@ -124,7 +124,6 @@
             owner: koliveir
             co-owners:
                 - brocha
-                - ragbalak
                 - bherring
 
 # Discard old builds that are month old for the job
