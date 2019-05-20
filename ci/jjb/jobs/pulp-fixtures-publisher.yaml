@@ -31,7 +31,8 @@
               puppet \
               python3-jinja2-cli \
               rpm-build \
-              rpm-sign
+              rpm-sign \
+              rsync
             sudo systemctl start docker
             sudo gpasswd --add "$(whoami)" mock
             newgrp -
