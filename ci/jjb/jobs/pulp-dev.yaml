@@ -32,6 +32,7 @@
             !include-raw-escape:
                 - 'pulp-coverage-setup.sh'
                 - 'pulp-smash-parameters.sh'
+                - 'pulp-version-information.sh'
         - inject:
             properties-file: parameters.txt
         - trigger-builds:
