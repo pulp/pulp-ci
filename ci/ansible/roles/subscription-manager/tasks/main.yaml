@@ -44,6 +44,7 @@
 
 - name: Subscription Manager disable all repositories
   command: subscription-manager repos --disable *
+  when: keep_existing_repositories is undefined
 
 - name: Enable main repository
   command: subscription-manager repos --enable rhel-{{ ansible_distribution_major_version }}-server-rpms

@@ -70,13 +70,13 @@
 - name: Install Pulp Smash
   pip:
     virtualenv: '{{ ansible_user_dir }}/.virtualenvs/pulp-2-tests'
-    name: git+https://github.com/PulpQE/pulp-smash.git#egg=pulp-smash
+    name: '{{ pulp_smash_repo }}'
     state: present
 
 - name: Install Pulp 2 Tests
   pip:
     virtualenv: '{{ ansible_user_dir }}/.virtualenvs/pulp-2-tests'
-    name: git+https://github.com/PulpQE/pulp-2-tests.git#egg=pulp-2-tests
+    name: '{{ pulp_2_tests_repo }}'
     state: present
 
 - name: Install pytest

@@ -1,0 +1,247 @@
+# Job that help installing Pulp on any machine. This is useful for setting up
+# machines for running Pulp Smash.
+- job:
+    name: 'pulp2-vault'
+    concurrent: true
+    node: 'f29-os'
+    description: |
+        <p>
+          This job will:
+            - Provision an OpenStack instance using image provided in UPSHIFTIMAGE.
+            - Install PULP_VERSION on the running instance.
+            - Install and configure PULP_SMASH using SMASH_REPO.
+            - Clone test cases using TEST_REPO.
+            - If UPGRADE_OS
+                - Run sanity tests defined in PRE_PYTEST_ARGS.
+                - Upgrade O.S using OS_LATEST_REPO.
+            - Run final test suite using POST_PYTEST_ARGS.
+            - Store results.
+        </p>
+
+    parameters:
+        - string:
+            name: UPSHIFTIMAGE
+            default: rhel-7.6-server-x86_64-released
+            description: The name of the image available on Openstack, pulp will be installed on that instance and after sanity check upgrade will be performed.
+        - bool:
+            name: UPGRADE_OS
+            default: true
+            description: Mark if you want to have O.S upgrades, uncheck if you only want to run tests on the O.S without upgrading.
+        - bool:
+            name: DELETE_INSTANCE
+            default: false
+            description: Mark if you want to have the instance deleted after success.
+        - string:
+            name: OS_LATEST_REPO
+            default: http://download.devel.redhat.com/composes/nightly/latest-RHEL-7.7/compose/Server/x86_64/os/
+            description: Repository to use when upgrading the O.S before running the test suite.
+        - string:
+            name: OS_LATEST_REPO_OPTIONAL
+            default: http://download.devel.redhat.com/composes/nightly/latest-RHEL-7.7/compose/Server-optional/x86_64/os/
+            description: Optional Repository to use when upgrading the O.S before running the test suite.
+        - string:
+           name: UPSHIFTINSTANCEPREFIX
+           default: vault
+           description: instance will be named <prefix>-uuid
+        - string:
+           name: UPSHIFTUSER
+           default: psi-pulp-jenkins
+           description: User used to login to Openstack, the UPSHIFTPASSWORD will be read from jenkins credentials.
+        - string:
+           name: UPSHIFTPROJECTID
+           default: 144f871271034aa9960c449982fa36f7
+           description: Can be found on OPenstack user interface.
+        - string:
+           name: UPSHIFTPROJECTNAME
+           default: pulp-jenkins
+           description: Can be found on OPenstack user interface.
+        - string:
+           name: UPSHIFTAUTHURL
+           default: https://rhos-d.infra.prod.upshift.rdu2.redhat.com:13000/v3
+           description: Can be found on OPenstack user interface.
+
+        - string:
+            name: PULP_VERSION
+            default: '2.19'
+            description: Version to install before the update. set it to the version before the latest use only X.Y (no Z)
+        - string:
+            name: PRE_PYTEST_ARGS
+            default: -v --color=yes --pyargs pulp_2_tests.tests.platform.api_v2.test_login
+            description: Pytest sanity check (quick test) to run before upgrading the O.S.
+        - string:
+            name: POST_PYTEST_ARGS
+            default: -v --color=yes --junit-xml=junit-report.xml --pyargs pulp_2_tests.tests
+            description: Pytest command to run after the upgrade of O.S.
+
+
+        - string:
+            name: SMASH_REPO
+            default: git+https://github.com/PulpQE/pulp-smash.git@master#egg=pulp-smash
+        - string:
+            name: TEST_REPO
+            default: git+https://github.com/PulpQE/pulp-2-tests.git@master#egg=pulp-2-tests
+
+
+        - string:
+            name: PULP_SMASH_PULP_VERSION
+            default: '2.19.1'
+            decription: The Pulp version Pulp Smash will consider when running tests after the upgrade. Specify the .Z stream if needed.
+        - string:
+            name: PULP_SMASH_PULP_USERNAME
+            default: admin
+        - string:
+            name: PULP_SMASH_PULP_PASSWORD
+            default: admin
+        - choice:
+            name: PULP_SMASH_AMQP_BROKER_SERVICE
+            choices:
+                - qpidd
+                - rabbitmq
+        - choice:
+            name: PULP_SMASH_API_SCHEME
+            choices:
+                - https
+                - http
+        - bool:
+            name: PULP_SMASH_API_VERIFY
+            default: false
+    
+    properties:
+      - qe-ownership
+    scm:
+        # - pulp-ci-github
+        - git:
+            url: https://github.com/rochacbruno/pulp-ci.git
+            branches:
+                - '*/vaultjob'
+            skip-tag: true
+    wrappers:
+        - ansicolor
+        - timeout:
+            # pulp-smash usually takes about an hour or two, so time it out
+            # after 7:40 hours. This gives room to some tasks time out.
+            timeout: 460
+            abort: true
+        - timestamps
+        - config-file-provider:
+            files:
+                - file-id: rhn_credentials
+                  variable: RHN_CREDENTIALS
+        - jenkins-ssh-credentials
+        - credentials-binding:
+            - text:
+                credential-id: UPSHIFTPASSWORD
+                variable: UPSHIFTPASSWORD
+    builders:
+        - fix-hostname
+        - shell:
+            sudo dnf -y install nc
+        - shell:
+            !include-raw:
+              # Creates parameters.txt
+              - 'create_upshift_instance.sh'
+        - inject:
+            # injects PULP_HOSTNAME
+            properties-file: parameters.txt
+        - shell: |
+            # Useful for debugging
+            getent passwd "$(id -u)"
+
+            # Setup ssh config and private key
+            mkdir ~/.ssh/controlmasters
+            
+            cat > ~/.ssh/config <<EOF
+            Host ${PULP_HOSTNAME}
+                User cloud-user
+                StrictHostKeyChecking no
+                UserKnownHostsFile /dev/null
+                IdentityFile ~/.ssh/id_rsa
+                ControlMaster auto
+                ControlPersist 5m
+                ControlPath ~/.ssh/controlmasters/%C
+            EOF
+            
+            chmod 600 ~/.ssh/id_rsa ~/.ssh/config
+
+        - shell:
+            !include-raw:
+                - 'fix_remote_hostname.sh'
+
+        - shell: |
+            # Install Pulp System
+            sudo dnf -y install ansible
+            
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            echo "${PULP_HOSTNAME} ansible_user=cloud-user" > hosts
+            source "${RHN_CREDENTIALS}"
+            export ANSIBLE_CONFIG="${PWD}/ci/ansible/ansible.cfg"
+            ansible-playbook -i hosts \
+                ci/ansible/pulp_server.yaml \
+                -e "pulp_build=stable" \
+                -e "pulp_version='${PULP_VERSION}'" \
+                -e "rhn_username=${RHN_USERNAME}" \
+                -e "rhn_password=${RHN_PASSWORD}" \
+                -e "rhn_pool=${RHN_POOL}" \
+                -e "keep_existing_repositories=true"
+
+            # Remote pre-requisites
+            ssh cloud-user@"${PULP_HOSTNAME}" << EOF
+               sudo yum -y install ansible attr git libselinux-python
+               sudo systemctl stop firewalld
+               sudo systemctl disable firewalld
+            EOF
+
+        - shell: |
+            # install and run smash tests
+            sudo dnf -y install attr git libselinux-python
+
+            ansible-playbook --connection local --inventory "localhost," ci/ansible/pulp_2_tests.yaml \
+                -e pulp_smash_system_hostname="${PULP_HOSTNAME}" \
+                -e pulp_smash_shell_transport="ssh" \
+                -e pulp_smash_amqp_broker_service="${PULP_SMASH_AMQP_BROKER_SERVICE}" \
+                -e pulp_smash_api_scheme="${PULP_SMASH_API_SCHEME}" \
+                -e pulp_smash_api_verify="${PULP_SMASH_API_VERIFY}" \
+                -e pulp_smash_pulp_username="${PULP_SMASH_PULP_USERNAME}" \
+                -e pulp_smash_pulp_password="${PULP_SMASH_PULP_PASSWORD}" \
+                -e pulp_smash_pulp_version="${PULP_SMASH_PULP_VERSION}" \
+                -e pulp_smash_repo="${SMASH_REPO}" \
+                -e pulp_2_tests_repo="${TEST_REPO}"
+            
+            source ~/.virtualenvs/pulp-2-tests/bin/activate
+            export PULP_SMASH_LOG_LEVEL=DEBUG
+            pulp-smash settings show
+
+            # Run Initial Sanity Check 
+            set +e
+            py.test ${PRE_PYTEST_ARGS}
+            set -e
+
+        - shell:
+            # To be used for the update of Pulp
+            # This script reads the OS_LATEST_REPO variable
+            # and is conditional to UPGRADE_OS bool.
+            !include-raw:
+                - 'upgrade_rhel_to_latest.sh'
+
+        - shell: | 
+            # Remote pre-requisites
+            ssh cloud-user@"${PULP_HOSTNAME}" << EOF
+               sudo systemctl stop firewalld
+               sudo systemctl disable firewalld
+            EOF
+            
+            # Re-run the tests after upgrade
+            source ~/.virtualenvs/pulp-2-tests/bin/activate
+            pulp-smash settings show
+            export PULP_SMASH_LOG_LEVEL=DEBUG
+            set +e
+            py.test ${POST_PYTEST_ARGS}
+            set -e
+        
+    publishers:
+        - archive:
+            artifacts: 'junit-report.xml'
+        - junit:
+            results: junit-report.xml
+        - email-notify-owners
+        - delete-slave-node

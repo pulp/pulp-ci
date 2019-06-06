@@ -15,3 +15,10 @@ pulp_smash_api_verify: "false"
 
 # AMQP broker service either qpidd or rabbitmq
 pulp_smash_amqp_broker_service: "qpidd"
+
+
+# Repository to fetch pulp-smash
+pulp_smash_repo: git+https://github.com/PulpQE/pulp-smash.git@master#egg=pulp-smash
+
+# Repository to fetch the tests
+pulp_2_tests_repo: git+https://github.com/PulpQE/pulp-2-tests.git@master#egg=pulp-2-tests
