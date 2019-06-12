@@ -2,9 +2,9 @@
 - name: Restart all services
   loop:
     - httpd
-    - pulp_workers
+    - pulp2_workers
     - pulp_celerybeat
-    - pulp_resource_manager
+    - pulp2_resource_manager
     - qpidd
   service:
     name: "{{ item }}"

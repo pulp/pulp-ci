@@ -16,4 +16,4 @@ broker and client using `certutil` command line.
 
 After the certificates are generated the config files `/etc/qpid/qpidd.conf` and `/etc/pulp/server.conf` are updated with SSL configuration.
 
-After all tasks the services `httpd, pulp_workers, pulp_celerybeat, pulp_resource_maneger and qpidd` are restarted.
+After all tasks the services `httpd, pulp2_workers, pulp_celerybeat, pulp2_resource_maneger and qpidd` are restarted.

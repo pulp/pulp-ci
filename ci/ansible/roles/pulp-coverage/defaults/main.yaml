@@ -21,6 +21,6 @@ pulp_coverage_report_erase: false
 # Services that need to be managed in order to coverage work
 pulp_coverage_services:
   - httpd
-  - pulp_workers
+  - pulp2_workers
   - pulp_celerybeat
-  - pulp_resource_manager
+  - pulp2_resource_manager

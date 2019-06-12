@@ -4,9 +4,9 @@
   loop:
     - httpd
     - pulp_celerybeat
-    - pulp_resource_manager
+    - pulp2_resource_manager
     - pulp_streamer
-    - pulp_workers
+    - pulp2_workers
     - qpidd
 
 - name: Install packages required for population task

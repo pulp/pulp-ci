@@ -249,7 +249,7 @@
 
 - name: Ensure Pulp workers are started
   service:
-    name: pulp_workers
+    name: pulp2_workers
     state: started
     enabled: true
 
@@ -261,6 +261,6 @@
 
 - name: Ensure Pulp resource manager is started
   service:
-    name: pulp_resource_manager
+    name: pulp2_resource_manager
     state: started
     enabled: true
