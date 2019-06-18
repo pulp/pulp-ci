@@ -42,7 +42,7 @@
             chmod 600 PRIVATE_KEY ~/.ssh/config
 
             echo "Is pulp working?"
-            curl -u admin:admin ${PULP_SMASH_SYSTEM_HOSTNAME}:80/pulp/api/v3/status/ | python3 -m json.tool
+            curl -u admin:admin ${PULP_SMASH_SYSTEM_HOSTNAME}:24817/pulp/api/v3/status/ | python3 -m json.tool
 
             echo "Make the venv"
             mkdir -p ~/.virtualenvs/
@@ -65,9 +65,9 @@
                 "hostname": "${PULP_SMASH_SYSTEM_HOSTNAME}",
                 "roles": {
                     "api": {
-                    "port": 80,
+                    "port": 24817,
                     "scheme": "http",
-                    "service": "nginx",
+                    "service": "pulp-api.service",
                     "verify": false
                     },
                     "content": {
