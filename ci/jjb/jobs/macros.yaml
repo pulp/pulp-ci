@@ -56,7 +56,7 @@
             hostname --all-fqdn
             hostname
             # Setting the hostname of the system to enable connectivity
-            hostname="$(hostname --all-fqdn | grep openstacklocal | head -n 1)"
+            hostname="$(hostname --all-fqdn | grep upshift | head -n 1)"
             hostname="$(echo ${hostname})"
             if [ -n "${hostname:-}" ]; then
               # Set hostname the systemd way if possible, else fall back to manual way.
