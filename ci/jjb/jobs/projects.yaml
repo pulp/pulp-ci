@@ -14,10 +14,10 @@
 - project:
     name: pulp-dev-2-17+
     build_version:
-    - 2.19:
-        pulp_version: '2.19'
-    - 2-master:
+    - 2.20:
         pulp_version: '2.20'
+    - 2-master:
+        pulp_version: '2.21'
         reverse_trigger: '2-master'
     os:
     - rhel7
