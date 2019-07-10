@@ -6,3 +6,6 @@ if [ "${PULP_VERSION}" != "$(cut -d. -f-2 <<< "${PULP_RPM_VERSION}")" ]; then
 fi
 echo "PULP_SMASH_PULP_VERSION=${PULP_RPM_VERSION}" >> parameters.txt
 cp /etc/pki/CA/cacert.pem cacert.pem
+
+# Adding hosts information to /etc/hosts
+echo "PULP_SMASH_SYSTEM_IP=$(hostname -I | awk '{print $1}')" >> parameters.txt

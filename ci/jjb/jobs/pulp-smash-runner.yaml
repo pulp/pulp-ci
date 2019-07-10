@@ -8,9 +8,13 @@
     parameters:
         - string:
             name: PULP_SMASH_SYSTEM_HOSTNAME
+            description: A defined name of the smash system to go into /etc/hosts
+        - string:
+            name: PULP_SMASH_SYSTEM_IP
+            description: A defined IPv4 of the smash system to go into /etc/hosts
         - string:
             name: PULP_SMASH_PULP_VERSION
-            decription: The Pulp version Pulp Smash will consider when running tests.
+            description: The Pulp version Pulp Smash will consider when running tests.
         - string:
             name: PULP_SMASH_PULP_USERNAME
             default: admin
@@ -91,6 +95,10 @@
             EOF
             fi
             chmod 600 PRIVATE_KEY ~/.ssh/config
+
+            # Add PULP_SMASH_SYSTEM_HOSTNAME to /etc/hosts
+            # This step replaces faulty DNS
+            sudo sed -i -e "\$a${PULP_SMASH_SYSTEM_IP} ${PULP_SMASH_SYSTEM_HOSTNAME}\\" /etc/hosts
 
             # Set up the CA certificate that signed Pulp's apache server.
             export PULP_CA_CERT_PATH="/etc/pki/ca-trust/source/anchors/pulp-cacert.pem"

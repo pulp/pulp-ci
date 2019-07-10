@@ -42,6 +42,7 @@
               predefined-parameters: |
                   PULP_SMASH_SYSTEM_HOSTNAME=$PULP_SMASH_SYSTEM_HOSTNAME
                   PULP_SMASH_PULP_VERSION=$PULP_SMASH_PULP_VERSION
+                  PULP_SMASH_SYSTEM_IP=$PULP_SMASH_SYSTEM_IP
               block-thresholds:
                   build-step-failure-threshold: never
                   unstable-threshold: never
@@ -72,15 +73,6 @@
                     -e pulp_coverage_report_xml=true
                 cp /tmp/report.xml coverage.xml
             fi
-        # TODO: Uncomment and update the configuration when sonar is ready to
-        # be used
-        # - conditional-step:
-        #     condition-kind: regex-match
-        #     regex: '2.8'
-        #     label: '${{ENV,var="PULP_VERSION"}}'
-        #     steps:
-        #         - sonar:
-        #             sonar-name: 'Sonar Test Server'
         - capture-logs
     publishers:
         - postbuildscript:
