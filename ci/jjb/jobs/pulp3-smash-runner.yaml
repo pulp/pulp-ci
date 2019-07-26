@@ -67,7 +67,7 @@
                     "api": {
                     "port": 24817,
                     "scheme": "http",
-                    "service": "pulp-api.service",
+                    "service": "nginx",
                     "verify": false
                     },
                     "content": {
