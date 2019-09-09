@@ -2,9 +2,8 @@
     name: 'pulp-{build_version}-dev-{os}'
     node: '{os}-os'
     properties:
-        - dev-ownership
+        - pulp2-ownership
         - discard-old-builds
-        - qe-ownership
     scm:
         - pulp-ci-github
     wrappers:
