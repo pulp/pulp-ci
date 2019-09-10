@@ -64,4 +64,5 @@
   package:
     name: "*"
     state: latest
+    exclude: java*
   become: yes
