@@ -101,6 +101,18 @@
                 - dalley
                 - ttereshc
 
+# Ownership for pulp 2 jobs
+- property:
+    name: pulp2-ownership
+    properties:
+        - ownership:
+            owner: dkliban
+            co-owners:
+                - bherring
+                - brocha
+                - ggainey
+                - koliveir
+
 # Ownership that indicates developers are the primary contact for the job
 - property:
     name: dev-ownership
