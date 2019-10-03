@@ -128,6 +128,8 @@
             fi
             source ~/.virtualenvs/pulp-2-tests/bin/activate
             set +e
+            ## SATQE-5885: Reverting to attrs==19.1.0 w/breaking 19.2.0 change
+            pip install attrs==19.1.0
             py.test -v --color=yes --junit-xml=junit-report.xml --pyargs pulp_2_tests.tests
             set -e
             test -f junit-report.xml
