@@ -44,12 +44,15 @@ fi
 
 ROUTER="$(openstack router list -f value -c "ID" -c "Name" | grep "default-satellite-jenkins" | cut -f1 -d' ')"
 EXTERNAL_GATEWAY_INFO="$(openstack router show -f value -c external_gateway_info "${ROUTER}")"
-NETWORK="$(python3 <<EOF
-import json
-data = json.loads('${EXTERNAL_GATEWAY_INFO}')
-print(data['network_id'])
-EOF
-)"
+#NETWORK="$(python3 <<EOF
+#import json
+#data = json.loads('${EXTERNAL_GATEWAY_INFO}')
+#print(data['network_id'])
+#EOF
+#)"
+#do not use the default shared network.
+NETWORK='provider_net_shared_2'
+
 FLOATING_IP="$(openstack floating ip list -f value -c "Floating IP Address" --network "${NETWORK}" --status DOWN | head -n 1)"
 
 if [ ! "${FLOATING_IP}" ]; then
