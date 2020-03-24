@@ -67,17 +67,17 @@ for repo in REPOS:
         else:
             comment = ""
             for issue_num in r_issues:
-                issue = redmine.issue.get(issue_num)
+                r_issue = redmine.issue.get(issue_num)
 
-                if issue.tracker.name == "Issue":
+                if r_issue.tracker.name == "Issue":
                     needs_cherry_pick = True
 
-                if issue.status.id <= PR_STATUS:
-                    redmine.issue.update(issue_num, status_id=3, notes=f"PR: {pr.url}")
-                    comment += f"Attached issue: {issue.url}\n\n"
+                if r_issue.status.id <= PR_STATUS:
+                    redmine.issue.update(issue_num, status_id=3, notes=f"PR: {pr.html_url}")
+                    comment += f"Attached issue: {r_issue.url}\n\n"
                 else:
-                    comment += f"Warning: Issue [#{issue.id}]({issue.url}) is not at NEW/ASSIGNED/POST.\n\n"
-                    redmine.issue.update(issue_num, notes=f"PR: {pr.url}")
+                    comment += f"Warning: Issue [#{r_issue.id}]({r_issue.url}) is not at NEW/ASSIGNED/POST.\n\n"
+                    redmine.issue.update(issue_num, notes=f"PR: {pr.html_url}")
 
         grepo.get_issue(pr.number).create_comment(comment)
 
