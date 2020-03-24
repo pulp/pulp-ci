@@ -39,15 +39,20 @@ regex = r"(?:{keywords})[\s:]+#(\d+)".format(keywords=("|").join(KEYWORDS))
 pattern = re.compile(regex)
 
 for repo in REPOS:
-    print(f"Processing repository {repo}")
+    print(f"\n\nProcessing repository {repo}")
     grepo = g.get_repo(f"{ORG}/{repo}")
     issues = grepo.get_issues(since=SINCE)
 
     for issue in issues:
         print(f"Processing issue {issue.number}")
+
         # check if we've seen this PR already
         if user_comment(issue):
             print(f"Issue {issue.number} already processed. Skipping.")
+            continue
+
+        # check if our bot opened this issue
+        if issue.user.login == GITHUB_USER:
             continue
 
         pr = issue.as_pull_request()
