@@ -43,11 +43,11 @@ for repo in REPOS:
     issues = grepo.get_issues(since=SINCE)
 
     for issue in issues:
-        pr = issue.as_pull_request()
-
         # check if we've seen this PR already
-        if user_comment(pr):
+        if user_comment(issue):
             continue
+
+        pr = issue.as_pull_request()
 
         r_issues = []
         for commit in pr.get_commits():
