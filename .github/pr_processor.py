@@ -39,12 +39,15 @@ regex = r"(?:{keywords})[\s:]+#(\d+)".format(keywords=("|").join(KEYWORDS))
 pattern = re.compile(regex)
 
 for repo in REPOS:
+    print(f"Processing repository {repo}")
     grepo = g.get_repo(f"{ORG}/{repo}")
     issues = grepo.get_issues(since=SINCE)
 
     for issue in issues:
+        print(f"Processing issue {issue.number}")
         # check if we've seen this PR already
         if user_comment(issue):
+            print(f"Issue {issue.number} already processed. Skipping.")
             continue
 
         pr = issue.as_pull_request()
@@ -59,12 +62,14 @@ for repo in REPOS:
         needs_cherry_pick = False
 
         if not r_issues:
+            print(f"Issue {issue.number} has no attached redmine ticket.")
             comment = (
                 "WARNING!!! This PR is not attached to an issue. In most cases this is not advisable. "
                 "Please see [our PR docs](http://docs.pulpproject.org/contributing/git.html#commit-message)"
                 " for more information about how to attach this PR to an issue."
             )
         else:
+            print(f"Found redmine ticket(s) for issue {issue.number}.")
             comment = ""
             for issue_num in r_issues:
                 r_issue = redmine.issue.get(issue_num)
@@ -84,6 +89,7 @@ for repo in REPOS:
         # ADD LABELS
 
         if needs_cherry_pick:
+            print(f"Issue {issue.number} has attached bug. Adding cherry pick label.")
             try:
                 label = grepo.get_label("Needs Cherry Pick")
             except UnknownObjectException:
