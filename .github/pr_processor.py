@@ -7,7 +7,7 @@ from github.GithubException import UnknownObjectException
 from redminelib import Redmine
 
 ORG = "pulp"
-REPOS = ["pulpcore", "pulp_file", "pulp_rpm"]
+REPOS = ["pulpcore", "pulp_file", "pulp_rpm", "pulp_container"]
 SINCE = datetime.utcnow() - timedelta(hours=1)
 KEYWORDS = ["fixes", "closes", "re", "ref"]
 PR_STATUS = 3  # POST
