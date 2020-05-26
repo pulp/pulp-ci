@@ -1,0 +1,8 @@
+[default.email]
+from = "no-reply@redhat.com"
+subject = "[Pulp CI] Bugzilla automation script"
+server = "localhost"
+port = 25
+ssl = false
+tls = false
+auth = false

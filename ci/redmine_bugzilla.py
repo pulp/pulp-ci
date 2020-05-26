@@ -22,24 +22,9 @@ There are a few pip installable requirements:
 
     $ pip install requests python-bugzilla python-redmine urllib3 pyopenssl
 
-The Redmine and Bugzilla credentials are expected from to be read from a
-file in ini format. See the example below. The location of this file is set
-by the REDMINE_BUGZILLA_CONF environment variable.
-
-For example `export REDMINE_BUGZILLA_CONF=~/Documents/redmine_bugzilla.ini`
-
-<SNIP>
-[bugzilla]
-username = XXXX
-password = XXXX
-
-[redmine]
-key = XXXX
-</SNIP>
 """
 
 
-import ConfigParser
 import os
 
 from bugzilla.rhbugzilla import RHBugzilla
@@ -54,18 +39,16 @@ DOWNSTREAM_CONTACTS = ['dkliban@redhat.com', 'ttereshc@redhat.com']
 REQUIRED_CC = ['rchan@redhat.com'] + DOWNSTREAM_CONTACTS
 
 
-def get_bugzilla_connection(user, password):
+def get_bugzilla_connection(api_key):
     """
     Return the Bugzilla connection.
 
-    :param user: The username to connect with
-    :type user: basestring
-    :param password: The password to connect with
-    :type password: basestring
+    :param api_key: The api_key to connect
+    :type api_key: basestring
 
     :return: An instantiated Bugzilla connection object.
     """
-    return RHBugzilla(url='%s/xmlrpc.cgi' % BUGZILLA_URL, user=user, password=password)
+    return RHBugzilla(url='%s/xmlrpc.cgi' % BUGZILLA_URL, api_key=api_key)
 
 
 def get_redmine_connection(key):
@@ -93,15 +76,11 @@ def add_cc_list_to_bugzilla_bug(bug):
 
 
 def main():
-    config = ConfigParser.ConfigParser()
-    config.read(os.environ['REDMINE_BUGZILLA_CONF'])
+    bugzilla_api_key = os.environ['BUGZILLA_API_KEY']
+    redmine_api_key = os.environ['REDMINE_API_KEY']
 
-    username = config.get('bugzilla', 'username')
-    password = config.get('bugzilla', 'password')
-    key = config.get('redmine', 'key')
-
-    redmine = get_redmine_connection(key)
-    BZ = get_bugzilla_connection(username, password)
+    redmine = get_redmine_connection(redmine_api_key)
+    BZ = get_bugzilla_connection(bugzilla_api_key)
 
     redmine_issues = [issue for issue in redmine.issue.filter(query_id=24)]
 
