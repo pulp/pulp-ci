@@ -104,6 +104,7 @@ def main():
     failed_qa_bugzillas = []
 
     for issue in redmine_issues:
+        print(f"Processing {issue.id}.")
         bugzilla_field = issue.custom_fields.get(32)  # 32 is the 'Bugzillas' field
         if bugzilla_field["value"] == "":
             continue
@@ -191,6 +192,7 @@ def main():
                         ]:
                             if "FailedQA" in bug.cf_verified:
                                 external_bug_id = external_bug["ext_bz_bug_id"]
+                                print(f"Processing external bug {external_bug_id}.")
                                 redmine_issue = redmine.issue.get(external_bug_id)
                                 redmine_user_id = redmine_issue.assigned_to.id
                                 needinfo_email = redmine.user.get(redmine_user_id).mail
