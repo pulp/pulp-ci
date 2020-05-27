@@ -26,7 +26,6 @@ There are a few pip installable requirements:
 
 
 import os
-from time import sleep
 
 from bugzilla.rhbugzilla import RHBugzilla
 from redminelib import Redmine, exceptions
@@ -200,22 +199,23 @@ def main():
                                     redmine_issue = redmine.issue.get(external_bug_id)
                                 except ConnectionError:
                                     # we've experienced timeouts here so retry the connection
-                                    sleep(2)
                                     redmine = get_redmine_connection(redmine_api_key)
                                     redmine_issue = redmine.issue.get(external_bug_id)
 
-                                redmine_user_id = redmine_issue.assigned_to.id
-                                needinfo_email = redmine.user.get(redmine_user_id).mail
-
-                                user_has_no_bz = False
                                 try:
-                                    # Check that the Redmine user has a Bugzilla account
+                                    redmine_user_id = redmine_issue.assigned_to.id
+                                    needinfo_email = redmine.user.get(redmine_user_id).mail
                                     BZ.getuser(needinfo_email)
+                                except exceptions.ResourceAttrError:
+                                    # the upstream issue is unassigned
+                                    user_has_no_bz = True
                                 except Fault as e:
                                     if e.faultCode == 51:
                                         user_has_no_bz = True
                                     else:
                                         raise
+                                else:
+                                    user_has_no_bz = False
 
                                 # If the Redmine user does not have a Bugzilla account, default
                                 # to the downstream contacts for Pulp
