@@ -29,7 +29,7 @@ import os
 
 from bugzilla.rhbugzilla import RHBugzilla
 from redminelib import Redmine, exceptions
-import xmlrpclib
+from xmlrpc.client import Fault
 
 
 BUGZILLA_URL = "https://bugzilla.redhat.com"
@@ -113,9 +113,9 @@ def main():
                 continue
             try:
                 bug = BZ.getbug(bug_id)
-            except xmlrpclib.Fault as e:
+            except Fault as e:
                 if e.faultCode == 102:
-                    print("Bugzilla %s could not be accessed." % bug_id)
+                    print(("Bugzilla %s could not be accessed." % bug_id))
                     continue
                 else:
                     raise
@@ -131,7 +131,7 @@ def main():
                         ext_params["ext_status"] = issue.status.name
                     if external_bug["ext_priority"] != issue.priority.name:
                         ext_params["ext_priority"] = issue.priority.name
-                    if len(ext_params.keys()) > 0:
+                    if len(list(ext_params.keys())) > 0:
                         ext_bug_record += (
                             "Bugzilla bug %s updated from upstream bug %s "
                             "with %s\n" % (bug.id, issue.id, ext_params)
@@ -199,7 +199,7 @@ def main():
                                 try:
                                     # Check that the Redmine user has a Bugzilla account
                                     BZ.getuser(needinfo_email)
-                                except xmlrpclib.Fault as e:
+                                except Fault as e:
                                     if e.faultCode == 51:
                                         user_has_no_bz = True
                                     else:
