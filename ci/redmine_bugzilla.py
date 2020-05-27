@@ -26,9 +26,11 @@ There are a few pip installable requirements:
 
 
 import os
+from time import sleep
 
 from bugzilla.rhbugzilla import RHBugzilla
 from redminelib import Redmine, exceptions
+from requests.exceptions import ConnectionError
 from xmlrpc.client import Fault
 
 
@@ -193,7 +195,15 @@ def main():
                             if "FailedQA" in bug.cf_verified:
                                 external_bug_id = external_bug["ext_bz_bug_id"]
                                 print(f"Processing external bug {external_bug_id}.")
-                                redmine_issue = redmine.issue.get(external_bug_id)
+
+                                try:
+                                    redmine_issue = redmine.issue.get(external_bug_id)
+                                except ConnectionError:
+                                    # we've experienced timeouts here so retry the connection
+                                    sleep(2)
+                                    redmine = get_redmine_connection(redmine_api_key)
+                                    redmine_issue = redmine.issue.get(external_bug_id)
+
                                 redmine_user_id = redmine_issue.assigned_to.id
                                 needinfo_email = redmine.user.get(redmine_user_id).mail
 
