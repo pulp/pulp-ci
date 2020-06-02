@@ -26,10 +26,11 @@ There are a few pip installable requirements:
 
 
 import os
+from time import sleep
 
 from bugzilla.rhbugzilla import RHBugzilla
 from redminelib import Redmine, exceptions
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, HTTPError
 from xmlrpc.client import Fault
 
 
@@ -121,6 +122,15 @@ def main():
                     continue
                 else:
                     raise
+            except HTTPError as e:
+                if e.response.status_code == 502:
+                    # we constantly hit 502s from bugzilla.redhat.com and have filed tickets.
+                    # response was that they couldn't fix it in the near future and to just retry.
+                    sleep(1)
+                    bug = BZ.getbug(bug_id)
+                else:
+                    raise
+
             for external_bug in bug.external_bugs:
                 if external_bug["type"][
                     "description"
