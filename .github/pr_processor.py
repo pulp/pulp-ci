@@ -17,6 +17,7 @@ REPOS = [
     "pulp-certguard",
     "pulp_installer",
     "pulp_rpm_prerequisites",
+    "pulp-oci-images",
 ]
 SINCE = datetime.utcnow() - timedelta(hours=1)
 KEYWORDS = ["fixes", "closes", "re", "ref"]
