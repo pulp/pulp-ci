@@ -30,7 +30,7 @@ from time import sleep
 
 from bugzilla.rhbugzilla import RHBugzilla
 from redminelib import Redmine, exceptions
-from requests.exceptions import ConnectionError, HTTPError
+from requests.exceptions import ConnectionError, HTTPError, ReadTimeout
 from xmlrpc.client import Fault
 
 
@@ -207,7 +207,7 @@ def main():
 
                                 try:
                                     redmine_issue = redmine.issue.get(external_bug_id)
-                                except ConnectionError:
+                                except ConnectionError, ReadTimeout:
                                     # we've experienced timeouts here so retry the connection
                                     redmine = get_redmine_connection(redmine_api_key)
                                     redmine_issue = redmine.issue.get(external_bug_id)
