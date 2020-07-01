@@ -28,7 +28,7 @@ There are a few pip installable requirements:
 import os
 from time import sleep
 
-from bugzilla.rhbugzilla import RHBugzilla
+from bugzilla import RHBugzilla
 from redminelib import Redmine, exceptions
 from requests.exceptions import ConnectionError, HTTPError, ReadTimeout
 from xmlrpc.client import Fault
