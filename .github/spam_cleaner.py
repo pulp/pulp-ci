@@ -68,8 +68,8 @@ TRUSTED_LINKS_DOMAINS = [
 # if a user does not respond within the given time, he/she will be removed
 REMOVAL_TIME_DELTA = datetime.timedelta(days=7)
 
-# check for issues/comments that were created 3 years ago
-ISSUES_TO_CHECK_TIME_DELTA = datetime.timedelta(days=1095)
+# check for issues/comments that were created 7 days ago
+ISSUES_TO_CHECK_TIME_DELTA = datetime.timedelta(days=7)
 
 EMAIL_SUBJECT = "[Pulp] [Plan.io] User Verification"
 
