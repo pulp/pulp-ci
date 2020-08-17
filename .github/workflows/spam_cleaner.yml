@@ -1,10 +1,7 @@
 name: Clean spam
 on:
-  push:
-    branches:
-      - '*'
-    tags:
-      - '*'
+  schedule:
+    - cron: '0 0 * * *'
 jobs:
   process:
     runs-on: ubuntu-latest
