@@ -228,7 +228,9 @@ def assign_email_addresses(driver, users):
             users_with_assigned_email_addresses[user] = users[user]
         else:
             driver.get(f"{REDMINE_USERS_PAGE}/{user_id}/edit")
-            email = driver.find_element_by_xpath('//*[@id="user_mail"]').get_attribute("value")
+            email = driver.find_element_by_xpath(
+                '//*[@id="user_mail"]'
+            ).get_attribute("value").lower()
             _, domain = email.split("@", 1)
             if domain not in TRUSTED_EMAIL_ADDRESS_DOMAINS:
                 # this filters out all e-mail addresses that are trusted
