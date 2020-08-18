@@ -7,6 +7,7 @@ import os
 import pickle
 import re
 import smtplib
+import tldextract
 
 from collections import defaultdict
 from urllib.parse import urlparse
@@ -50,18 +51,13 @@ URL_REGEX = (
 
 TRUSTED_EMAIL_ADDRESS_DOMAINS = ["redhat.com", "atix.de"]
 TRUSTED_LINKS_DOMAINS = [
-    "cdn.redhat.com",
-    "docs.pulpproject.org",
+    "centos.org",
+    "fedorapeople.org",
     "github.com",
-    "gist.github.com",
-    "mirror.centos.org",
-    "pulp.plan.io",
     "pulpproject.org",
-    "pulp-container.readthedocs.io",
-    "pulp-rpm.readthedocs.io",
-    "pulp-file.readthedocs.io",
+    "plan.io",
     "redhat.com",
-    "repos.fedorapeople.org",
+    "readthedocs.io",
     "travis-ci.com",
 ]
 
@@ -193,7 +189,9 @@ def extract_issues_and_journals(recently_updated_issues, datetime_after_threshol
 def contains_unknown_outbound_links(text):
     """Check for untrusted outbound links."""
     for link in re.finditer(URL_REGEX, text):
-        if urlparse(link.group()).netloc not in TRUSTED_LINKS_DOMAINS:
+        result = tldextract.extract(link.group())
+        domain = f"{result.domain}.{result.suffix}"
+        if domain not in TRUSTED_LINKS_DOMAINS:
             return True
     return False
 

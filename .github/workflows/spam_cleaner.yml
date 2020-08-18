@@ -21,6 +21,6 @@ jobs:
           GOOGLE_CLIENT_CONFIG: ${{ secrets.GOOGLE_CLIENT_CONFIG }}
         run: |
           echo ::group::dependencies
-          pip install dynaconf google_spreadsheet google-auth-oauthlib pandas selenium python-redmine
+          pip install dynaconf google_spreadsheet google-auth-oauthlib pandas selenium python-redmine tldextract
           echo ::endgroup::
           python .github/spam_cleaner.py
