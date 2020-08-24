@@ -70,12 +70,13 @@ ISSUES_TO_CHECK_TIME_DELTA = datetime.timedelta(days=7)
 EMAIL_SUBJECT = "[Pulp] [Plan.io] User Verification"
 
 EMAIL_MESSAGE = (
-    "Dear user,\n\nwe have recorded your activity at pulp.plan.io. In order to verify your "
+    "Dear {user},\n\nWe have recorded your activity at pulp.plan.io. In order to verify your "
     "account, please, send an e-mail to pulp-infra@redhat.com with the subject '[Verification] "
     "[your username]' and the body containing (again) your username and reference to "
     "the recently added content. If we do not receive such an e-mail from you within "
     + str(REMOVAL_TIME_DELTA.days) + " days, your contributions will be automatically "
-    "removed.\n\nThank you for your understanding!"
+    "removed.\n\nLearn more at https://www.redhat.com/archives/pulp-list/2020-August/msg00011.html."
+    "\n\nThank you for your understanding!"
 )
 
 ISSUE_DELETE_BUTTON_XPATH = '//*[@id="content"]/div[2]/a[5]'
@@ -286,7 +287,7 @@ def update_sheet_and_send_notifications(sheet, fetched_issues_data, current_time
     users_to_verify_data = read_sheet(sheet, USERS_TO_VERIFY_SHEET_RANGE)
     current_timestamp = datetime.datetime.timestamp(current_time)
 
-    rows_to_update, rows_to_append = separate_users_to_update_append_notify(
+    rows_to_update, rows_to_append = separate_users_to_update_and_append(
         fetched_issues_data, users_to_verify_data, current_timestamp
     )
     request_data = prepare_update_request(
@@ -294,11 +295,13 @@ def update_sheet_and_send_notifications(sheet, fetched_issues_data, current_time
     )
     send_batch_update_request(sheet, request_data)
 
-    users_to_notify = [email for _, email, _, _ in rows_to_append if email != "Anonymous"]
+    users_to_notify = [
+        (user, email) for user, email, _, _ in rows_to_append if email != "Anonymous"
+    ]
     send_notifications(users_to_notify)
 
 
-def separate_users_to_update_append_notify(
+def separate_users_to_update_and_append(
     fetched_issues_data, users_to_verify_data, current_timestamp
 ):
     """Prepare updated sheet's rows for existing users with recently added content and new users."""
@@ -379,12 +382,9 @@ def send_notifications(users_to_notify):
     server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
     server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
 
-    message = "Subject: " + EMAIL_SUBJECT + "\n\n" + EMAIL_MESSAGE
-    server.sendmail(
-        EMAIL_USERNAME,
-        users_to_notify,
-        message,
-    )
+    for user, email in users_to_notify:
+        message = "Subject: " + EMAIL_SUBJECT + "\n\n" + EMAIL_MESSAGE.format(user=user)
+        server.sendmail(EMAIL_USERNAME, email, message)
 
 
 def delete_unverified_content(sheet, driver, current_time):
