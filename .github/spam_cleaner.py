@@ -52,13 +52,22 @@ URL_REGEX = (
 TRUSTED_EMAIL_ADDRESS_DOMAINS = ["redhat.com", "atix.de"]
 TRUSTED_LINKS_DOMAINS = [
     "centos.org",
+    "debian.org",
+    "example.com",
     "fedorapeople.org",
+    "git.io",
     "github.com",
+    "microsoft.com",
     "pulpproject.org",
     "plan.io",
+    "puppet.com",
+    "puppetlabs.com",
+    "pypi.org",
     "redhat.com",
     "readthedocs.io",
     "travis-ci.com",
+    "theforeman.org",
+    "ubuntu.com",
 ]
 
 # if a user does not respond within the given time, he/she will be removed
