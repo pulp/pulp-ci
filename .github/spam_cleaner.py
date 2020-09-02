@@ -16,8 +16,12 @@ import pandas as pd
 
 from redminelib import Redmine
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
 
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -36,12 +40,14 @@ SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 USERS_TO_VERIFY_SHEET_RANGE = "A1:AA1000"
 VERIFIED_USERS_SHEET_RANGE = "verified!A1:AA1000"
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+MAX_NUMBER_OF_UPDATES = 10
 
 EMAIL_USERNAME = "pulpbotnoreply@gmail.com"
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 # https://github.com/actions/virtual-environments/pull/269
 CHROME_DRIVER_PATH = os.path.join(os.getenv("CHROMEWEBDRIVER"), "chromedriver")
+SECONDS_TO_WAIT = 2
 
 # https://stackoverflow.com/a/48689681
 URL_REGEX = (
@@ -90,7 +96,7 @@ EMAIL_MESSAGE = (
 
 ISSUE_DELETE_BUTTON_XPATH = '//*[@id="content"]/div[2]/a[5]'
 COMMENT_DELETE_BUTTON_XPATH = '//*[@id="journal-{journal_id}-notes"]/div/a[3]'
-USER_DELETE_BUTTON_XPATH = '//*[@id="content"]/div[2]/a[4]'
+USER_LOCK_BUTTON_XPATH = '//*[@id="content"]/div[2]/a[3]'
 
 logging.config.dictConfig({
     'version': 1,
@@ -422,7 +428,7 @@ def delete_users_content(driver, users_to_verify_data, current_time):
                 else:
                     delete_journal(driver, content_data)
 
-            delete_user(driver, user)
+            lock_user(driver, user)
 
             rows_to_delete.append(row_index)
 
@@ -433,11 +439,13 @@ def delete_users_content(driver, users_to_verify_data, current_time):
 
 def delete_issue(driver, content_data):
     """Delete an issue via the chrome driver."""
-    driver.get(content_data["issue"])
+    issue_url = content_data["issue"]
+    driver.get(issue_url)
+
     try:
-        driver.find_element_by_xpath(ISSUE_DELETE_BUTTON_XPATH).click()
-    except NoSuchElementException:
-        pass
+        perform_delete_button_click(driver, ISSUE_DELETE_BUTTON_XPATH)
+    except TimeoutException:
+        logger.error(f"The issue '{issue_url}' could not be deleted.")
     else:
         driver.switch_to.alert.accept()
 
@@ -447,30 +455,44 @@ def delete_journal(driver, content_data):
     issue_url = content_data["journal"][0]
     journal_id = content_data["journal"][1]
     driver.get(issue_url)
+
     journal_delete_button_xpath = COMMENT_DELETE_BUTTON_XPATH.format(journal_id=journal_id)
     try:
-        driver.find_element_by_xpath(journal_delete_button_xpath).click()
-    except NoSuchElementException:
-        pass
+        perform_delete_button_click(driver, journal_delete_button_xpath)
+    except TimeoutException:
+        logger.error(f"The journal '{journal_id}' of the issue '{issue_url}' could not be deleted.")
     else:
         driver.switch_to.alert.accept()
 
 
-def delete_user(driver, user):
-    """Delete a user via the chrome driver."""
+def perform_delete_button_click(driver, element_xpath):
+    """Perform the click, but wait until the element is visible and clickable."""
+    wait = WebDriverWait(driver, SECONDS_TO_WAIT)
+
+    element = wait.until(expected_conditions.element_to_be_clickable((By.XPATH, element_xpath)))
+    ActionChains(driver).move_to_element(element).click(element).perform()
+
+
+def lock_user(driver, user):
+    """Lock a user via the chrome driver."""
     username, user_id = user.split("/")
     if username != "Anonymous":
         driver.get(f"{REDMINE_USERS_PAGE}/{user_id}/edit")
         try:
-            driver.find_element_by_xpath(USER_DELETE_BUTTON_XPATH).click()
-        except NoSuchElementException:
-            pass
+            wait = WebDriverWait(driver, SECONDS_TO_WAIT)
+            lock_element = wait.until(
+                expected_conditions.element_to_be_clickable((By.XPATH, USER_LOCK_BUTTON_XPATH))
+            )
+        except TimeoutException:
+            logger.error(f"The user '{username}' could not be locked.")
         else:
-            driver.switch_to.alert.accept()
+            # some users could be already locked; therefore, check for the context
+            if lock_element.text == "Lock":
+                ActionChains(driver).move_to_element(lock_element).click(lock_element).perform()
 
 
 def delete_users_data_from_sheet(rows_to_delete, sheet):
-    """Delete users from the sheet who were actually deleted from REDMINE."""
+    """Delete users from the sheet who were actually deleted/locked from REDMINE."""
     if rows_to_delete:
         requests = []
         for row_index in rows_to_delete:
@@ -489,9 +511,24 @@ def delete_users_data_from_sheet(rows_to_delete, sheet):
 
         # delete rows in the reversed order because they are shifted after each deletion
         requests.reverse()
-        sheet.batchUpdate(
-            spreadsheetId=SPREADSHEET_ID, body={"requests": requests}
-        ).execute()
+
+        # write operations often got timed out; therefore, batch updates are sent in batch
+        max_requests = 0
+        batch_requests = []
+        for request in requests:
+            max_requests += 1
+            batch_requests.append(request)
+            if max_requests == MAX_NUMBER_OF_UPDATES:
+                sheet.batchUpdate(
+                    spreadsheetId=SPREADSHEET_ID, body={"requests": batch_requests}
+                ).execute()
+                max_requests = 0
+                batch_requests = []
+
+        if batch_requests:
+            sheet.batchUpdate(
+                spreadsheetId=SPREADSHEET_ID, body={"requests": batch_requests}
+            ).execute()
 
 
 if __name__ == "__main__":
