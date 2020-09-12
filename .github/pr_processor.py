@@ -19,6 +19,7 @@ REPOS = [
     "pulp-oci-images",
     "pulp-operator",
     "plugin_template",
+    "pulp-cli",
 ]
 SINCE = datetime.utcnow() - timedelta(hours=1)
 KEYWORDS = ["fixes", "closes", "re", "ref"]
