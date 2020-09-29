@@ -37,7 +37,7 @@ from xmlrpc.client import Fault
 BUGZILLA_URL = "https://bugzilla.redhat.com"
 REDMINE_URL = "https://pulp.plan.io"
 
-DOWNSTREAM_CONTACTS = ["dkliban@redhat.com", "ttereshc@redhat.com"]
+DOWNSTREAM_CONTACTS = ["bmbouter@redhat.com", "ipanova@redhat.com"]
 REQUIRED_CC = ["rchan@redhat.com"] + DOWNSTREAM_CONTACTS
 
 
