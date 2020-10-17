@@ -49,7 +49,7 @@ redmine = Redmine(REDMINE_URL, key=REDMINE_KEY)
 g = Github(GITHUB_TOKEN)
 
 regex = r"(?:{keywords})[\s:]+#(\d+)".format(keywords=("|").join(KEYWORDS))
-pattern = re.compile(regex)
+pattern = re.compile(regex, re.IGNORECASE)
 
 for repo in REPOS:
     print(f"\n\nProcessing repository {repo}")
