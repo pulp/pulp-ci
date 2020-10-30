@@ -102,6 +102,7 @@ for repo in REPOS:
                     comment += f"Warning: Issue [#{r_issue.id}]({r_issue.url}) is not at NEW/ASSIGNED/POST.\n\n"
                     redmine.issue.update(issue_num, notes=f"PR: {pr.html_url}")
 
+        comment += "\n\n<!-- pr_proccessor -->"
         grepo.get_issue(pr.number).create_comment(comment)
 
         # ADD LABELS
