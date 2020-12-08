@@ -5,8 +5,10 @@ import logging
 import logging.config
 import os
 import pickle
+import random
 import re
 import smtplib
+import time
 import tldextract
 
 from collections import defaultdict
@@ -98,6 +100,11 @@ ISSUE_DELETE_BUTTON_XPATH = '//*[@id="content"]/div[2]/a[5]'
 COMMENT_DELETE_BUTTON_XPATH = '//*[@id="journal-{journal_id}-notes"]/div/a[3]'
 USER_LOCK_BUTTON_XPATH = '//*[@id="content"]/div[2]/a[3]'
 
+# wait time in seconds
+WAIT_TIME_LOG_IN = 1.0
+WAIT_TIME_BEFORE_SENDING = 1.2
+WAIT_TIME_DEVIATION = 0.1
+
 logging.config.dictConfig({
     'version': 1,
     'disable_existing_loggers': True,
@@ -127,7 +134,7 @@ def run():
     logger.info("Filtering out verified content...")
     filter_out_verified_content(sheet, fetched_issues_data)
     logger.info("Updating the spreadsheet...")
-    update_sheet_and_send_notifications(sheet, fetched_issues_data, current_time)
+    send_notifications_and_update_sheet(sheet, fetched_issues_data, current_time)
     logger.info("Deleting unverified content...")
     delete_unverified_content(sheet, driver, current_time)
 
@@ -297,7 +304,7 @@ def delete_verified_users(fetched_issues_data, verified_users_data):
         del fetched_issues_data[user]
 
 
-def update_sheet_and_send_notifications(sheet, fetched_issues_data, current_time):
+def send_notifications_and_update_sheet(sheet, fetched_issues_data, current_time):
     """Update the sheet with newly added content, and newly added users and then notify them."""
     users_to_verify_data = read_sheet(sheet, USERS_TO_VERIFY_SHEET_RANGE)
     current_timestamp = datetime.datetime.timestamp(current_time)
@@ -305,15 +312,17 @@ def update_sheet_and_send_notifications(sheet, fetched_issues_data, current_time
     rows_to_update, rows_to_append = separate_users_to_update_and_append(
         fetched_issues_data, users_to_verify_data, current_timestamp
     )
-    request_data = prepare_update_request(
-        rows_to_update, rows_to_append, users_to_verify_data
-    )
-    send_batch_update_request(sheet, request_data)
 
+    # send notifications before putting users on the watchlist
     users_to_notify = [
         (user, email) for user, email, _, _ in rows_to_append if email != "Anonymous"
     ]
     send_notifications(users_to_notify)
+
+    request_data = prepare_update_request(
+        rows_to_update, rows_to_append, users_to_verify_data
+    )
+    send_batch_update_request(sheet, request_data)
 
 
 def separate_users_to_update_and_append(
@@ -395,9 +404,20 @@ def send_notifications(users_to_notify):
         return
 
     server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-    server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
+    try:
+        server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
+    except smtplib.SMTPAuthenticationError:
+        # try once again to log in
+        time.sleep(WAIT_TIME_LOG_IN)
+
+        # when the login fails again, the script ends with an uncaught exception
+        server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
 
     for user, email in users_to_notify:
+        # gmail sometimes blocks sending of emails when too many of them are sent within a minute;
+        # therefore, an additional wait time was added before sending each email
+        time.sleep(random.gauss(WAIT_TIME_BEFORE_SENDING, WAIT_TIME_DEVIATION))
+
         message = "Subject: " + EMAIL_SUBJECT + "\n\n" + EMAIL_MESSAGE.format(user=user)
         server.sendmail(EMAIL_USERNAME, email, message)
 
