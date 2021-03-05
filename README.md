@@ -71,3 +71,10 @@ This repository is the home of Pulp's CI files.
 * [![CI](https://github.com/pulp/pulp-cli/actions/workflows/main.yml/badge.svg?branch=develop)](https://github.com/pulp/pulp-cli/actions/workflows/main.yml)
 * [![Nightly Test](https://github.com/pulp/pulp-cli/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulp-cli/actions/workflows/nightly.yml)
 * [![Pulp CLI Release](https://github.com/pulp/pulp-cli/actions/workflows/release.yml/badge.svg)](https://github.com/pulp/pulp-cli/actions/workflows/release.yml)
+
+### Pulp Python
+
+* [![Pulp CI](https://github.com/pulp/pulp_python/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/pulp/pulp_python/actions/workflows/ci.yml)
+* [![Pulp Nightly CI/CD](https://github.com/pulp/pulp_python/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulp_python/actions/workflows/nightly.yml)
+* [![Pulp Release CI/CD](https://github.com/pulp/pulp_python/actions/workflows/release.yml/badge.svg)](https://github.com/pulp/pulp_python/actions/workflows/release.yml)
+
