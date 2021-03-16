@@ -93,7 +93,10 @@
       - "5671/tcp"   # amqps
       - "5672/tcp"   # amqp
 
-  when: not (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
+  when:
+    - not (ansible_distribution == "RedHat" and ansible_distribution_major_version|int == 6)
+    - ansible_facts.virtualization_type | default("") not in ["docker", "podman"]
+    - ansible_facts.env.container | default("") not in ["docker", "podman"]
 
 - name: Add MongoDB3.4 repo
   yum_repository:
@@ -111,6 +114,16 @@
       - mongodb-org
       - mongodb-org-server
     state: present
+
+# Needed for docker port forwarding to work.
+- name: Configure MongoDB to listen on all interfaces
+  lineinfile:
+    path: /etc/mongod.conf
+    state: absent
+    regexp: '^  bindIp:'
+  when:
+    - ansible_facts.virtualization_type | default("") in ["docker", "podman"] or
+      ansible_facts.env.container | default("") in ["docker", "podman"]
 
 - name: Start and enable MongoDB server service
   service:
@@ -239,7 +252,9 @@
 
 - name: Enable pulp_manage_rsync SELinux boolean
   command: semanage boolean --modify --on pulp_manage_rsync
-  when: pulp_version is version('2.10', '>=')
+  when:
+    - pulp_version is version('2.10', '>=')
+    - ansible_facts.selinux.status == 'enabled'
 
 - name: Ensure Apache server is started
   service:
