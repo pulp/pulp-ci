@@ -11,21 +11,18 @@ This repository is the home of Pulp's CI files.
 * [![Pulp CI](https://github.com/pulp/pulpcore/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/pulp/pulpcore/actions/workflows/ci.yml)
 * [![Pulp Nightly CI/CD](https://github.com/pulp/pulpcore/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulpcore/actions/workflows/nightly.yml)
 * [![Pulp Release CI/CD](https://github.com/pulp/pulpcore/actions/workflows/release.yml/badge.svg)](https://github.com/pulp/pulpcore/actions/workflows/release.yml)
-* [![Pulp FIPS CI](https://github.com/pulp/pulpcore/actions/workflows/fips.yml/badge.svg)](https://github.com/pulp/pulpcore/actions/workflows/fips.yml)
 
 ### Pulp Ansible
 
 * [![Pulp CI](https://github.com/pulp/pulp_ansible/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/pulp/pulp_ansible/actions/workflows/ci.yml)
 * [![Pulp Nightly CI/CD](https://github.com/pulp/pulp_ansible/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulp_ansible/actions/workflows/nightly.yml)
 * [![Pulp Release CI/CD](https://github.com/pulp/pulp_ansible/actions/workflows/release.yml/badge.svg)](https://github.com/pulp/pulp_ansible/actions/workflows/release.yml)
-* [![Pulp FIPS CI](https://github.com/pulp/pulp_ansible/actions/workflows/fips.yml/badge.svg)](https://github.com/pulp/pulp_ansible/actions/workflows/fips.yml)
 
 ### Pulp Container
 
 * [![Pulp CI](https://github.com/pulp/pulp_container/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/pulp/pulp_container/actions/workflows/ci.yml)
 * [![Pulp Nightly CI/CD](https://github.com/pulp/pulp_container/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulp_container/actions/workflows/nightly.yml)
 * [![Pulp Release CI/CD](https://github.com/pulp/pulp_container/actions/workflows/release.yml/badge.svg)](https://github.com/pulp/pulp_container/actions/workflows/release.yml)
-* [![Pulp FIPS CI](https://github.com/pulp/pulp_container/actions/workflows/fips.yml/badge.svg)](https://github.com/pulp/pulp_container/actions/workflows/fips.yml)
 
 ### Pulp Deb
 
@@ -38,7 +35,6 @@ This repository is the home of Pulp's CI files.
 * [![Pulp CI](https://github.com/pulp/pulp_file/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/pulp/pulp_file/actions/workflows/ci.yml)
 * [![Pulp Nightly CI/CD](https://github.com/pulp/pulp_file/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulp_file/actions/workflows/nightly.yml)
 * [![Pulp Release CI/CD](https://github.com/pulp/pulp_file/actions/workflows/release.yml/badge.svg)](https://github.com/pulp/pulp_file/actions/workflows/release.yml)
-* [![Pulp FIPS CI](https://github.com/pulp/pulp_file/actions/workflows/fips.yml/badge.svg)](https://github.com/pulp/pulp_file/actions/workflows/fips.yml)
 
 ### Pulp Maven
 
@@ -51,14 +47,12 @@ This repository is the home of Pulp's CI files.
 * [![Pulp CI](https://github.com/pulp/pulp_npm/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/pulp/pulp_npm/actions/workflows/ci.yml)
 * [![Pulp Nightly CI/CD](https://github.com/pulp/pulp_npm/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulp_npm/actions/workflows/nightly.yml)
 * [![Pulp Release CI/CD](https://github.com/pulp/pulp_npm/actions/workflows/release.yml/badge.svg)](https://github.com/pulp/pulp_npm/actions/workflows/release.yml)
-* [![Pulp FIPS CI](https://github.com/pulp/pulp_npm/actions/workflows/fips.yml/badge.svg)](https://github.com/pulp/pulp_npm/actions/workflows/fips.yml)
 
 ### Pulp RPM
 
 * [![Pulp CI](https://github.com/pulp/pulp_rpm/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/pulp/pulp_rpm/actions/workflows/ci.yml)
 * [![Pulp Nightly CI/CD](https://github.com/pulp/pulp_rpm/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulp_rpm/actions/workflows/nightly.yml)
 * [![Pulp Release CI/CD](https://github.com/pulp/pulp_rpm/actions/workflows/release.yml/badge.svg)](https://github.com/pulp/pulp_rpm/actions/workflows/release.yml)
-* [![Pulp FIPS CI](https://github.com/pulp/pulp_rpm/actions/workflows/fips.yml/badge.svg)](https://github.com/pulp/pulp_rpm/actions/workflows/fips.yml)
 
 ### Certguard
 
