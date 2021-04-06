@@ -63,7 +63,7 @@ def send_html_email(mail_to, text, html, server, test=False):
 
 if __name__ == '__main__':
     send_html_email(
-        ["bmbouter@redhat.com", "ipanova@redhat.com", "rchan@redhat.com"],
+        ["ttereshc@redhat.com", "ggainey@redhat.com", "rchan@redhat.com"],
         "Pulp CI job failed",
         "<h1>Pulp CI job failed</h1> - https://github.com/pulp/pulp-ci/actions",
         get_email_server(),
