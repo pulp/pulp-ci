@@ -16,7 +16,6 @@ REPOS = [
     "pulp_deb",
     "pulp-certguard",
     "pulp_installer",
-    "pulp-oci-images",
     "pulp-operator",
 ]
 SINCE = datetime.utcnow() - timedelta(hours=1)
