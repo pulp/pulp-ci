@@ -16,7 +16,6 @@ REPOS = [
     "pulp_deb",
     "pulp-certguard",
     "pulp_installer",
-    "pulp-operator",
 ]
 SINCE = datetime.utcnow() - timedelta(hours=1)
 KEYWORDS = ["fixes", "closes", "re", "ref"]
