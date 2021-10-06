@@ -305,6 +305,10 @@ def main():
                         "not exist\n" % (bug.id, issue_id, issue_id)
                     )
                     continue
+                except (ConnectionError, ReadTimeout):
+                    # we've experienced timeouts here so retry the connection
+                    redmine = get_redmine_connection(redmine_api_key)
+                    redmine_issue = redmine.issue.get(external_bug_id)
                 links_back = False
                 bugzilla_field = issue.custom_fields.get(
                     32
