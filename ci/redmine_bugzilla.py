@@ -96,7 +96,6 @@ def main():
     )
     query = BZ.url_to_query(non_closed_bug_with_ext_tracker)
     query["extra_fields"] = ["external_bugs"]
-    bugzilla_bugs = BZ.query(query)
 
     links_issues_record = ""
     ext_bug_record = ""
@@ -292,6 +291,8 @@ def main():
                 bug.setstatus("POST", msg)
                 downstream_changes += "Bugzilla %s was transitioned to POST\n" % bug.id
 
+    BZ = get_bugzilla_connection(bugzilla_api_key)
+    bugzilla_bugs = BZ.query(query)
     for bug in bugzilla_bugs:
         for external_bug in bug.external_bugs:
             if external_bug["type"]["description"] == "Pulp Redmine":
