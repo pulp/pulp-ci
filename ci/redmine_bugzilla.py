@@ -294,7 +294,7 @@ def main():
     BZ = get_bugzilla_connection(bugzilla_api_key)
     bugzilla_bugs = BZ.query(query)
     for bug in bugzilla_bugs:
-        print(f"Processing bugzilla #{issue.id}.")
+        print(f"Processing bugzilla #{bug.id}.")
         for external_bug in bug.external_bugs:
             if external_bug["type"]["description"] == "Pulp Redmine":
                 add_cc_list_to_bugzilla_bug(bug)
