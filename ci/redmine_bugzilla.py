@@ -105,7 +105,7 @@ def main():
     failed_qa_bugzillas = []
 
     for issue in redmine_issues:
-        print(f"Processing {issue.id}.")
+        print(f"Processing redmine issue #{issue.id}.")
         bugzilla_field = issue.custom_fields.get(32)  # 32 is the 'Bugzillas' field
         if bugzilla_field["value"] == "":
             continue
@@ -294,6 +294,7 @@ def main():
     BZ = get_bugzilla_connection(bugzilla_api_key)
     bugzilla_bugs = BZ.query(query)
     for bug in bugzilla_bugs:
+        print(f"Processing bugzilla #{issue.id}.")
         for external_bug in bug.external_bugs:
             if external_bug["type"]["description"] == "Pulp Redmine":
                 add_cc_list_to_bugzilla_bug(bug)
