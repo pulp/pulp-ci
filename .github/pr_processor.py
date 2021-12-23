@@ -9,10 +9,6 @@ from redminelib import Redmine
 ORG = "pulp"
 REPOS = [
     "pulpcore",
-    "pulp_file",
-    "pulp_rpm",
-    "pulp_container",
-    "pulp_ansible",
     "pulp_deb",
     "pulp-certguard",
 ]
