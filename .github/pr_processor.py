@@ -9,8 +9,6 @@ from redminelib import Redmine
 ORG = "pulp"
 REPOS = [
     "pulpcore",
-    "pulp_deb",
-    "pulp-certguard",
 ]
 SINCE = datetime.utcnow() - timedelta(hours=1)
 KEYWORDS = ["fixes", "closes", "re", "ref"]
