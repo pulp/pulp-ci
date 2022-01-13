@@ -284,7 +284,7 @@ def main():
     for bug in bugzilla_bugs:
         print(f"Processing bugzilla #{bug.id}.")
         for external_bug in bug.external_bugs:
-            if external_bug["type"]["description"] == "Pulp Redmine":
+            if external_bug["type"]["description"] == "Github":
                 add_cc_list_to_bugzilla_bug(bug)
                 issue_repo, issue_id = external_bug["ext_bz_bug_id"].split("/issues/")
                 try:
