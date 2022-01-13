@@ -190,14 +190,15 @@ def main():
                         if external_bug["ext_status"] == "closed":
                             if "FailedQA" in bug.cf_verified:
                                 external_bug_id = external_bug["ext_bz_bug_id"]
+                                external_bug_repo, external_bug_id = external_bug["ext_bz_bug_id"].split("/issues/")
                                 print(f"Processing external bug {external_bug_id}.")
 
                                 try:
-                                    github_issue = g.issue.get(external_bug_id)
+                                    github_issue = g.get_repo(external_bug_repo).get_issue(external_bug_id)
                                 except (ConnectionError, ReadTimeout):
                                     # we've experienced timeouts here so retry the connection
                                     g = get_github_connection(github_api_key)
-                                    github_issue = g.issue.get(external_bug_id)
+                                    github_issue = g.get_repo(external_bug_repo).get_issue(external_bug_id)
 
                                 try:
                                     needinfo_email = github_issue.assignee.email
@@ -285,9 +286,9 @@ def main():
         for external_bug in bug.external_bugs:
             if external_bug["type"]["description"] == "Pulp Redmine":
                 add_cc_list_to_bugzilla_bug(bug)
-                issue_id = external_bug["ext_bz_bug_id"]
+                issue_repo, issue_id = external_bug["ext_bz_bug_id"].split("/issues/")
                 try:
-                    issue = g.issue.get(issue_id)
+                    issue = g.get_repo(issue_repo).get_issue(issue_id)
                 except UnknownObjectException:
                     links_issues_record += (
                         "Bugzilla #%s -> Github %s, but Github %s does "
@@ -297,7 +298,7 @@ def main():
                 except (ConnectionError, ReadTimeout):
                     # we've experienced timeouts here so retry the connection
                     g = get_github_connection(github_api_key)
-                    issue = g.issue.get(issue_id)
+                    issue = g.get_repo(issue_repo).get_issue(issue_id)
                 bugzilla_field = issue.body.split("https://bugzilla.redhat.com/buglist.cgi?quicksearch=")
                 if len(bugzilla_field) < 2:
                     continue
