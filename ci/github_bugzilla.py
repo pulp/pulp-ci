@@ -108,7 +108,7 @@ def main():
     failed_qa_bugzillas = []
 
     for issue in github_issues:
-        print(f"Processing github issue #{issue.html_url}.")
+        print(f"Processing github issue: {issue.html_url}")
         if not issue.body:
             continue
         bugzilla_field = issue.body.split("https://bugzilla.redhat.com/buglist.cgi?quicksearch=")
@@ -192,7 +192,7 @@ def main():
                         if external_bug["ext_status"] == "closed":
                             if "FailedQA" in bug.cf_verified:
                                 external_bug_repo, external_bug_id = external_bug["ext_bz_bug_id"].split("/issues/")
-                                print(f"Processing external bug https://github.com/{external_bug['ext_bz_bug_id']}.")
+                                print(f"Processing external bug: https://github.com/{external_bug['ext_bz_bug_id']}.")
 
                                 try:
                                     github_issue = g.get_repo(external_bug_repo).get_issue(int(external_bug_id))
@@ -283,7 +283,7 @@ def main():
     BZ = get_bugzilla_connection(bugzilla_api_key)
     bugzilla_bugs = BZ.query(query)
     for bug in bugzilla_bugs:
-        print(f"Processing bugzilla https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug.id}")
+        print(f"Processing bugzilla: https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug.id}")
         for external_bug in bug.external_bugs:
             if external_bug["type"]["description"] == "Github":
                 add_cc_list_to_bugzilla_bug(bug)
