@@ -109,6 +109,8 @@ def main():
 
     for issue in github_issues:
         print(f"Processing github issue #{issue.number}.")
+        if not issue.body:
+            continue
         bugzilla_field = issue.body.split("https://bugzilla.redhat.com/buglist.cgi?quicksearch=")
         if len(bugzilla_field) < 2:
             continue
@@ -308,6 +310,8 @@ def main():
                         issue = g.get_repo(issue_repo).get_issue(int(issue_id))
                     elif "pull" in external_bug["ext_bz_bug_id"]:
                         issue = g.get_repo(issue_repo).get_pull(int(pull_id))
+                if not issue.body:
+                    continue
                 bugzilla_field = issue.body.split("https://bugzilla.redhat.com/buglist.cgi?quicksearch=")
                 if len(bugzilla_field) < 2:
                     continue
