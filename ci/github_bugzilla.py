@@ -194,11 +194,11 @@ def main():
                                 print(f"Processing external bug {external_bug_id}.")
 
                                 try:
-                                    github_issue = g.get_repo(external_bug_repo).get_issue(external_bug_id)
+                                    github_issue = g.get_repo(external_bug_repo).get_issue(int(external_bug_id))
                                 except (ConnectionError, ReadTimeout):
                                     # we've experienced timeouts here so retry the connection
                                     g = get_github_connection(github_api_key)
-                                    github_issue = g.get_repo(external_bug_repo).get_issue(external_bug_id)
+                                    github_issue = g.get_repo(external_bug_repo).get_issue(int(external_bug_id))
 
                                 try:
                                     needinfo_email = github_issue.assignee.email
@@ -291,10 +291,10 @@ def main():
                 try:
                     if "issues" in external_bug["ext_bz_bug_id"]:
                         issue_repo, issue_id = external_bug["ext_bz_bug_id"].split("/issues/")
-                        issue = g.get_repo(issue_repo).get_issue(issue_id)
+                        issue = g.get_repo(issue_repo).get_issue(int(issue_id))
                     elif "pull" in external_bug["ext_bz_bug_id"]:
                         issue_repo, pull_id = external_bug["ext_bz_bug_id"].split("/pull/")
-                        issue = g.get_repo(issue_repo).get_pull(pull_id)
+                        issue = g.get_repo(issue_repo).get_pull(int(pull_id))
                 except UnknownObjectException:
                     links_issues_record += (
                         "Bugzilla #%s -> Github %s, but Github %s does "
@@ -305,9 +305,9 @@ def main():
                     # we've experienced timeouts here so retry the connection
                     g = get_github_connection(github_api_key)
                     if "issues" in external_bug["ext_bz_bug_id"]:
-                        issue = g.get_repo(issue_repo).get_issue(issue_id)
+                        issue = g.get_repo(issue_repo).get_issue(int(issue_id))
                     elif "pull" in external_bug["ext_bz_bug_id"]:
-                        issue = g.get_repo(issue_repo).get_pull(pull_id)
+                        issue = g.get_repo(issue_repo).get_pull(int(pull_id))
                 bugzilla_field = issue.body.split("https://bugzilla.redhat.com/buglist.cgi?quicksearch=")
                 if len(bugzilla_field) < 2:
                     continue
