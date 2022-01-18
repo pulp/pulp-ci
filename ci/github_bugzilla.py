@@ -110,6 +110,8 @@ def main():
     not_found_bzs = []
 
     for issue in github_issues:
+        if "github.com/pulp" not in issue.html_url:
+            continue
         print(f"Processing github issue: {issue.html_url}")
         if not issue.body:
             not_found_bzs.append(issue.html_url)
@@ -316,6 +318,8 @@ def main():
                         issue = g.get_repo(issue_repo).get_issue(int(issue_id))
                     elif "pull" in external_bug["ext_bz_bug_id"]:
                         issue = g.get_repo(issue_repo).get_pull(int(pull_id))
+                if "github.com/pulp" not in issue.html_url:
+                    continue
                 if not issue.body:
                     not_found_bzs.append(issue.html_url)
                     continue
