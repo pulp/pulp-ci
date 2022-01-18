@@ -114,177 +114,178 @@ def main():
         if not issue.body:
             not_found_bzs.append(issue.html_url)
             continue
-        try:
-            bugzilla_field = re.match(r'.*bugzilla.redhat.com(.*)=([0-9]+)', issue.body)
-            bug_id = int(bugzilla_field.group(2))
-            print(f"  -> https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug_id}")
-        except (AttributeError, IndexError):
-            not_found_bzs.append(issue.html_url)
-            continue
-        links_back = False
-        if bug_id in failed_qa_bugzillas:
-            continue
-        try:
-            bug = BZ.getbug(bug_id)
-        except Fault as e:
-            if e.faultCode == 102:
-                print(("Bugzilla %s could not be accessed." % bug_id))
+        bugzillas = re.findall(r'.*bugzilla.redhat.com(.*)=([0-9]+)', issue.body)
+        for bugzilla_field in bugzillas:
+            try:
+                bug_id = int(bugzilla_field[1])
+                print(f"  -> https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug_id}")
+            except IndexError:
+                not_found_bzs.append(issue.html_url)
                 continue
-            else:
-                raise
-        except HTTPError as e:
-            if e.response.status_code == 502:
-                # we constantly hit 502s from bugzilla.redhat.com and have filed tickets.
-                # response was that they couldn't fix it in the near future and to just retry.
-                sleep(1)
+            links_back = False
+            if bug_id in failed_qa_bugzillas:
+                continue
+            try:
                 bug = BZ.getbug(bug_id)
-            else:
-                raise
+            except Fault as e:
+                if e.faultCode == 102:
+                    print(("Bugzilla %s could not be accessed." % bug_id))
+                    continue
+                else:
+                    raise
+            except HTTPError as e:
+                if e.response.status_code == 502:
+                    # we constantly hit 502s from bugzilla.redhat.com and have filed tickets.
+                    # response was that they couldn't fix it in the near future and to just retry.
+                    sleep(1)
+                    bug = BZ.getbug(bug_id)
+                else:
+                    raise
 
-            for external_bug in bug.external_bugs:
-                if external_bug["type"][
-                    "description"
-                ] == "Github" and external_bug["ext_bz_bug_id"].endswith(f"/issues/{issue.number}"):
-                    add_cc_list_to_bugzilla_bug(bug)
-                    ext_params = {}
-                    if external_bug["ext_description"] != issue.title:
-                        ext_params["ext_description"] = issue.title
-                    if external_bug["ext_status"] != issue.state:
-                        ext_params["ext_status"] = issue.state
-                    if len(list(ext_params.keys())) > 0:
-                        ext_bug_record += (
-                            "Bugzilla bug %s updated from upstream bug %s "
-                            "with %s\n" % (bug.id, issue.number, ext_params)
-                        )
-                        ext_params["ids"] = external_bug["id"]
-                        BZ.update_external_tracker(**ext_params)
-                        if "ext_status" in ext_params:
-                            bug.addcomment(
-                                "The Pulp upstream bug status is at %s. Updating the "
-                                "external tracker on this bug." % issue.state
+                for external_bug in bug.external_bugs:
+                    if external_bug["type"][
+                        "description"
+                    ] == "Github" and external_bug["ext_bz_bug_id"].endswith(f"/issues/{issue.number}"):
+                        add_cc_list_to_bugzilla_bug(bug)
+                        ext_params = {}
+                        if external_bug["ext_description"] != issue.title:
+                            ext_params["ext_description"] = issue.title
+                        if external_bug["ext_status"] != issue.state:
+                            ext_params["ext_status"] = issue.state
+                        if len(list(ext_params.keys())) > 0:
+                            ext_bug_record += (
+                                "Bugzilla bug %s updated from upstream bug %s "
+                                "with %s\n" % (bug.id, issue.number, ext_params)
                             )
-                    downstream_POST_plus = [
-                        "POST",
-                        "MODIFIED",
-                        "ON_QA",
-                        "VERIFIED",
-                        "RELEASE_PENDING",
-                        "CLOSED",
-                    ]
-                    downstream_ACCEPTABLE_resolution = [
-                        "NOTABUG",
-                        "WONTFIX",
-                        "DEFERRED",
-                        "WORKSFORME",
-                    ]
-                    if (
-                        bug.status in downstream_POST_plus
-                        and issue.state == "open"
-                    ):
-                        if bug.resolution not in downstream_ACCEPTABLE_resolution:
-                            msg = (
-                                "The downstream bug %s is at POST+ but the upstream "
-                                "bug %s at POST-.\n" % (bug.id, issue.number)
-                            )
-                            downstream_state_issue_record += msg
-                    links_back = True
-            transition_to_closed = []
-            for external_bug in bug.external_bugs:
-                if external_bug["type"]["description"] == "Foreman Issue Tracker":
-                    # If the bug has an external foreman issue, don't transition the BZ
-                    transition_to_closed.append(False)
-                if external_bug["type"]["description"] == "Github":
-                    if bug.status in ["NEW", "ASSIGNED"]:
-                        if external_bug["ext_status"] == "closed":
-                            if "FailedQA" in bug.cf_verified:
-                                external_bug_repo, external_bug_id = external_bug["ext_bz_bug_id"].split("/issues/")
-                                print(f"Processing external bug: https://github.com/{external_bug['ext_bz_bug_id']}.")
+                            ext_params["ids"] = external_bug["id"]
+                            BZ.update_external_tracker(**ext_params)
+                            if "ext_status" in ext_params:
+                                bug.addcomment(
+                                    "The Pulp upstream bug status is at %s. Updating the "
+                                    "external tracker on this bug." % issue.state
+                                )
+                        downstream_POST_plus = [
+                            "POST",
+                            "MODIFIED",
+                            "ON_QA",
+                            "VERIFIED",
+                            "RELEASE_PENDING",
+                            "CLOSED",
+                        ]
+                        downstream_ACCEPTABLE_resolution = [
+                            "NOTABUG",
+                            "WONTFIX",
+                            "DEFERRED",
+                            "WORKSFORME",
+                        ]
+                        if (
+                            bug.status in downstream_POST_plus
+                            and issue.state == "open"
+                        ):
+                            if bug.resolution not in downstream_ACCEPTABLE_resolution:
+                                msg = (
+                                    "The downstream bug %s is at POST+ but the upstream "
+                                    "bug %s at POST-.\n" % (bug.id, issue.number)
+                                )
+                                downstream_state_issue_record += msg
+                        links_back = True
+                transition_to_closed = []
+                for external_bug in bug.external_bugs:
+                    if external_bug["type"]["description"] == "Foreman Issue Tracker":
+                        # If the bug has an external foreman issue, don't transition the BZ
+                        transition_to_closed.append(False)
+                    if external_bug["type"]["description"] == "Github":
+                        if bug.status in ["NEW", "ASSIGNED"]:
+                            if external_bug["ext_status"] == "closed":
+                                if "FailedQA" in bug.cf_verified:
+                                    external_bug_repo, external_bug_id = external_bug["ext_bz_bug_id"].split("/issues/")
+                                    print(f"Processing external bug: https://github.com/{external_bug['ext_bz_bug_id']}.")
 
-                                try:
-                                    github_issue = g.get_repo(external_bug_repo).get_issue(int(external_bug_id))
-                                except (ConnectionError, ReadTimeout):
-                                    # we've experienced timeouts here so retry the connection
-                                    g = get_github_connection(github_api_key)
-                                    github_issue = g.get_repo(external_bug_repo).get_issue(int(external_bug_id))
+                                    try:
+                                        github_issue = g.get_repo(external_bug_repo).get_issue(int(external_bug_id))
+                                    except (ConnectionError, ReadTimeout):
+                                        # we've experienced timeouts here so retry the connection
+                                        g = get_github_connection(github_api_key)
+                                        github_issue = g.get_repo(external_bug_repo).get_issue(int(external_bug_id))
 
-                                try:
-                                    needinfo_email = github_issue.assignee.email
-                                    BZ.getuser(needinfo_email)
-                                except BadAttributeException:
-                                    # the upstream issue is unassigned
-                                    user_has_no_bz = True
-                                except Fault as e:
-                                    if e.faultCode == 51:
+                                    try:
+                                        needinfo_email = github_issue.assignee.email
+                                        BZ.getuser(needinfo_email)
+                                    except BadAttributeException:
+                                        # the upstream issue is unassigned
                                         user_has_no_bz = True
+                                    except Fault as e:
+                                        if e.faultCode == 51:
+                                            user_has_no_bz = True
+                                        else:
+                                            raise
                                     else:
-                                        raise
-                                else:
-                                    user_has_no_bz = False
+                                        user_has_no_bz = False
 
-                                # If the Github user does not have a Bugzilla account, default
-                                # to the downstream contacts for Pulp
-                                if user_has_no_bz:
-                                    needsinfo_contacts = DOWNSTREAM_CONTACTS
-                                else:
-                                    needsinfo_contacts = [needinfo_email]
+                                    # If the Github user does not have a Bugzilla account, default
+                                    # to the downstream contacts for Pulp
+                                    if user_has_no_bz:
+                                        needsinfo_contacts = DOWNSTREAM_CONTACTS
+                                    else:
+                                        needsinfo_contacts = [needinfo_email]
 
-                                # Don't set needsinfo for people who are already flagged
-                                for flag in bug.flags:
-                                    if (
-                                        flag["name"] == "needinfo"
-                                        and flag["requestee"] in needsinfo_contacts
-                                    ):
-                                        needsinfo_contacts = list(
-                                            filter(
-                                                lambda x: x != flag["requestee"],
-                                                needsinfo_contacts,
+                                    # Don't set needsinfo for people who are already flagged
+                                    for flag in bug.flags:
+                                        if (
+                                            flag["name"] == "needinfo"
+                                            and flag["requestee"] in needsinfo_contacts
+                                        ):
+                                            needsinfo_contacts = list(
+                                                filter(
+                                                    lambda x: x != flag["requestee"],
+                                                    needsinfo_contacts,
+                                                )
                                             )
+
+                                    if needsinfo_contacts:
+                                        flags = []
+                                        for contact in needsinfo_contacts:
+                                            flags.append(
+                                                {
+                                                    "name": "needinfo",
+                                                    "status": "?",
+                                                    "requestee": contact,
+                                                    "new": True,
+                                                }
+                                            )
+                                        updates = BZ.build_update(
+                                            status=bug.status, flags=flags
+                                        )
+                                        BZ.update_bugs(bug.id, updates)
+                                        bug.addcomment(
+                                            "Requesting needsinfo from upstream "
+                                            "developer %s because the 'FailedQA' "
+                                            "flag is set." % ", ".join(needsinfo_contacts)
                                         )
 
-                                if needsinfo_contacts:
-                                    flags = []
-                                    for contact in needsinfo_contacts:
-                                        flags.append(
-                                            {
-                                                "name": "needinfo",
-                                                "status": "?",
-                                                "requestee": contact,
-                                                "new": True,
-                                            }
+                                        msg = (
+                                            "Bugzilla %s failed QA. Needinfo is set for %s."
+                                            % (bug.id, ", ".join(needsinfo_contacts))
                                         )
-                                    updates = BZ.build_update(
-                                        status=bug.status, flags=flags
-                                    )
-                                    BZ.update_bugs(bug.id, updates)
-                                    bug.addcomment(
-                                        "Requesting needsinfo from upstream "
-                                        "developer %s because the 'FailedQA' "
-                                        "flag is set." % ", ".join(needsinfo_contacts)
-                                    )
+                                        new_failed_qa_record += "%s\n" % msg
+                                        print(msg)
 
-                                    msg = (
-                                        "Bugzilla %s failed QA. Needinfo is set for %s."
-                                        % (bug.id, ", ".join(needsinfo_contacts))
-                                    )
-                                    new_failed_qa_record += "%s\n" % msg
-                                    print(msg)
-
-                                failed_qa_bugzillas.append(bug.id)
+                                    failed_qa_bugzillas.append(bug.id)
+                                else:
+                                    transition_to_closed.append(True)
                             else:
-                                transition_to_closed.append(True)
-                        else:
-                            transition_to_closed.append(False)
-            if not links_back:
-                links_issues_record += (
-                    "Github #%s -> Bugzilla %s, but Bugzilla %s does "
-                    "not link back\n" % (issue.number, bug.id, bug.id)
-                )
-            if len(transition_to_closed) > 0 and all(transition_to_closed):
-                msg = (
-                    "All upstream Pulp bugs are at MODIFIED+. Moving this bug to POST."
-                )
-                bug.setstatus("POST", msg)
-                downstream_changes += "Bugzilla %s was transitioned to POST\n" % bug.id
+                                transition_to_closed.append(False)
+                if not links_back:
+                    links_issues_record += (
+                        "Github #%s -> Bugzilla %s, but Bugzilla %s does "
+                        "not link back\n" % (issue.number, bug.id, bug.id)
+                    )
+                if len(transition_to_closed) > 0 and all(transition_to_closed):
+                    msg = (
+                        "All upstream Pulp bugs are at MODIFIED+. Moving this bug to POST."
+                    )
+                    bug.setstatus("POST", msg)
+                    downstream_changes += "Bugzilla %s was transitioned to POST\n" % bug.id
 
     BZ = get_bugzilla_connection(bugzilla_api_key)
     bugzilla_bugs = BZ.query(query)
@@ -318,27 +319,29 @@ def main():
                 if not issue.body:
                     not_found_bzs.append(issue.html_url)
                     continue
-                try:
-                    bugzilla_field = re.match(r'.*bugzilla.redhat.com(.*)=([0-9]+)', issue.body)
-                    bug_id = int(bugzilla_field.group(2))
-                except (AttributeError, IndexError):
-                    not_found_bzs.append(issue.html_url)
-                    continue
-                links_back = False
-                try:
-                    if bug_id == bug.id:
-                        links_back = True
-                except KeyError:
-                    # If value isn't present this field is not linking back
-                    continue
-                except ValueError:
-                    # If value is present but empty this field is not linking back
-                    continue
-                if not links_back:
-                    links_issues_record += (
-                        "Bugzilla #%s -> Github %s, but Github %s does "
-                        "not link back\n" % (bug.id, issue.number, issue.number)
-                    )
+                bugzillas = re.findall(r'.*bugzilla.redhat.com(.*)=([0-9]+)', issue.body)
+                for bugzilla_field in bugzillas:
+                    try:
+                        bug_id = int(bugzilla_field[1])
+                        print(f"  -> https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug_id}")
+                    except IndexError:
+                        not_found_bzs.append(issue.html_url)
+                        continue
+                    links_back = False
+                    try:
+                        if bug_id == bug.id:
+                            links_back = True
+                    except KeyError:
+                        # If value isn't present this field is not linking back
+                        continue
+                    except ValueError:
+                        # If value is present but empty this field is not linking back
+                        continue
+                    if not links_back:
+                        links_issues_record += (
+                            "Bugzilla #%s -> Github %s, but Github %s does "
+                            "not link back\n" % (bug.id, issue.number, issue.number)
+                        )
 
     if ext_bug_record != "":
         print("\nBugzilla Updates From Upstream")
