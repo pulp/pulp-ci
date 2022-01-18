@@ -26,6 +26,7 @@ There are a few pip installable requirements:
 
 
 import os
+import re
 from time import sleep
 
 from bugzilla import RHBugzilla
@@ -106,15 +107,20 @@ def main():
     downstream_changes = ""
     new_failed_qa_record = ""
     failed_qa_bugzillas = []
+    not_found_bzs = []
 
     for issue in github_issues:
         print(f"Processing github issue: {issue.html_url}")
         if not issue.body:
+            not_found_bzs.append(issue.html_url)
             continue
-        bugzilla_field = issue.body.split("https://bugzilla.redhat.com/buglist.cgi?quicksearch=")
-        if len(bugzilla_field) < 2:
+        try:
+            bugzilla_field = re.match(r'.*bugzilla.redhat.com(.*)=([0-9]+)', issue.body)
+            bug_id = int(bugzilla_field.group(2))
+            print(f"  -> https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug_id}")
+        except (AttributeError, IndexError):
+            not_found_bzs.append(issue.html_url)
             continue
-        bug_id = int(bugzilla_field[1].split("\n")[0])
         links_back = False
         if bug_id in failed_qa_bugzillas:
             continue
@@ -310,11 +316,14 @@ def main():
                     elif "pull" in external_bug["ext_bz_bug_id"]:
                         issue = g.get_repo(issue_repo).get_pull(int(pull_id))
                 if not issue.body:
+                    not_found_bzs.append(issue.html_url)
                     continue
-                bugzilla_field = issue.body.split("https://bugzilla.redhat.com/buglist.cgi?quicksearch=")
-                if len(bugzilla_field) < 2:
+                try:
+                    bugzilla_field = re.match(r'.*bugzilla.redhat.com(.*)=([0-9]+)', issue.body)
+                    bug_id = int(bugzilla_field.group(2))
+                except (AttributeError, IndexError):
+                    not_found_bzs.append(issue.html_url)
                     continue
-                bug_id = int(bugzilla_field[1].split("\n")[0])
                 links_back = False
                 try:
                     if bug_id == bug.id:
@@ -356,10 +365,16 @@ def main():
         print("----------------------------")
         print(new_failed_qa_record)
 
+    if not_found_bzs:
+        print("\nCouldn't find Bugzilla link on the following Github issues:")
+        print("----------------------------")
+        print(not_found_bzs)
+
     if (
         links_issues_record != ""
         or downstream_state_issue_record != ""
         or new_failed_qa_record
+        or not_found_bzs
     ):
         # Raise an exception so the job fails and Jenkins will send e-mail
         raise RuntimeError("We need a human here")
