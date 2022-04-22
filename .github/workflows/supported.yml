@@ -42,10 +42,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
-      - name: Run update
-        run: |
-          .github/workflows/scripts/update_ci.sh
-
       - name: Update supported versions
         uses: peter-evans/create-pull-request@v4
         with:
