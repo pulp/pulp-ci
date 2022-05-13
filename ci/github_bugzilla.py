@@ -113,12 +113,12 @@ def main():
         if "github.com/pulp" not in issue.html_url:
             continue
         print(f"Processing github issue: {issue.html_url}")
-        if not issue.body:
-            not_found_bzs.append(issue.html_url)
-            continue
         text = issue.body
         for comment in issue.get_comments():
             text = text + "\n\n" + comment.body
+        if not text:
+            not_found_bzs.append(issue.html_url)
+            continue
         bugzillas = re.findall(r'.*bugzilla.redhat.com(.*)=([0-9]+)', text)
         for bugzilla_field in bugzillas:
             try:
@@ -323,12 +323,12 @@ def main():
                         issue = g.get_repo(issue_repo).get_pull(int(pull_id))
                 if "github.com/pulp" not in issue.html_url:
                     continue
-                if not issue.body:
-                    not_found_bzs.append(issue.html_url)
-                    continue
                 text = issue.body
                 for comment in issue.get_comments():
                     text = text + "\n\n" + comment.body
+                if not text:
+                    not_found_bzs.append(issue.html_url)
+                    continue
                 bugzillas = re.findall(r'.*bugzilla.redhat.com(.*)=([0-9]+)', text)
                 for bugzilla_field in bugzillas:
                     try:
