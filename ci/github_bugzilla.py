@@ -282,8 +282,8 @@ def main():
                             transition_to_closed.append(False)
             if not links_back:
                 links_issues_record += (
-                    "Github #%s -> Bugzilla %s, but Bugzilla %s does "
-                    "not link back\n" % (issue.number, bug.id, bug.id)
+                    "Github #%s <%s> -> Bugzilla %s, but Bugzilla %s does "
+                    "not link back\n" % (issue.number, issue.html_url, bug.id, bug.id)
                 )
             if len(transition_to_closed) > 0 and all(transition_to_closed):
                 msg = (
@@ -349,8 +349,8 @@ def main():
                         continue
                     if not links_back:
                         links_issues_record += (
-                            "Bugzilla #%s -> Github %s, but Github %s does "
-                            "not link back\n" % (bug.id, issue.number, issue.number)
+                            "Bugzilla #%s -> Github %s <%s>, but Github %s does "
+                            "not link back\n" % (bug.id, issue.number, issue.html_url, issue.number)
                         )
 
     if ext_bug_record != "":
