@@ -116,7 +116,10 @@ def main():
         if not issue.body:
             not_found_bzs.append(issue.html_url)
             continue
-        bugzillas = re.findall(r'.*bugzilla.redhat.com(.*)=([0-9]+)', issue.body)
+        text = issue.body
+        for comment in issue.get_comments():
+            text = text + "\n\n" + comment.body
+        bugzillas = re.findall(r'.*bugzilla.redhat.com(.*)=([0-9]+)', text)
         for bugzilla_field in bugzillas:
             try:
                 bug_id = int(bugzilla_field[1])
@@ -323,7 +326,10 @@ def main():
                 if not issue.body:
                     not_found_bzs.append(issue.html_url)
                     continue
-                bugzillas = re.findall(r'.*bugzilla.redhat.com(.*)=([0-9]+)', issue.body)
+                text = issue.body
+                for comment in issue.get_comments():
+                    text = text + "\n\n" + comment.body
+                bugzillas = re.findall(r'.*bugzilla.redhat.com(.*)=([0-9]+)', text)
                 for bugzilla_field in bugzillas:
                     try:
                         bug_id = int(bugzilla_field[1])
