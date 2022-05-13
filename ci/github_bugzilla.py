@@ -199,9 +199,9 @@ def main():
                     if external_bug["type"]["description"] == "Foreman Issue Tracker":
                         # If the bug has an external foreman issue, don't transition the BZ
                         transition_to_closed.append(False)
-                    if external_bug["type"]["description"] == "Github":
+                    if str(external_bug["type"]["description"]).lower() == "github":
                         if bug.status in ["NEW", "ASSIGNED"]:
-                            if external_bug["ext_status"] == "closed":
+                            if str(external_bug["ext_status"]).lower() == "closed":
                                 if "FailedQA" in bug.cf_verified:
                                     external_bug_repo, external_bug_id = external_bug["ext_bz_bug_id"].split("/issues/")
                                     print(f"Processing external bug: https://github.com/{external_bug['ext_bz_bug_id']}.")
@@ -297,7 +297,7 @@ def main():
     for bug in bugzilla_bugs:
         print(f"Processing bugzilla: https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug.id}")
         for external_bug in bug.external_bugs:
-            if external_bug["type"]["description"] == "Github":
+            if str(external_bug["type"]["description"]).lower() == "github":
                 add_cc_list_to_bugzilla_bug(bug)
                 issue_id = None
                 pull_id = None
