@@ -148,14 +148,15 @@ def main():
                     raise
 
                 for external_bug in bug.external_bugs:
-                    if external_bug["type"][
+                    print(external_bug)
+                    if str(external_bug["type"][
                         "description"
-                    ] == "Github" and external_bug["ext_bz_bug_id"].endswith(f"/issues/{issue.number}"):
+                    ]).lower() == "github" and external_bug["ext_bz_bug_id"].endswith(f"/issues/{issue.number}"):
                         add_cc_list_to_bugzilla_bug(bug)
                         ext_params = {}
                         if external_bug["ext_description"] != issue.title:
                             ext_params["ext_description"] = issue.title
-                        if external_bug["ext_status"] != issue.state:
+                        if str(external_bug["ext_status"]).lower() != issue.state.lower():
                             ext_params["ext_status"] = issue.state
                         if len(list(ext_params.keys())) > 0:
                             ext_bug_record += (
@@ -196,6 +197,7 @@ def main():
                         links_back = True
                 transition_to_closed = []
                 for external_bug in bug.external_bugs:
+                    print(external_bug)
                     if external_bug["type"]["description"] == "Foreman Issue Tracker":
                         # If the bug has an external foreman issue, don't transition the BZ
                         transition_to_closed.append(False)
