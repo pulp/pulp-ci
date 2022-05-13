@@ -148,7 +148,6 @@ def main():
                     raise
 
             for external_bug in bug.external_bugs:
-                print(external_bug)
                 if str(external_bug["type"][
                     "description"
                 ]).lower() == "github" and external_bug["ext_bz_bug_id"].endswith(f"/issues/{issue.number}"):
@@ -197,7 +196,6 @@ def main():
                     links_back = True
             transition_to_closed = []
             for external_bug in bug.external_bugs:
-                print(external_bug)
                 if external_bug["type"]["description"] == "Foreman Issue Tracker":
                     # If the bug has an external foreman issue, don't transition the BZ
                     transition_to_closed.append(False)
