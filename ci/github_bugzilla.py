@@ -88,7 +88,7 @@ def main():
 
     bz_label = g.get_repo("pulp/pulp_ansible").get_label("BZ")
     for repo in g.get_organization("pulp").get_repos():
-        github_issues.extend(list(repo.get_issues(labels=[bz_label])))
+        github_issues.extend(list(repo.get_issues(state="all", labels=[bz_label])))
 
     non_closed_bug_with_ext_tracker = (
         BUGZILLA_URL + "/buglist.cgi?bug_status=NEW&"
