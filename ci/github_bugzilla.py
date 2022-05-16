@@ -96,7 +96,7 @@ def main():
         "bug_status=ON_QA&bug_status=VERIFIED&bug_status=RELEASE_PENDING&"
         "columnlist=priority%2Cbug_severity%2Cbug_status%2Cshort_desc%2Cchangeddate%2C"
         "component%2Ctarget_release%2Cassigned_to%2Creporter&f1=external_bugzilla.url&"
-        "list_id=3309842&o1=substring&query_format=advanced&v1=pulp.plan.io"
+        "list_id=3309842&o1=substring&query_format=advanced"
     )
     query = BZ.url_to_query(non_closed_bug_with_ext_tracker)
     query["extra_fields"] = ["external_bugs"]
