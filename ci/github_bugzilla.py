@@ -346,6 +346,7 @@ def process_bugzillas(BZ, g):
                 add_cc_list_to_bugzilla_bug(bug)
                 issue_id = None
                 pull_id = None
+                links_back = False
                 try:
                     if "issues" in external_bug["ext_bz_bug_id"]:
                         issue_repo, issue_id = external_bug["ext_bz_bug_id"].split(
@@ -353,6 +354,7 @@ def process_bugzillas(BZ, g):
                         )
                         issue = g.get_repo(issue_repo).get_issue(int(issue_id))
                     elif "pull" in external_bug["ext_bz_bug_id"]:
+                        links_back = True
                         issue_repo, pull_id = external_bug["ext_bz_bug_id"].split(
                             "/pull/"
                         )
@@ -368,10 +370,10 @@ def process_bugzillas(BZ, g):
                     if "issues" in external_bug["ext_bz_bug_id"]:
                         issue = g.get_repo(issue_repo).get_issue(int(issue_id))
                     elif "pull" in external_bug["ext_bz_bug_id"]:
+                        links_back = True
                         issue = g.get_repo(issue_repo).get_pull(int(pull_id))
                 if "github.com/pulp" not in issue.html_url:
                     continue
-                links_back = False
                 print(f"  -> {issue.html_url}")
                 text = getattr(issue, "body", "")
                 for comment in issue.get_comments():
