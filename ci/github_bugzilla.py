@@ -86,6 +86,7 @@ def process_github_issues(BZ, g, links_issues_record):
     new_failed_qa_record = ""
     failed_qa_bugzillas = []
     not_found_bzs = []
+    links_back = []
 
     bz_label = g.get_repo("pulp/pulp_ansible").get_label("BZ")
     for repo in g.get_organization("pulp").get_repos():
@@ -111,7 +112,7 @@ def process_github_issues(BZ, g, links_issues_record):
             except IndexError:
                 not_found_bzs.append(issue.html_url)
                 continue
-            links_back = False
+            links_back.append(False)
             if bug_id in failed_qa_bugzillas:
                 continue
             try:
@@ -155,6 +156,7 @@ def process_github_issues(BZ, g, links_issues_record):
                                 "The Pulp upstream bug status is at %s. Updating the "
                                 "external tracker on this bug." % issue.state
                             )
+                        bug = BZ.getbug(bug_id)
                     downstream_POST_plus = [
                         "POST",
                         "MODIFIED",
@@ -176,8 +178,8 @@ def process_github_issues(BZ, g, links_issues_record):
                                 "bug %s at POST-.\n" % (bug.id, issue.html_url)
                             )
                             downstream_state_issue_record += msg
-                    links_back = True
-            bug = BZ.getbug(bug_id)
+                    links_back.append(True)
+
             transition_to_closed = []
             for external_bug in bug.external_bugs:
                 if external_bug["type"]["description"] == "Foreman Issue Tracker":
@@ -271,7 +273,7 @@ def process_github_issues(BZ, g, links_issues_record):
                                 transition_to_closed.append(True)
                         else:
                             transition_to_closed.append(False)
-            if not links_back:
+            if not any(links_back):
                 links_issues_record += (
                     "Github #%s <%s> -> Bugzilla %s, but Bugzilla %s does "
                     "not link back\n" % (issue.number, issue.html_url, bug.id, bug.id)
