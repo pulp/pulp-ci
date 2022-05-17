@@ -372,6 +372,7 @@ def process_bugzillas(BZ, g):
                 if "github.com/pulp" not in issue.html_url:
                     continue
                 links_back = False
+                print(f"  -> {issue.html_url}")
                 text = getattr(issue, "body", "")
                 for comment in issue.get_comments():
                     text = text + "\n\n" + comment.body
