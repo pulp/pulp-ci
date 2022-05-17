@@ -146,7 +146,7 @@ def process_github_issues(BZ, g, links_issues_record):
                     if len(list(ext_params.keys())) > 0:
                         ext_bug_record += (
                             "Bugzilla bug %s updated from upstream bug %s "
-                            "with %s\n" % (bug.id, issue.number, ext_params)
+                            "with %s\n" % (bug.id, issue.html_url, ext_params)
                         )
                         ext_params["ids"] = external_bug["id"]
                         BZ.update_external_tracker(**ext_params)
@@ -173,10 +173,11 @@ def process_github_issues(BZ, g, links_issues_record):
                         if bug.resolution not in downstream_ACCEPTABLE_resolution:
                             msg = (
                                 "The downstream bug %s is at POST+ but the upstream "
-                                "bug %s at POST-.\n" % (bug.id, issue.number)
+                                "bug %s at POST-.\n" % (bug.id, issue.html_url)
                             )
                             downstream_state_issue_record += msg
                     links_back = True
+            bug = BZ.getbug(bug_id)
             transition_to_closed = []
             for external_bug in bug.external_bugs:
                 if external_bug["type"]["description"] == "Foreman Issue Tracker":
