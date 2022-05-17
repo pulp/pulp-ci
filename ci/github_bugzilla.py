@@ -77,31 +77,9 @@ def add_cc_list_to_bugzilla_bug(bug):
             bug.addcc(pulp_cc_username)
 
 
-def main():
-    bugzilla_api_key = os.environ["BUGZILLA_API_KEY"]
-    github_api_key = os.environ["GITHUB_API_TOKEN"]
-
-    g = get_github_connection(github_api_key)
-    BZ = get_bugzilla_connection(bugzilla_api_key)
-
+def process_github_issues(BZ, g, links_issues_record):
+    print("#" * 20 + "\nProcessing github issues\n" + "#" * 20)
     github_issues = []
-
-    bz_label = g.get_repo("pulp/pulp_ansible").get_label("BZ")
-    for repo in g.get_organization("pulp").get_repos():
-        github_issues.extend(list(repo.get_issues(state="all", labels=[bz_label])))
-
-    non_closed_bug_with_ext_tracker = (
-        BUGZILLA_URL + "/buglist.cgi?bug_status=NEW&"
-        "bug_status=ASSIGNED&bug_status=POST&bug_status=MODIFIED&bug_status=ON_DEV&"
-        "bug_status=ON_QA&bug_status=VERIFIED&bug_status=RELEASE_PENDING&"
-        "columnlist=priority%2Cbug_severity%2Cbug_status%2Cshort_desc%2Cchangeddate%2C"
-        "component%2Ctarget_release%2Cassigned_to%2Creporter&f1=external_bugzilla.url&"
-        "list_id=3309842&o1=substring&query_format=advanced&component=Pulp&limit=500"
-    )
-    query = BZ.url_to_query(non_closed_bug_with_ext_tracker)
-    query["extra_fields"] = ["external_bugs"]
-
-    links_issues_record = ""
     ext_bug_record = ""
     downstream_state_issue_record = ""
     downstream_changes = ""
@@ -109,21 +87,27 @@ def main():
     failed_qa_bugzillas = []
     not_found_bzs = []
 
+    bz_label = g.get_repo("pulp/pulp_ansible").get_label("BZ")
+    for repo in g.get_organization("pulp").get_repos():
+        github_issues.extend(list(repo.get_issues(state="all", labels=[bz_label])))
+
     for issue in github_issues:
         if "github.com/pulp" not in issue.html_url:
             continue
         print(f"Processing github issue: {issue.html_url}")
-        text = issue.body
+        text = getattr(issue, "body", "")
         for comment in issue.get_comments():
             text = text + "\n\n" + comment.body
         if not text:
             not_found_bzs.append(issue.html_url)
             continue
-        bugzillas = re.findall(r'.*bugzilla.redhat.com(.*)=([0-9]+)', text)
+        bugzillas = re.findall(r".*bugzilla.redhat.com(.*)=([0-9]+)", text)
         for bugzilla_field in bugzillas:
             try:
                 bug_id = int(bugzilla_field[1])
-                print(f"  -> https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug_id}")
+                print(
+                    f"  -> https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug_id}"
+                )
             except IndexError:
                 not_found_bzs.append(issue.html_url)
                 continue
@@ -148,9 +132,11 @@ def main():
                     raise
 
             for external_bug in bug.external_bugs:
-                if str(external_bug["type"][
-                    "description"
-                ]).lower() == "github" and external_bug["ext_bz_bug_id"].endswith(f"/issues/{issue.number}"):
+                if str(
+                    external_bug["type"]["description"]
+                ).lower() == "github" and external_bug["ext_bz_bug_id"].endswith(
+                    f"/issues/{issue.number}"
+                ):
                     add_cc_list_to_bugzilla_bug(bug)
                     ext_params = {}
                     if external_bug["ext_description"] != issue.title:
@@ -183,10 +169,7 @@ def main():
                         "DEFERRED",
                         "WORKSFORME",
                     ]
-                    if (
-                        bug.status in downstream_POST_plus
-                        and issue.state == "open"
-                    ):
+                    if bug.status in downstream_POST_plus and issue.state == "open":
                         if bug.resolution not in downstream_ACCEPTABLE_resolution:
                             msg = (
                                 "The downstream bug %s is at POST+ but the upstream "
@@ -203,20 +186,27 @@ def main():
                     if bug.status in ["NEW", "ASSIGNED"]:
                         if str(external_bug["ext_status"]).lower() == "closed":
                             if "FailedQA" in bug.cf_verified:
-                                external_bug_repo, external_bug_id = external_bug["ext_bz_bug_id"].split("/issues/")
-                                print(f"Processing external bug: https://github.com/{external_bug['ext_bz_bug_id']}.")
+                                external_bug_repo, external_bug_id = external_bug[
+                                    "ext_bz_bug_id"
+                                ].split("/issues/")
+                                print(
+                                    f"Processing external bug: https://github.com/{external_bug['ext_bz_bug_id']}."
+                                )
 
                                 try:
-                                    github_issue = g.get_repo(external_bug_repo).get_issue(int(external_bug_id))
+                                    github_issue = g.get_repo(
+                                        external_bug_repo
+                                    ).get_issue(int(external_bug_id))
                                 except (ConnectionError, ReadTimeout):
                                     # we've experienced timeouts here so retry the connection
-                                    g = get_github_connection(github_api_key)
-                                    github_issue = g.get_repo(external_bug_repo).get_issue(int(external_bug_id))
+                                    github_issue = g.get_repo(
+                                        external_bug_repo
+                                    ).get_issue(int(external_bug_id))
 
                                 try:
                                     needinfo_email = github_issue.assignee.email
                                     BZ.getuser(needinfo_email)
-                                except BadAttributeException:
+                                except (BadAttributeException, TypeError):
                                     # the upstream issue is unassigned
                                     user_has_no_bz = True
                                 except Fault as e:
@@ -292,67 +282,6 @@ def main():
                 bug.setstatus("POST", msg)
                 downstream_changes += "Bugzilla %s was transitioned to POST\n" % bug.id
 
-    BZ = get_bugzilla_connection(bugzilla_api_key)
-    bugzilla_bugs = BZ.query(query)
-    for bug in bugzilla_bugs:
-        print(f"Processing bugzilla: https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug.id}")
-        for external_bug in bug.external_bugs:
-            if str(external_bug["type"]["description"]).lower() == "github":
-                add_cc_list_to_bugzilla_bug(bug)
-                issue_id = None
-                pull_id = None
-                try:
-                    if "issues" in external_bug["ext_bz_bug_id"]:
-                        issue_repo, issue_id = external_bug["ext_bz_bug_id"].split("/issues/")
-                        issue = g.get_repo(issue_repo).get_issue(int(issue_id))
-                    elif "pull" in external_bug["ext_bz_bug_id"]:
-                        issue_repo, pull_id = external_bug["ext_bz_bug_id"].split("/pull/")
-                        issue = g.get_repo(issue_repo).get_pull(int(pull_id))
-                except UnknownObjectException:
-                    links_issues_record += (
-                        "Bugzilla #%s -> Github %s, but Github %s does "
-                        "not exist\n" % (bug.id, issue_id, issue_id)
-                    )
-                    continue
-                except (ConnectionError, ReadTimeout):
-                    # we've experienced timeouts here so retry the connection
-                    g = get_github_connection(github_api_key)
-                    if "issues" in external_bug["ext_bz_bug_id"]:
-                        issue = g.get_repo(issue_repo).get_issue(int(issue_id))
-                    elif "pull" in external_bug["ext_bz_bug_id"]:
-                        issue = g.get_repo(issue_repo).get_pull(int(pull_id))
-                if "github.com/pulp" not in issue.html_url:
-                    continue
-                text = issue.body
-                for comment in issue.get_comments():
-                    text = text + "\n\n" + comment.body
-                if not text:
-                    not_found_bzs.append(issue.html_url)
-                    continue
-                bugzillas = re.findall(r'.*bugzilla.redhat.com(.*)=([0-9]+)', text)
-                for bugzilla_field in bugzillas:
-                    try:
-                        bug_id = int(bugzilla_field[1])
-                        print(f"  -> https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug_id}")
-                    except IndexError:
-                        not_found_bzs.append(issue.html_url)
-                        continue
-                    links_back = False
-                    try:
-                        if bug_id == bug.id:
-                            links_back = True
-                    except KeyError:
-                        # If value isn't present this field is not linking back
-                        continue
-                    except ValueError:
-                        # If value is present but empty this field is not linking back
-                        continue
-                    if not links_back and f"Bugzilla #{bug.id}" not in links_issues_record:
-                        links_issues_record += (
-                            "Bugzilla #%s -> Github %s <%s>, but Github %s does "
-                            "not link back\n" % (bug.id, issue.number, issue.html_url, issue.number)
-                        )
-
     if ext_bug_record != "":
         print("\nBugzilla Updates From Upstream")
         print("------------------------------")
@@ -391,6 +320,84 @@ def main():
     ):
         # Raise an exception so the job fails and Jenkins will send e-mail
         raise RuntimeError("We need a human here")
+
+
+def process_bugzillas(BZ, g):
+    print("#" * 20 + "\nProcessing bugzillas\n" + "#" * 20)
+    links_issues_record = ""
+    non_closed_bug_with_ext_tracker = (
+        BUGZILLA_URL + "/buglist.cgi?bug_status=NEW&"
+        "bug_status=ASSIGNED&bug_status=POST&bug_status=MODIFIED&bug_status=ON_DEV&"
+        "bug_status=ON_QA&bug_status=VERIFIED&bug_status=RELEASE_PENDING&"
+        "columnlist=priority%2Cbug_severity%2Cbug_status%2Cshort_desc%2Cchangeddate%2C"
+        "component%2Ctarget_release%2Cassigned_to%2Creporter&f1=external_bugzilla.url&"
+        "list_id=3309842&o1=substring&query_format=advanced&component=Pulp&limit=500"
+    )
+    query = BZ.url_to_query(non_closed_bug_with_ext_tracker)
+    query["extra_fields"] = ["external_bugs"]
+    bugzilla_bugs = BZ.query(query)
+    for bug in bugzilla_bugs:
+        print(
+            f"Processing bugzilla: https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug.id}"
+        )
+        for external_bug in bug.external_bugs:
+            if str(external_bug["type"]["description"]).lower() == "github":
+                add_cc_list_to_bugzilla_bug(bug)
+                issue_id = None
+                pull_id = None
+                try:
+                    if "issues" in external_bug["ext_bz_bug_id"]:
+                        issue_repo, issue_id = external_bug["ext_bz_bug_id"].split(
+                            "/issues/"
+                        )
+                        issue = g.get_repo(issue_repo).get_issue(int(issue_id))
+                    elif "pull" in external_bug["ext_bz_bug_id"]:
+                        issue_repo, pull_id = external_bug["ext_bz_bug_id"].split(
+                            "/pull/"
+                        )
+                        issue = g.get_repo(issue_repo).get_pull(int(pull_id))
+                except UnknownObjectException:
+                    links_issues_record += (
+                        "Bugzilla #%s -> Github %s, but Github %s does "
+                        "not exist\n" % (bug.id, issue_id, issue_id)
+                    )
+                    continue
+                except (ConnectionError, ReadTimeout):
+                    # we've experienced timeouts here so retry the connection
+                    if "issues" in external_bug["ext_bz_bug_id"]:
+                        issue = g.get_repo(issue_repo).get_issue(int(issue_id))
+                    elif "pull" in external_bug["ext_bz_bug_id"]:
+                        issue = g.get_repo(issue_repo).get_pull(int(pull_id))
+                if "github.com/pulp" not in issue.html_url:
+                    continue
+                links_back = False
+                text = getattr(issue, "body", "")
+                for comment in issue.get_comments():
+                    text = text + "\n\n" + comment.body
+                bugzillas = re.findall(r".*bugzilla.redhat.com(.*)=([0-9]+)", text)
+                ids = [b[1] for b in bugzillas]
+                if str(bug.id) in ids:
+                    links_back = True
+
+                if not links_back:
+                    links_issues_record += (
+                        "Bugzilla #%s -> Github %s <%s>, but Github %s does "
+                        "not link back\n"
+                        % (bug.id, issue.number, issue.html_url, issue.number)
+                    )
+
+    return links_issues_record
+
+
+def main():
+    bugzilla_api_key = os.environ["BUGZILLA_API_KEY"]
+    github_api_key = os.environ["GITHUB_API_TOKEN"]
+
+    g = get_github_connection(github_api_key)
+    BZ = get_bugzilla_connection(bugzilla_api_key)
+
+    links_issues_record = process_bugzillas(BZ, g)
+    process_github_issues(BZ, g, links_issues_record)
 
 
 if __name__ == "__main__":
