@@ -192,6 +192,13 @@
     state: present
   when: fips_state.stdout == '1'
 
+- name: Install Puppet repo on EL7
+  package:
+    name: http://yum.puppet.com/puppet-release-el-7.noarch.rpm
+  when:
+    - ansible_facts.os_family == 'RedHat'
+    - ansible_facts.distribution_major_version|int == 7
+
 - name: Install Pulp Server
   package:
     name: '@pulp-server-qpid'
