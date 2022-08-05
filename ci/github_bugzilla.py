@@ -103,6 +103,7 @@ def process_github_issues(BZ, g, links_issues_record):
             buginfo = BZ.build_createbug(
                 product="Red Hat Satellite",
                 component="Pulp",
+                version="Unspecified",
                 summary=issue.title,
                 description=issue.body,
                 cc=REQUIRED_CC,
@@ -122,6 +123,7 @@ def process_github_issues(BZ, g, links_issues_record):
             buginfo = BZ.build_createbug(
                 product="Red Hat Satellite",
                 component="Pulp",
+                version="Unspecified",
                 summary=issue.title,
                 description=issue.body,
                 cc=REQUIRED_CC,
@@ -145,6 +147,7 @@ def process_github_issues(BZ, g, links_issues_record):
                 buginfo = BZ.build_createbug(
                     product="Red Hat Satellite",
                     component="Pulp",
+                    version="Unspecified",
                     summary=issue.title,
                     description=issue.body,
                     cc=REQUIRED_CC,
