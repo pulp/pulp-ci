@@ -109,13 +109,13 @@ def process_github_issues(BZ, g, links_issues_record):
                 cc=REQUIRED_CC,
             )
             new_bz = BZ.createbug(buginfo)
+            print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
             BZ.add_external_tracker(
-                new_bz.id,
-                issue.html_url,
+                bug_ids=[new_bz.id],
+                ext_bz_bug_id=issue.html_url,
                 ext_status=issue.state,
                 ext_description=issue.title,
             )
-            print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
             continue
         bugzillas = re.findall(r".*bugzilla.redhat.com(.*)=([0-9]+)", text)
         if not bugzillas:
@@ -129,13 +129,13 @@ def process_github_issues(BZ, g, links_issues_record):
                 cc=REQUIRED_CC,
             )
             new_bz = BZ.createbug(buginfo)
+            print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
             BZ.add_external_tracker(
-                new_bz.id,
-                issue.html_url,
+                bug_ids=[new_bz.id],
+                ext_bz_bug_id=issue.html_url,
                 ext_status=issue.state,
                 ext_description=issue.title,
             )
-            print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
         for bugzilla_field in bugzillas:
             try:
                 bug_id = int(bugzilla_field[1])
@@ -153,13 +153,13 @@ def process_github_issues(BZ, g, links_issues_record):
                     cc=REQUIRED_CC,
                 )
                 new_bz = BZ.createbug(buginfo)
+                print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
                 BZ.add_external_tracker(
-                    new_bz.id,
-                    issue.html_url,
+                    bug_ids=[new_bz.id],
+                    ext_bz_bug_id=issue.html_url,
                     ext_status=issue.state,
                     ext_description=issue.title,
                 )
-                print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
                 continue
             links_back.append(False)
             if bug_id in failed_qa_bugzillas:
