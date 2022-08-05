@@ -112,9 +112,8 @@ def process_github_issues(BZ, g, links_issues_record):
             print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
             BZ.add_external_tracker(
                 bug_ids=[new_bz.id],
-                ext_bz_bug_id=issue.html_url,
-                ext_status=issue.state,
-                ext_description=issue.title,
+                ext_bz_bug_id=issue.html_url.replace("https://github.com", ""),
+                ext_type_url="https://github.com/",
             )
             continue
         bugzillas = re.findall(r".*bugzilla.redhat.com(.*)=([0-9]+)", text)
@@ -132,9 +131,8 @@ def process_github_issues(BZ, g, links_issues_record):
             print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
             BZ.add_external_tracker(
                 bug_ids=[new_bz.id],
-                ext_bz_bug_id=issue.html_url,
-                ext_status=issue.state,
-                ext_description=issue.title,
+                ext_bz_bug_id=issue.html_url.replace("https://github.com", ""),
+                ext_type_url="https://github.com/",
             )
         for bugzilla_field in bugzillas:
             try:
@@ -156,9 +154,8 @@ def process_github_issues(BZ, g, links_issues_record):
                 print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
                 BZ.add_external_tracker(
                     bug_ids=[new_bz.id],
-                    ext_bz_bug_id=issue.html_url,
-                    ext_status=issue.state,
-                    ext_description=issue.title,
+                    ext_bz_bug_id=issue.html_url.replace("https://github.com", ""),
+                    ext_type_url="https://github.com/",
                 )
                 continue
             links_back.append(False)
