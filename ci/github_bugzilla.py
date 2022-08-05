@@ -85,7 +85,6 @@ def process_github_issues(BZ, g, links_issues_record):
     downstream_changes = ""
     new_failed_qa_record = ""
     failed_qa_bugzillas = []
-    not_found_bzs = []
     links_back = []
 
     bz_label = g.get_repo("pulp/pulp_ansible").get_label("BZ")
@@ -100,7 +99,21 @@ def process_github_issues(BZ, g, links_issues_record):
         for comment in issue.get_comments():
             text = text + "\n\n" + comment.body
         if not text:
-            not_found_bzs.append(issue.html_url)
+            buginfo = BZ.build_createbug(
+                product="Red Hat Satellite",
+                component="Pulp",
+                summary=issue.title,
+                description=issue.body,
+                cc=REQUIRED_CC,
+            )
+            new_bz = BZ.createbug(buginfo)
+            BZ.add_external_tracker(
+                new_bz.id,
+                issue.html_url,
+                ext_status=issue.state,
+                ext_description=issue.title,
+            )
+            print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
             continue
         bugzillas = re.findall(r".*bugzilla.redhat.com(.*)=([0-9]+)", text)
         for bugzilla_field in bugzillas:
@@ -110,7 +123,21 @@ def process_github_issues(BZ, g, links_issues_record):
                     f"  -> https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug_id}"
                 )
             except IndexError:
-                not_found_bzs.append(issue.html_url)
+                buginfo = BZ.build_createbug(
+                    product="Red Hat Satellite",
+                    component="Pulp",
+                    summary=issue.title,
+                    description=issue.body,
+                    cc=REQUIRED_CC,
+                )
+                new_bz = BZ.createbug(buginfo)
+                BZ.add_external_tracker(
+                    new_bz.id,
+                    issue.html_url,
+                    ext_status=issue.state,
+                    ext_description=issue.title,
+                )
+                print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
                 continue
             links_back.append(False)
             if bug_id in failed_qa_bugzillas:
@@ -209,7 +236,7 @@ def process_github_issues(BZ, g, links_issues_record):
                                 try:
                                     needinfo_email = github_issue.assignee.email
                                     BZ.getuser(needinfo_email)
-                                except (BadAttributeException, TypeError):
+                                except (BadAttributeException, TypeError, AttributeError):
                                     # the upstream issue is unassigned
                                     user_has_no_bz = True
                                 except Fault as e:
@@ -310,16 +337,10 @@ def process_github_issues(BZ, g, links_issues_record):
         print("----------------------------")
         print(new_failed_qa_record)
 
-    if not_found_bzs:
-        print("\nCouldn't find Bugzilla link on the following Github issues:")
-        print("----------------------------")
-        print(not_found_bzs)
-
     if (
         links_issues_record != ""
         or downstream_state_issue_record != ""
         or new_failed_qa_record
-        or not_found_bzs
     ):
         # Raise an exception so the job fails and Jenkins will send e-mail
         raise RuntimeError("We need a human here")
