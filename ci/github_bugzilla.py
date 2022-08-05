@@ -99,26 +99,27 @@ def process_github_issues(BZ, g, links_issues_record):
         for comment in issue.get_comments():
             text = text + "\n\n" + comment.body
         if not text:
-            print("Creating BZ ...")
-            buginfo = BZ.build_createbug(
-                product="Red Hat Satellite",
-                component="Pulp",
-                version="Unspecified",
-                summary=issue.title,
-                description=issue.body,
-                cc=REQUIRED_CC,
-            )
-            new_bz = BZ.createbug(buginfo)
-            print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
-            BZ.add_external_tracker(
-                bug_ids=[new_bz.id],
-                ext_bz_bug_id=issue.html_url.replace("https://github.com", ""),
-                ext_type_url="https://github.com/",
-            )
-            issue.create_comment(new_bz.weburl)
+            if "/pull/" not in issue.html_url:
+                print("Creating BZ ...")
+                buginfo = BZ.build_createbug(
+                    product="Red Hat Satellite",
+                    component="Pulp",
+                    version="Unspecified",
+                    summary=issue.title,
+                    description=issue.body,
+                    cc=REQUIRED_CC,
+                )
+                new_bz = BZ.createbug(buginfo)
+                print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
+                BZ.add_external_tracker(
+                    bug_ids=[new_bz.id],
+                    ext_bz_bug_id=issue.html_url.replace("https://github.com", ""),
+                    ext_type_url="https://github.com/",
+                )
+                issue.create_comment(new_bz.weburl)
             continue
         bugzillas = re.findall(r".*bugzilla.redhat.com(.*)=([0-9]+)", text)
-        if not bugzillas:
+        if not bugzillas and "/pull/" not in issue.html_url:
             print("Creating BZ ...")
             buginfo = BZ.build_createbug(
                 product="Red Hat Satellite",
@@ -143,23 +144,24 @@ def process_github_issues(BZ, g, links_issues_record):
                     f"  -> https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug_id}"
                 )
             except IndexError:
-                print("Creating BZ ...")
-                buginfo = BZ.build_createbug(
-                    product="Red Hat Satellite",
-                    component="Pulp",
-                    version="Unspecified",
-                    summary=issue.title,
-                    description=issue.body,
-                    cc=REQUIRED_CC,
-                )
-                new_bz = BZ.createbug(buginfo)
-                print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
-                BZ.add_external_tracker(
-                    bug_ids=[new_bz.id],
-                    ext_bz_bug_id=issue.html_url.replace("https://github.com", ""),
-                    ext_type_url="https://github.com/",
-                )
-                issue.create_comment(new_bz.weburl)
+                if "/pull/" not in issue.html_url:
+                    print("Creating BZ ...")
+                    buginfo = BZ.build_createbug(
+                        product="Red Hat Satellite",
+                        component="Pulp",
+                        version="Unspecified",
+                        summary=issue.title,
+                        description=issue.body,
+                        cc=REQUIRED_CC,
+                    )
+                    new_bz = BZ.createbug(buginfo)
+                    print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
+                    BZ.add_external_tracker(
+                        bug_ids=[new_bz.id],
+                        ext_bz_bug_id=issue.html_url.replace("https://github.com", ""),
+                        ext_type_url="https://github.com/",
+                    )
+                    issue.create_comment(new_bz.weburl)
                 continue
             links_back.append(False)
             if bug_id in failed_qa_bugzillas:
