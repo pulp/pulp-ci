@@ -115,6 +115,7 @@ def process_github_issues(BZ, g, links_issues_record):
                 ext_bz_bug_id=issue.html_url.replace("https://github.com", ""),
                 ext_type_url="https://github.com/",
             )
+            issue.create_comment(new_bz.weburl)
             continue
         bugzillas = re.findall(r".*bugzilla.redhat.com(.*)=([0-9]+)", text)
         if not bugzillas:
@@ -134,6 +135,7 @@ def process_github_issues(BZ, g, links_issues_record):
                 ext_bz_bug_id=issue.html_url.replace("https://github.com", ""),
                 ext_type_url="https://github.com/",
             )
+            issue.create_comment(new_bz.weburl)
         for bugzilla_field in bugzillas:
             try:
                 bug_id = int(bugzilla_field[1])
@@ -157,6 +159,7 @@ def process_github_issues(BZ, g, links_issues_record):
                     ext_bz_bug_id=issue.html_url.replace("https://github.com", ""),
                     ext_type_url="https://github.com/",
                 )
+                issue.create_comment(new_bz.weburl)
                 continue
             links_back.append(False)
             if bug_id in failed_qa_bugzillas:
