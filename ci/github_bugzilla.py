@@ -117,6 +117,23 @@ def process_github_issues(BZ, g, links_issues_record):
             print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
             continue
         bugzillas = re.findall(r".*bugzilla.redhat.com(.*)=([0-9]+)", text)
+        if not bugzillas:
+            print("Creating BZ ...")
+            buginfo = BZ.build_createbug(
+                product="Red Hat Satellite",
+                component="Pulp",
+                summary=issue.title,
+                description=issue.body,
+                cc=REQUIRED_CC,
+            )
+            new_bz = BZ.createbug(buginfo)
+            BZ.add_external_tracker(
+                new_bz.id,
+                issue.html_url,
+                ext_status=issue.state,
+                ext_description=issue.title,
+            )
+            print("Created new bug id=%s url=%s" % (new_bz.id, new_bz.weburl))
         for bugzilla_field in bugzillas:
             try:
                 bug_id = int(bugzilla_field[1])
