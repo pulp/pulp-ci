@@ -99,6 +99,7 @@ def process_github_issues(BZ, g, links_issues_record):
         for comment in issue.get_comments():
             text = text + "\n\n" + comment.body
         if not text:
+            print("Creating BZ ...")
             buginfo = BZ.build_createbug(
                 product="Red Hat Satellite",
                 component="Pulp",
@@ -123,6 +124,7 @@ def process_github_issues(BZ, g, links_issues_record):
                     f"  -> https://bugzilla.redhat.com/buglist.cgi?quicksearch={bug_id}"
                 )
             except IndexError:
+                print("Creating BZ ...")
                 buginfo = BZ.build_createbug(
                     product="Red Hat Satellite",
                     component="Pulp",
