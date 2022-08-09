@@ -398,13 +398,13 @@ def process_bugzillas(BZ, g):
                         issue_repo, gh_id = external_bug["ext_bz_bug_id"].split(
                             "/issues/"
                         )
-                        issue = g.get_repo(issue_repo).get_issue(int(gh_id))
+                        issue = g.get_repo(issue_repo.strip("/")).get_issue(int(gh_id))
                     elif "pull" in external_bug["ext_bz_bug_id"]:
                         links_back = True
                         issue_repo, gh_id = external_bug["ext_bz_bug_id"].split(
                             "/pull/"
                         )
-                        issue = g.get_repo(issue_repo).get_pull(int(gh_id))
+                        issue = g.get_repo(issue_repo.strip("/")).get_pull(int(gh_id))
                 except UnknownObjectException:
                     if gh_id:
                         links_issues_record += (
