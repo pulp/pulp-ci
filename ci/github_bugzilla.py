@@ -391,34 +391,34 @@ def process_bugzillas(BZ, g):
         for external_bug in bug.external_bugs:
             if str(external_bug["type"]["description"]).lower() == "github":
                 add_cc_list_to_bugzilla_bug(bug)
-                issue_id = None
-                pull_id = None
+                gh_id = None
                 links_back = False
                 try:
                     if "issues" in external_bug["ext_bz_bug_id"]:
-                        issue_repo, issue_id = external_bug["ext_bz_bug_id"].split(
+                        issue_repo, gh_id = external_bug["ext_bz_bug_id"].split(
                             "/issues/"
                         )
-                        issue = g.get_repo(issue_repo).get_issue(int(issue_id))
+                        issue = g.get_repo(issue_repo).get_issue(int(gh_id))
                     elif "pull" in external_bug["ext_bz_bug_id"]:
                         links_back = True
-                        issue_repo, pull_id = external_bug["ext_bz_bug_id"].split(
+                        issue_repo, gh_id = external_bug["ext_bz_bug_id"].split(
                             "/pull/"
                         )
-                        issue = g.get_repo(issue_repo).get_pull(int(pull_id))
+                        issue = g.get_repo(issue_repo).get_pull(int(gh_id))
                 except UnknownObjectException:
-                    links_issues_record += (
-                        "Bugzilla #%s -> Github %s, but Github %s does "
-                        "not exist\n" % (bug.id, issue_id, issue_id)
-                    )
+                    if gh_id:
+                        links_issues_record += (
+                            "Bugzilla #%s -> Github %s, but Github %s does "
+                            "not exist\n" % (bug.id, gh_id, gh_id)
+                        )
                     continue
                 except (ConnectionError, ReadTimeout):
                     # we've experienced timeouts here so retry the connection
                     if "issues" in external_bug["ext_bz_bug_id"]:
-                        issue = g.get_repo(issue_repo).get_issue(int(issue_id))
+                        issue = g.get_repo(issue_repo).get_issue(int(gh_id))
                     elif "pull" in external_bug["ext_bz_bug_id"]:
                         links_back = True
-                        issue = g.get_repo(issue_repo).get_pull(int(pull_id))
+                        issue = g.get_repo(issue_repo).get_pull(int(gh_id))
                 if "github.com/pulp" not in issue.html_url:
                     continue
                 print(f"  -> {issue.html_url}")
@@ -432,6 +432,8 @@ def process_bugzillas(BZ, g):
 
                 if not links_back:
                     issue.create_comment(bug.weburl)
+                    if not issue.number:
+                        continue
                     links_issues_record += (
                         "Bugzilla #%s -> Github %s <%s>, but Github %s does "
                         "not link back\n"
