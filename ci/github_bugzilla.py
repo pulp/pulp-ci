@@ -431,6 +431,7 @@ def process_bugzillas(BZ, g):
                     links_back = True
 
                 if not links_back:
+                    issue.create_comment(bug.weburl)
                     links_issues_record += (
                         "Bugzilla #%s -> Github %s <%s>, but Github %s does "
                         "not link back\n"
