@@ -67,5 +67,4 @@ This repository is the home of Pulp's CI files.
 
 ### Pulp 2to3 Migration
 
-* [![Pulp Nightly CI/CD](https://github.com/pulp/pulp-2to3-migration/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulp-2to3-migration/actions/workflows/nightly.yml)
-* [![Pulp Release CI/CD](https://github.com/pulp/pulp-2to3-migration/actions/workflows/release.yml/badge.svg)](https://github.com/pulp/pulp-2to3-migration/actions/workflows/release.yml)
+* Archived
