@@ -65,6 +65,11 @@ This repository is the home of Pulp's CI files.
 * [![Pulp Nightly CI/CD](https://github.com/pulp/pulp_ostree/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulp_ostree/actions/workflows/nightly.yml)
 * [![Pulp Release CI/CD](https://github.com/pulp/pulp_ostree/actions/workflows/release.yml/badge.svg)](https://github.com/pulp/pulp_ostree/actions/workflows/release.yml)
 
+### Oci-env
+* [![Nightly CI/CD](https://github.com/pulp/oci_env/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/oci_env/actions/workflows/nightly.yml)
+* [![Release CI/CD](https://github.com/pulp/oci_env/actions/workflows/release.yml/badge.svg)](https://github.com/pulp/oci_env/actions/workflows/release.yml)
+
 ### Pulp 2to3 Migration
 
 * Archived
+
