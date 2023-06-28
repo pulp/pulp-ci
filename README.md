@@ -31,6 +31,11 @@ This repository is the home of Pulp's CI files.
 * [![Pulp Nightly CI/CD](https://github.com/pulp/pulp_file/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulp_file/actions/workflows/nightly.yml)
 * [![Pulp Release CI/CD](https://github.com/pulp/pulp_file/actions/workflows/release.yml/badge.svg)](https://github.com/pulp/pulp_file/actions/workflows/release.yml)
 
+### Pulp Gem
+
+* [![Pulp Nightly CI/CD](https://github.com/pulp/pulp_gem/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulp_gem/actions/workflows/nightly.yml)
+* [![Pulp Release CI/CD](https://github.com/pulp/pulp_gem/actions/workflows/release.yml/badge.svg)](https://github.com/pulp/pulp_gem/actions/workflows/release.yml)
+
 ### Pulp Maven
 
 * [![Pulp Nightly CI/CD](https://github.com/pulp/pulp_maven/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulp_maven/actions/workflows/nightly.yml)
