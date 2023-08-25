@@ -6,6 +6,8 @@ This repository is the home of Pulp's CI files.
 
 ## Pulp Project CI Overview
 
+[![pulp-oci-images CI](https://github.com/pulp/pulp-oci-images/actions/workflows/pulp_images.yml/badge.svg)](https://github.com/pulp/pulp-oci-images/actions/workflows/pulp_images.yml)
+
 Plugin | Nightly | CI Update | CLI
 :---|---:|---:|---:
 Pulpcore | [![Pulpcore Nightly CI](https://github.com/pulp/pulpcore/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulpcore/actions/workflows/nightly.yml) | [![Pulpcore CI Update](https://github.com/pulp/pulpcore/actions/workflows/update_ci.yml/badge.svg)](https://github.com/pulp/pulpcore/actions/workflows/update_ci.yml) | [![pulp-cli Nightly](https://github.com/pulp/pulp-cli/actions/workflows/nightly.yml/badge.svg)](https://github.com/pulp/pulp-cli/actions/workflows/nightly.yml)
