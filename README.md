@@ -6,7 +6,16 @@ This repository is the home of Pulp's CI files.
 
 ## Pulp Project CI Overview
 
-[![pulp-oci-images CI](https://github.com/pulp/pulp-oci-images/actions/workflows/pulp_images.yml/badge.svg)](https://github.com/pulp/pulp-oci-images/actions/workflows/pulp_images.yml)
+### OCI Images
+
+Nightly: [![Release Image](https://github.com/pulp/pulp-oci-images/actions/workflows/release.yml/badge.svg?event=schedule)](https://github.com/pulp/pulp-oci-images/actions/workflows/release.yml)
+
+Merge: [![Release Image](https://github.com/pulp/pulp-oci-images/actions/workflows/release.yml/badge.svg?event=push)](https://github.com/pulp/pulp-oci-images/actions/workflows/release.yml)
+
+Manual: [![Release Image](https://github.com/pulp/pulp-oci-images/actions/workflows/release.yml/badge.svg?event=workflow_dispatch)](https://github.com/pulp/pulp-oci-images/actions/workflows/release.yml)
+
+### Unified Docs build
+
 [![Docs Publication Nightly CI](https://github.com/pulp/pulpcore/actions/workflows/staging-docs.yml/badge.svg)](https://github.com/pulp/pulpcore/actions/workflows/staging-docs.yml)
 
 Plugin | Nightly | CI Update | CLI
