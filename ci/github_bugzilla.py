@@ -95,7 +95,7 @@ def process_github_issues(BZ, g, links_issues_record):
         if "github.com/pulp" not in issue.html_url:
             continue
         print(f"Processing github issue: {issue.html_url}")
-        text = getattr(issue, "body", "")
+        text = "" if getattr(issue, "body", "") == None else getattr(issue, "body", "")
         for comment in issue.get_comments():
             text = text + "\n\n" + comment.body
         if not text:
@@ -422,7 +422,7 @@ def process_bugzillas(BZ, g):
                 if "github.com/pulp" not in issue.html_url:
                     continue
                 print(f"  -> {issue.html_url}")
-                text = getattr(issue, "body", "")
+                text = "" if getattr(issue, "body", "") == None else getattr(issue, "body", "")
                 for comment in issue.get_comments():
                     text = text + "\n\n" + comment.body
                 bugzillas = re.findall(r".*bugzilla.redhat.com(.*)=([0-9]+)", text)
