@@ -16,7 +16,7 @@ Manual: [![Release Image](https://github.com/pulp/pulp-oci-images/actions/workfl
 
 ### Unified Docs build
 
-[![Docs Publication Nightly CI](https://github.com/pulp/pulpcore/actions/workflows/staging-docs.yml/badge.svg)](https://github.com/pulp/pulpcore/actions/workflows/staging-docs.yml)
+[![Docs Publication Nightly CI](https://github.com/pulp/pulpcore/actions/workflows/all-docs.yml/badge.svg)](https://github.com/pulp/pulpcore/actions/workflows/all-docs.yml)
 
 Plugin | Nightly | CI Update | CLI
 :---|---:|---:|---:
