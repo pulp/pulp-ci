@@ -1,7 +1,0 @@
-- name: restart apache
-  service:
-    name: httpd
-    state: restarted
-
-- name: Save IPv4 iptables configuration
-  shell: 'iptables-save > /etc/sysconfig/iptables'

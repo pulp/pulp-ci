@@ -1,7 +1,0 @@
-- job:
-    name: job-name
-    properties:
-        - {dev,qe,...}-ownership
-    publishers:
-        - email-notify-owners
-        - delete-slave-node

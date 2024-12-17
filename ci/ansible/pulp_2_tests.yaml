@@ -1,4 +1,0 @@
-- hosts: all
-  become: false
-  roles:
-  - pulp-2-tests

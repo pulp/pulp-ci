@@ -1,7 +1,0 @@
----
-- name: Generate initramfs
-  command: dracut -f
-  become: true
-
-- name: Restart host
-  reboot:
