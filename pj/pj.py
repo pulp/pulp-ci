@@ -55,6 +55,27 @@ def main(ctx: click.Context, /) -> None:
 
 
 @main.command()
+@click.option("--my/--all", default=None)
+@pass_jira_context
+def sprint(ctx: JiraContext, /, my: bool) -> None:
+    conditions = [
+        f"project = {ctx.project}",
+        "sprint in openSprints()",
+    ]
+    if my is True:
+        conditions.append("assignee = currentUser()")
+    elif my is None:
+        conditions.append("assignee is EMPTY")
+    # False -> all sprint items
+
+    for issue in search_issues_paginated(
+        ctx.jira,
+        " AND ".join(conditions) + " ORDER BY priority DESC, updated DESC",
+    ):
+        print(issue, issue.fields.summary)
+
+
+@main.command()
 @pass_jira_context
 def issues(ctx: JiraContext, /) -> None:
     for issue in search_issues_paginated(
