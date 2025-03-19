@@ -40,8 +40,15 @@ def search_issues_paginated(jira: JIRA, jql: str):
 
 class JiraContext:
     def __init__(self, config: Config):
-        self.jira: JIRA = JIRA(server=config.server, token_auth=config.token)
+        self._config = config
+        self._jira: JIRA | None = None
         self.project: str = config.project
+
+    @property
+    def jira(self) -> JIRA:
+        if self._jira is None:
+            self._jira = JIRA(server=self._config.server, token_auth=self._config.token)
+        return self._jira
 
 
 pass_jira_context = click.make_pass_decorator(JiraContext)
