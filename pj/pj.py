@@ -6,8 +6,9 @@ import typing as t
 from pathlib import Path
 import json
 import tomllib
+from collections import defaultdict
 
-from jira import JIRA
+from jira import JIRA, Issue
 from jira.utils import remove_empty_attributes
 from pydantic.dataclasses import dataclass
 import click
@@ -26,22 +27,12 @@ def read_config() -> Config:
     return Config(**data)
 
 
-def search_issues_paginated(jira: JIRA, jql: str):
-    start_at = 0
-    max_results = 50
-    while results := jira.search_issues(
-        jql,
-        maxResults=max_results,
-        startAt=start_at,
-    ):
-        yield from results
-        start_at += max_results
-
-
 class JiraContext:
     def __init__(self, config: Config):
         self._config = config
         self._jira: JIRA | None = None
+        self._jira_fields: list[dict[str, t.Any]] | None = None
+        self._sp_field_id: str | None = None
         self.project: str = config.project
 
     @property
@@ -49,6 +40,77 @@ class JiraContext:
         if self._jira is None:
             self._jira = JIRA(server=self._config.server, token_auth=self._config.token)
         return self._jira
+
+    @property
+    def jira_fields(self) -> list[dict[str, t.Any]]:
+        if self._jira_fields is None:
+            self._jira_fields = self.jira.fields()
+        return self._jira_fields
+
+    @property
+    def sp_field_id(self) -> str:
+        if self._sp_field_id is None:
+            self._sp_field_id = next(
+                (
+                    field["id"]
+                    for field in self.jira_fields
+                    if field["name"] == "Story Points"
+                )
+            )
+        return self._sp_field_id
+
+    def search_issues_paginated(
+        self, jql: str, max_results: int | None = None
+    ) -> t.Iterator[Issue]:
+        start_at = 0
+        max_results = 50  # TODO
+        while results := self.jira.search_issues(
+            jql,
+            maxResults=max_results,
+            startAt=start_at,
+        ):
+            yield from results
+            start_at += max_results
+
+    def print_issue(self, issue) -> None:
+        print(
+            issue.fields.issuetype.name,
+            "\t",
+            issue,
+            "\t",
+            issue.get_field(self.sp_field_id),
+            "\t",
+            issue.fields.summary,
+        )
+
+    def print_issue_detail(self, issue) -> None:
+        print(issue.fields.issuetype.name, issue)
+        print(issue.fields.summary)
+        print(issue.fields.description)
+        print("Status:", issue.fields.status.name)
+        for fieldname in ["Story Points", "Resolution"]:
+            field_id = next(
+                (
+                    field["id"]
+                    for field in self.jira_fields
+                    if field["name"] == fieldname
+                )
+            )
+            print(fieldname + ":", issue.get_field(field_id))
+
+    def print_kanban(self, issues) -> None:
+        results: dict[str, list[Issue]] = defaultdict(list)
+        sp_accumulator: dict[str, int] = defaultdict(int)
+        for issue in issues:
+            results[issue.fields.status.name].append(issue)
+            sp_accumulator[issue.fields.status.name] += issue.get_field(
+                self.sp_field_id
+            )
+        for status in ["New", "In Progress", "Closed"]:
+            issues = results[status]
+            print(f"## {status} ({sp_accumulator[status]})")
+            for issue in issues:
+                self.print_issue(issue)
 
 
 pass_jira_context = click.make_pass_decorator(JiraContext)
@@ -62,7 +124,7 @@ def main(ctx: click.Context, /) -> None:
 
 
 @main.command()
-@click.option("--my/--all", default=None)
+@click.option("--my/--unassigned", default=None, help="defaults to all")
 @pass_jira_context
 def sprint(ctx: JiraContext, /, my: bool) -> None:
     conditions = [
@@ -71,44 +133,37 @@ def sprint(ctx: JiraContext, /, my: bool) -> None:
     ]
     if my is True:
         conditions.append("assignee = currentUser()")
-    elif my is None:
+    elif my is False:
         conditions.append("assignee is EMPTY")
-    # False -> all sprint items
+    # None -> all sprint items
 
-    for issue in search_issues_paginated(
-        ctx.jira,
-        " AND ".join(conditions) + " ORDER BY priority DESC, updated DESC",
-    ):
-        print(issue, issue.fields.summary)
+    jql = " AND ".join(conditions) + " ORDER BY priority DESC, updated DESC"
+
+    ctx.print_kanban(ctx.search_issues_paginated(jql))
 
 
 @main.command()
 @pass_jira_context
 def issues(ctx: JiraContext, /) -> None:
-    for issue in search_issues_paginated(
-        ctx.jira,
-        f"project = {ctx.project} AND resolution = Unresolved ORDER BY priority DESC, updated DESC",
-    ):
-        print(issue, issue.fields.summary)
+    jql = f"project = {ctx.project} AND resolution = Unresolved ORDER BY priority DESC, updated DESC"
+    for issue in ctx.search_issues_paginated(jql):
+        ctx.print_issue(issue)
 
 
 @main.command()
 @pass_jira_context
 def blocker(ctx: JiraContext, /) -> None:
-    for issue in ctx.jira.search_issues(
-        f"project = {ctx.project} AND resolution = Unresolved AND priority = blocker ORDER BY updated DESC"
-    ):
-        print(issue, issue.fields.summary)
+    jql = f"project = {ctx.project} AND resolution = Unresolved AND priority = blocker ORDER BY updated DESC"
+    for issue in ctx.search_issues_paginated(jql):
+        ctx.print_issue(issue)
 
 
 @main.command()
 @pass_jira_context
 def my_issues(ctx: JiraContext, /) -> None:
-    jira = ctx.jira
-    for issue in jira.search_issues(
-        "assignee = currentUser() AND resolution = Unresolved order by updated DESC"
-    ):
-        print(issue, issue.fields.summary)
+    jql = "assignee = currentUser() AND resolution = Unresolved order by updated DESC"
+    for issue in ctx.search_issues_paginated(jql):
+        ctx.print_issue(issue)
 
 
 @main.command()
@@ -125,8 +180,8 @@ def search(
     search_phrase: str,
 ) -> None:
     jql = f"project = {ctx.project} AND resolution = Unresolved AND text ~ '{search_phrase}' ORDER BY updated DESC"
-    for issue in ctx.jira.search_issues(jql):
-        print(issue, issue.fields.summary)
+    for issue in ctx.search_issues_paginated(jql):
+        ctx.print_issue(issue)
 
 
 @main.command()
@@ -146,20 +201,12 @@ def show(
         raw_issue = remove_empty_attributes(raw_issue)
         print(json.dumps(raw_issue))
     else:
-        print(issue.fields.issuetype.name, issue)
-        print(issue.fields.summary)
-        print(issue.fields.description)
-        print("Status:", issue.fields.status.name)
-        fields = ctx.jira.fields()
-        for fieldname in ["Story Points", "Resolution"]:
-            field_id = next(
-                (field["id"] for field in fields if field["name"] == fieldname)
-            )
-            print(fieldname + ":", issue.get_field(field_id))
+        ctx.print_issue_detail(issue)
 
 
 @main.command()
-@click.option("--assign/--no-assign", default=True)
+@click.option("--assign/--no-assign", default=False)
+# @click.option("--task/--bug/--epic")
 @click.argument("summary")
 @click.argument("description")
 @pass_jira_context
@@ -179,7 +226,7 @@ def create(
     if assign:
         fields["assignee"] = {"name": ctx.jira.current_user()}
     issue = ctx.jira.create_issue(fields)
-    print(issue)
+    ctx.print_issue_detail(issue)
 
 
 @main.command()
