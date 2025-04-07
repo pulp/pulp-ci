@@ -7,6 +7,7 @@ from pathlib import Path
 import json
 import tomllib
 from collections import defaultdict
+import dataclasses
 
 from jira import JIRA, Issue
 from jira.utils import remove_empty_attributes
@@ -19,6 +20,9 @@ class Config:
     server: str = "https://issues.redhat.com"
     token: str = ""
     project: str = "PULP"
+    kanban_status: list[str] = dataclasses.field(
+        default_factory=lambda: ["New", "In Progress", "Closed"]
+    )
 
 
 def read_config() -> Config:
@@ -106,7 +110,7 @@ class JiraContext:
             sp_accumulator[issue.fields.status.name] += issue.get_field(
                 self.sp_field_id
             )
-        for status in ["New", "In Progress", "Closed"]:
+        for status in self._config.kanban_status:
             issues = results[status]
             print(f"## {status} ({sp_accumulator[status]})")
             for issue in issues:
@@ -126,7 +130,7 @@ def main(ctx: click.Context, /) -> None:
 @main.command()
 @click.option("--my/--unassigned", default=None, help="defaults to all")
 @pass_jira_context
-def sprint(ctx: JiraContext, /, my: bool) -> None:
+def sprint(ctx: JiraContext, /, my: bool | None) -> None:
     conditions = [
         f"project = {ctx.project}",
         "sprint in openSprints()",
@@ -143,25 +147,23 @@ def sprint(ctx: JiraContext, /, my: bool) -> None:
 
 
 @main.command()
+@click.option("--my/--unassigned", default=None, help="defaults to all")
+@click.option("--blocker", is_flag=True)
 @pass_jira_context
-def issues(ctx: JiraContext, /) -> None:
-    jql = f"project = {ctx.project} AND resolution = Unresolved ORDER BY priority DESC, updated DESC"
-    for issue in ctx.search_issues_paginated(jql):
-        ctx.print_issue(issue)
+def issues(ctx: JiraContext, /, my: bool | None, blocker: bool) -> None:
+    conditions = [
+        f"project = {ctx.project}",
+    ]
+    if my is True:
+        conditions.append("assignee = currentUser()")
+    elif my is False:
+        conditions.append("assignee is EMPTY")
+    # None -> all sprint items
 
+    if blocker:
+        conditions.append("priority = blocker")
 
-@main.command()
-@pass_jira_context
-def blocker(ctx: JiraContext, /) -> None:
-    jql = f"project = {ctx.project} AND resolution = Unresolved AND priority = blocker ORDER BY updated DESC"
-    for issue in ctx.search_issues_paginated(jql):
-        ctx.print_issue(issue)
-
-
-@main.command()
-@pass_jira_context
-def my_issues(ctx: JiraContext, /) -> None:
-    jql = "assignee = currentUser() AND resolution = Unresolved order by updated DESC"
+    jql = " AND ".join(conditions) + " ORDER BY priority DESC, updated DESC"
     for issue in ctx.search_issues_paginated(jql):
         ctx.print_issue(issue)
 
@@ -243,11 +245,8 @@ def storypoint(
     Mark issue with a certain number of storypoints.
     """
     issue = ctx.jira.issue(issue_id)
-    sp_field_id = next(
-        (field["id"] for field in ctx.jira.fields() if field["name"] == "Story Points")
-    )
-    print("Story Points:", issue.get_field(sp_field_id), "->", story_points)
-    issue.update(fields={sp_field_id: float(story_points)})
+    print("Story Points:", issue.get_field(ctx.sp_field_id), "->", story_points)
+    issue.update(fields={ctx.sp_field_id: float(story_points)})
 
 
 @main.command()
@@ -297,7 +296,7 @@ def fields(ctx: JiraContext, /) -> None:
     """
     Dump available fields.
     """
-    for field in ctx.jira.fields():
+    for field in ctx.jira_fields:
         print(field["name"], "(id=" + field["id"] + ")")
 
 
