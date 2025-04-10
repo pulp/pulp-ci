@@ -9,7 +9,8 @@ import tomllib
 from collections import defaultdict
 import dataclasses
 
-from jira import JIRA, Issue
+from jira import JIRA
+from jira.resources import Issue, IssueType, Resolution
 from jira.utils import remove_empty_attributes
 from pydantic.dataclasses import dataclass
 import click
@@ -35,8 +36,10 @@ class JiraContext:
     def __init__(self, config: Config):
         self._config = config
         self._jira: JIRA | None = None
-        self._jira_fields: list[dict[str, t.Any]] | None = None
+        self._fields: list[dict[str, t.Any]] | None = None
         self._sp_field_id: str | None = None
+        self._issue_types: list[IssueType] | None = None
+        self._resolutions: list[Resolution] | None = None
         self.project: str = config.project
 
     @property
@@ -46,10 +49,11 @@ class JiraContext:
         return self._jira
 
     @property
-    def jira_fields(self) -> list[dict[str, t.Any]]:
-        if self._jira_fields is None:
-            self._jira_fields = self.jira.fields()
-        return self._jira_fields
+    def fields(self) -> list[dict[str, t.Any]]:
+        if self._fields is None:
+            # Idea: Cache them on disc.
+            self._fields = self.jira.fields()
+        return self._fields
 
     @property
     def sp_field_id(self) -> str:
@@ -57,11 +61,23 @@ class JiraContext:
             self._sp_field_id = next(
                 (
                     field["id"]
-                    for field in self.jira_fields
+                    for field in self.fields
                     if field["name"] == "Story Points"
                 )
             )
         return self._sp_field_id
+
+    @property
+    def issue_types(self) -> list[IssueType]:
+        if self._issue_types is None:
+            self._issue_types = self.jira.issue_types_for_project(self.project)
+        return self._issue_types
+
+    @property
+    def resolutions(self) -> list[Resolution]:
+        if self._resolutions is None:
+            self._resolutions = self.jira.resolutions()
+        return self._resolutions
 
     def search_issues_paginated(
         self, jql: str, max_results: int | None = None
@@ -94,11 +110,7 @@ class JiraContext:
         print("Status:", issue.fields.status.name)
         for fieldname in ["Story Points", "Resolution"]:
             field_id = next(
-                (
-                    field["id"]
-                    for field in self.jira_fields
-                    if field["name"] == fieldname
-                )
+                (field["id"] for field in self.fields if field["name"] == fieldname)
             )
             print(fieldname + ":", issue.get_field(field_id))
 
@@ -262,9 +274,7 @@ def close(
     (ATM this is the only supported resolution.)
     """
     issue = ctx.jira.issue(issue_id)
-    resolution_id = next(
-        (res.id for res in ctx.jira.resolutions() if res.name == "Done")
-    )
+    resolution_id = next((res.id for res in ctx.resolutions if res.name == "Done"))
     transitions = ctx.jira.transitions(issue)
     close_id = next((t["id"] for t in transitions if t["name"] == "Closed"))
     ctx.jira.transition_issue(issue, close_id, resolution={"id": resolution_id})
@@ -276,7 +286,7 @@ def types(ctx: JiraContext, /) -> None:
     """
     Dump available issue types for the project.
     """
-    for issue_type in ctx.jira.issue_types_for_project(ctx.project):
+    for issue_type in ctx.issue_types:
         print(issue_type.name, f"(id={issue_type.id})")
 
 
@@ -286,7 +296,7 @@ def resolutions(ctx: JiraContext, /) -> None:
     """
     Dump available resolutions.
     """
-    for resolution in ctx.jira.resolutions():
+    for resolution in ctx.resolutions:
         print(resolution.name, f"(id={resolution.id})")
 
 
@@ -296,7 +306,7 @@ def fields(ctx: JiraContext, /) -> None:
     """
     Dump available fields.
     """
-    for field in ctx.jira_fields:
+    for field in ctx.fields:
         print(field["name"], "(id=" + field["id"] + ")")
 
 
