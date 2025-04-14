@@ -98,6 +98,8 @@ class JiraContext:
             "\t",
             issue,
             "\t",
+            issue.fields.status,
+            "\t",
             issue.get_field(self.sp_field_id),
             "\t",
             issue.fields.summary,
@@ -165,6 +167,7 @@ def sprint(ctx: JiraContext, /, my: bool | None) -> None:
 def issues(ctx: JiraContext, /, my: bool | None, blocker: bool) -> None:
     conditions = [
         f"project = {ctx.project}",
+        "status != 'Closed'",
     ]
     if my is True:
         conditions.append("assignee = currentUser()")
