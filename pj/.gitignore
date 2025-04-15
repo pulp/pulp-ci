@@ -1,2 +1,3 @@
 .jiraauth
-.pjcache
+.pj_cache
+.pj_config

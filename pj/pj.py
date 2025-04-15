@@ -12,6 +12,7 @@ import dataclasses
 from jira import JIRA
 from jira.resources import Issue, IssueType, Resolution
 from jira.utils import remove_empty_attributes
+from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
 import click
 
@@ -26,18 +27,24 @@ class Config:
     )
 
 
+class Cache(BaseModel):
+    field_ids: dict[str, str] | None = None
+    issue_types: list[t.Any] | None = None
+    resolutions: list[t.Any] | None = None
+
+
 def read_config() -> Config:
-    conf_path = Path(".") / ".jiraauth"
+    conf_path = Path(".") / ".pj_config"
     data = tomllib.loads(conf_path.read_text())["default"]
     return Config(**data)
 
 
 class JiraContext:
     def __init__(self, config: Config):
-        self._config = config
+        self._config: Config = config
+        self._cache_dirty: bool = False
+        self._cache: Cache = Cache()
         self._jira: JIRA | None = None
-        self._fields: list[dict[str, t.Any]] | None = None
-        self._sp_field_id: str | None = None
         self._issue_types: list[IssueType] | None = None
         self._resolutions: list[Resolution] | None = None
         self.project: str = config.project
@@ -49,35 +56,47 @@ class JiraContext:
         return self._jira
 
     @property
-    def fields(self) -> list[dict[str, t.Any]]:
-        if self._fields is None:
-            # Idea: Cache them on disc.
-            self._fields = self.jira.fields()
-        return self._fields
-
-    @property
-    def sp_field_id(self) -> str:
-        if self._sp_field_id is None:
-            self._sp_field_id = next(
-                (
-                    field["id"]
-                    for field in self.fields
-                    if field["name"] == "Story Points"
-                )
-            )
-        return self._sp_field_id
+    def field_ids(self) -> dict[str, str]:
+        if self._cache.field_ids is None:
+            self._cache.field_ids = {
+                field["name"]: field["id"] for field in self.jira.fields()
+            }
+            self._cache_dirty = True
+        return self._cache.field_ids
 
     @property
     def issue_types(self) -> list[IssueType]:
-        if self._issue_types is None:
-            self._issue_types = self.jira.issue_types_for_project(self.project)
-        return self._issue_types
+        if self._cache.issue_types is None:
+            result = self.jira.issue_types_for_project(self.project)
+            self._cache.issue_types = [it.raw for it in result]
+            self._cache_dirty = True
+        else:
+            result = [IssueType(None, None, raw=it) for it in self._cache.issue_types]
+        return result
 
     @property
     def resolutions(self) -> list[Resolution]:
-        if self._resolutions is None:
-            self._resolutions = self.jira.resolutions()
-        return self._resolutions
+        if self._cache.resolutions is None:
+            result = self.jira.resolutions()
+            self._cache.resolutions = [res.raw for res in result]
+            self._cache_dirty = True
+        else:
+            result = [
+                Resolution(None, None, raw=res) for res in self._cache.resolutions
+            ]
+        return result
+
+    def read_cache(self) -> None:
+        cache_path = Path(".") / ".pj_cache"
+        if cache_path.exists():
+            self._cache = Cache.model_validate_json(cache_path.read_text())
+        else:
+            self._cache = Cache()
+
+    def dump_cache(self) -> None:
+        if self._cache_dirty:
+            cache_path = Path(".") / ".pj_cache"
+            cache_path.write_text(self._cache.model_dump_json())
 
     def search_issues_paginated(
         self, jql: str, max_results: int | None = None
@@ -100,7 +119,7 @@ class JiraContext:
             "\t",
             issue.fields.status,
             "\t",
-            issue.get_field(self.sp_field_id),
+            issue.get_field(self.field_ids["Story Points"]),
             "\t",
             issue.fields.summary,
         )
@@ -111,10 +130,7 @@ class JiraContext:
         print(issue.fields.description)
         print("Status:", issue.fields.status.name)
         for fieldname in ["Story Points", "Resolution"]:
-            field_id = next(
-                (field["id"] for field in self.fields if field["name"] == fieldname)
-            )
-            print(fieldname + ":", issue.get_field(field_id))
+            print(fieldname + ":", issue.get_field(self.field_ids[fieldname]))
 
     def print_kanban(self, issues) -> None:
         results: dict[str, list[Issue]] = defaultdict(list)
@@ -122,7 +138,7 @@ class JiraContext:
         for issue in issues:
             results[issue.fields.status.name].append(issue)
             sp_accumulator[issue.fields.status.name] += issue.get_field(
-                self.sp_field_id
+                self.field_ids["Story Points"]
             )
         for status in self._config.kanban_status:
             issues = results[status]
@@ -139,6 +155,9 @@ pass_jira_context = click.make_pass_decorator(JiraContext)
 def main(ctx: click.Context, /) -> None:
     config = read_config()
     ctx.obj = JiraContext(config)
+
+    ctx.obj.read_cache()
+    ctx.call_on_close(ctx.obj.dump_cache)
 
 
 @main.command()
@@ -260,8 +279,13 @@ def storypoint(
     Mark issue with a certain number of storypoints.
     """
     issue = ctx.jira.issue(issue_id)
-    print("Story Points:", issue.get_field(ctx.sp_field_id), "->", story_points)
-    issue.update(fields={ctx.sp_field_id: float(story_points)})
+    print(
+        "Story Points:",
+        issue.get_field(ctx.field_ids["Story Points"]),
+        "->",
+        story_points,
+    )
+    issue.update(fields={ctx.field_ids["Story Points"]: float(story_points)})
 
 
 @main.command()
@@ -309,8 +333,8 @@ def fields(ctx: JiraContext, /) -> None:
     """
     Dump available fields.
     """
-    for field in ctx.fields:
-        print(field["name"], "(id=" + field["id"] + ")")
+    for name, id in ctx.field_ids.items():
+        print(name, "(id=" + id + ")")
 
 
 @main.command()
