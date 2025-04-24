@@ -71,7 +71,10 @@ class JiraContext:
             self._cache.issue_types = [it.raw for it in result]
             self._cache_dirty = True
         else:
-            result = [IssueType(None, None, raw=it) for it in self._cache.issue_types]
+            result = [
+                IssueType({}, self.jira._session, raw=it)
+                for it in self._cache.issue_types
+            ]
         return result
 
     @property
@@ -82,7 +85,8 @@ class JiraContext:
             self._cache_dirty = True
         else:
             result = [
-                Resolution(None, None, raw=res) for res in self._cache.resolutions
+                Resolution({}, self.jira._session, raw=res)
+                for res in self._cache.resolutions
             ]
         return result
 
@@ -137,8 +141,8 @@ class JiraContext:
         sp_accumulator: dict[str, int] = defaultdict(int)
         for issue in issues:
             results[issue.fields.status.name].append(issue)
-            sp_accumulator[issue.fields.status.name] += issue.get_field(
-                self.field_ids["Story Points"]
+            sp_accumulator[issue.fields.status.name] += (
+                issue.get_field(self.field_ids["Story Points"]) or 0.0
             )
         for status in self._config.kanban_status:
             issues = results[status]
@@ -286,6 +290,23 @@ def storypoint(
         story_points,
     )
     issue.update(fields={ctx.field_ids["Story Points"]: float(story_points)})
+
+
+@main.command()
+@click.argument("issue_id")
+@pass_jira_context
+def in_progress(
+    ctx: JiraContext,
+    /,
+    issue_id: str,
+):
+    """
+    iTransition issue to in progress.
+    """
+    issue = ctx.jira.issue(issue_id)
+    transitions = ctx.jira.transitions(issue)
+    in_progress_id = next((t["id"] for t in transitions if t["name"] == "In Progress"))
+    ctx.jira.transition_issue(issue, in_progress_id)
 
 
 @main.command()
