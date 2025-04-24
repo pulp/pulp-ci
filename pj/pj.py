@@ -116,17 +116,13 @@ class JiraContext:
             start_at += max_results
 
     def print_issue(self, issue) -> None:
-        print(
-            issue.fields.issuetype.name,
-            "\t",
-            issue,
-            "\t",
-            issue.fields.status,
-            "\t",
-            issue.get_field(self.field_ids["Story Points"]),
-            "\t",
-            issue.fields.summary,
-        )
+        issue_type: str = issue.fields.issuetype.name
+        issue_key: str = issue.key
+        status: str = issue.fields.status.name
+        storypoints: float = issue.get_field(self.field_ids["Story Points"])
+        sp: str = f"{storypoints:.1f}" if storypoints is not None else "N/A"
+        summary: str = issue.fields.summary
+        print(f"{issue_type:7.7}{issue_key:11.11}{status:7.7}{sp:>7.7} {summary}")
 
     def print_issue_detail(self, issue) -> None:
         print(issue.fields.issuetype.name, issue)
