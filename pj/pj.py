@@ -8,6 +8,7 @@ import json
 import tomllib
 from collections import defaultdict
 import dataclasses
+from functools import cached_property
 
 from jira import JIRA
 from jira.resources import Issue, IssueType, Resolution
@@ -44,18 +45,13 @@ class JiraContext:
         self._config: Config = config
         self._cache_dirty: bool = False
         self._cache: Cache = Cache()
-        self._jira: JIRA | None = None
-        self._issue_types: list[IssueType] | None = None
-        self._resolutions: list[Resolution] | None = None
         self.project: str = config.project
 
-    @property
+    @cached_property
     def jira(self) -> JIRA:
-        if self._jira is None:
-            self._jira = JIRA(server=self._config.server, token_auth=self._config.token)
-        return self._jira
+        return JIRA(server=self._config.server, token_auth=self._config.token)
 
-    @property
+    @cached_property
     def field_ids(self) -> dict[str, str]:
         if self._cache.field_ids is None:
             self._cache.field_ids = {
@@ -64,7 +60,7 @@ class JiraContext:
             self._cache_dirty = True
         return self._cache.field_ids
 
-    @property
+    @cached_property
     def issue_types(self) -> list[IssueType]:
         if self._cache.issue_types is None:
             result = self.jira.issue_types_for_project(self.project)
@@ -77,7 +73,7 @@ class JiraContext:
             ]
         return result
 
-    @property
+    @cached_property
     def resolutions(self) -> list[Resolution]:
         if self._cache.resolutions is None:
             result = self.jira.resolutions()
@@ -134,7 +130,7 @@ class JiraContext:
 
     def print_kanban(self, issues) -> None:
         results: dict[str, list[Issue]] = defaultdict(list)
-        sp_accumulator: dict[str, int] = defaultdict(int)
+        sp_accumulator: dict[str, float] = defaultdict(float)
         for issue in issues:
             results[issue.fields.status.name].append(issue)
             sp_accumulator[issue.fields.status.name] += (
