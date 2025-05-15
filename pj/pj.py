@@ -23,6 +23,7 @@ class Config:
     server: str = "https://issues.redhat.com"
     token: str = ""
     project: str = "PULP"
+    board: str = "Pulp Team Board"
     kanban_status: list[str] = dataclasses.field(
         default_factory=lambda: ["New", "In Progress", "Closed"]
     )
@@ -46,6 +47,7 @@ class JiraContext:
         self._cache_dirty: bool = False
         self._cache: Cache = Cache()
         self.project: str = config.project
+        self.board: str = config.board
 
     @cached_property
     def jira(self) -> JIRA:
@@ -125,6 +127,7 @@ class JiraContext:
         print(issue.fields.summary)
         print(issue.fields.description)
         print("Status:", issue.fields.status.name)
+        print("Assignee:", issue.fields.assignee)
         for fieldname in ["Story Points", "Resolution"]:
             print(fieldname + ":", issue.get_field(self.field_ids[fieldname]))
 
@@ -176,6 +179,24 @@ def sprint(ctx: JiraContext, /, my: bool | None) -> None:
 
 
 @main.command()
+@click.argument("issue_id")
+@pass_jira_context
+def assign(ctx: JiraContext, /, issue_id: str) -> None:
+    issue = ctx.jira.issue(issue_id)
+    ctx.jira.assign_issue(issue, ctx.jira.current_user())
+
+
+@main.command()
+@click.argument("issue_id")
+@pass_jira_context
+def add_to_sprint(ctx: JiraContext, /, issue_id: str) -> None:
+    issue = ctx.jira.issue(issue_id)
+    board = ctx.jira.boards(name=ctx.board, projectKeyOrID=ctx.project)[0]
+    sprint = ctx.jira.sprints(board.id, state=["active"])[0]
+    ctx.jira.add_issues_to_sprint(sprint.id, [issue.key])
+
+
+@main.command()
 @click.option("--my/--unassigned", default=None, help="defaults to all")
 @click.option("--blocker", is_flag=True)
 @pass_jira_context
@@ -200,6 +221,9 @@ def issues(ctx: JiraContext, /, my: bool | None, blocker: bool) -> None:
 
 @main.command()
 def my_next_issue() -> None:
+    """
+    Use special intelligent logic to spit out the next issue you should work on.
+    """
     print("Who do you think I am?")
 
 
@@ -237,21 +261,25 @@ def show(
 
 
 @main.command()
+@click.option("--task", "issuetype", flag_value="Task", default=True)
+@click.option("--bug", "issuetype", flag_value="Bug")
+@click.option("--story", "issuetype", flag_value="Story")
+@click.option("--epic", "issuetype", flag_value="Epic")
 @click.option("--assign/--no-assign", default=False)
-# @click.option("--task/--bug/--epic")
 @click.argument("summary")
 @click.argument("description")
 @pass_jira_context
 def create(
     ctx: JiraContext,
     /,
+    issuetype: str,
     assign: bool,
     summary: str,
     description: str,
 ) -> None:
     fields: dict[str, t.Any] = {
         "project": ctx.project,
-        "issuetype": "Task",
+        "issuetype": issuetype,
         "summary": summary,
         "description": description,
     }
@@ -293,7 +321,7 @@ def in_progress(
     issue_id: str,
 ):
     """
-    iTransition issue to in progress.
+    Transition issue to in progress.
     """
     issue = ctx.jira.issue(issue_id)
     transitions = ctx.jira.transitions(issue)
