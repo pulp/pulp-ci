@@ -290,6 +290,36 @@ def create(
 
 
 @main.command()
+@click.option("--task", "issuetype", flag_value="Task")
+@click.option("--bug", "issuetype", flag_value="Bug")
+@click.option("--story", "issuetype", flag_value="Story")
+@click.option("--epic", "issuetype", flag_value="Epic")
+@click.argument("issue_id")
+@pass_jira_context
+def retype(
+    ctx: JiraContext,
+    /,
+    issuetype: str,
+    issue_id: str,
+):
+    """
+    Change type of issue.
+    """
+    if issuetype is None:
+        raise click.UsageError(
+            "You need to specify one of '--task/--bug/--story/--epic'."
+        )
+    issue = ctx.jira.issue(issue_id)
+    print(
+        "Type:",
+        issue.fields.issuetype,
+        "->",
+        issuetype,
+    )
+    issue.update(fields={"issuetype": {"name": issuetype}})
+
+
+@main.command()
 @click.argument("issue_id")
 @click.argument("story_points")
 @pass_jira_context
