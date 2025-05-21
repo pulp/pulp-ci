@@ -128,6 +128,7 @@ class JiraContext:
         print(issue.fields.description)
         print("Status:", issue.fields.status.name)
         print("Assignee:", issue.fields.assignee)
+        print("Priority:", issue.fields.priority.name)
         for fieldname in ["Story Points", "Resolution"]:
             print(fieldname + ":", issue.get_field(self.field_ids[fieldname]))
 
@@ -176,24 +177,6 @@ def sprint(ctx: JiraContext, /, my: bool | None) -> None:
     jql = " AND ".join(conditions) + " ORDER BY priority DESC, updated DESC"
 
     ctx.print_kanban(ctx.search_issues_paginated(jql))
-
-
-@main.command()
-@click.argument("issue_id")
-@pass_jira_context
-def assign(ctx: JiraContext, /, issue_id: str) -> None:
-    issue = ctx.jira.issue(issue_id)
-    ctx.jira.assign_issue(issue, ctx.jira.current_user())
-
-
-@main.command()
-@click.argument("issue_id")
-@pass_jira_context
-def add_to_sprint(ctx: JiraContext, /, issue_id: str) -> None:
-    issue = ctx.jira.issue(issue_id)
-    board = ctx.jira.boards(name=ctx.board, projectKeyOrID=ctx.project)[0]
-    sprint = ctx.jira.sprints(board.id, state=["active"])[0]
-    ctx.jira.add_issues_to_sprint(sprint.id, [issue.key])
 
 
 @main.command()
@@ -264,7 +247,12 @@ def show(
 @click.option("--task", "issuetype", flag_value="Task", default=True)
 @click.option("--bug", "issuetype", flag_value="Bug")
 @click.option("--story", "issuetype", flag_value="Story")
+@click.option("--vulnerability", "issuetype", flag_value="Vulnerability")
 @click.option("--epic", "issuetype", flag_value="Epic")
+@click.option(
+    "--priority",
+    type=click.Choice(["Undefined", "Minor", "Normal", "Major", "Critical", "Blocker"]),
+)
 @click.option("--assign/--no-assign", default=False)
 @click.argument("summary")
 @click.argument("description")
@@ -273,6 +261,7 @@ def create(
     ctx: JiraContext,
     /,
     issuetype: str,
+    priority: str,
     assign: bool,
     summary: str,
     description: str,
@@ -283,6 +272,8 @@ def create(
         "summary": summary,
         "description": description,
     }
+    if priority is not None:
+        fields["priority"] = {"name": priority}
     if assign:
         fields["assignee"] = {"name": ctx.jira.current_user()}
     issue = ctx.jira.create_issue(fields)
@@ -293,30 +284,63 @@ def create(
 @click.option("--task", "issuetype", flag_value="Task")
 @click.option("--bug", "issuetype", flag_value="Bug")
 @click.option("--story", "issuetype", flag_value="Story")
+@click.option("--vulnerability", "issuetype", flag_value="Vulnerability")
 @click.option("--epic", "issuetype", flag_value="Epic")
+@click.option(
+    "--priority",
+    type=click.Choice(["Undefined", "Minor", "Normal", "Major", "Critical", "Blocker"]),
+)
+@click.option("--assign/--no-assign", default=None)
 @click.argument("issue_id")
 @pass_jira_context
-def retype(
+def amend(
     ctx: JiraContext,
     /,
     issuetype: str,
+    priority: str,
+    assign: bool,
     issue_id: str,
 ):
     """
     Change type of issue.
     """
-    if issuetype is None:
-        raise click.UsageError(
-            "You need to specify one of '--task/--bug/--story/--epic'."
-        )
     issue = ctx.jira.issue(issue_id)
-    print(
-        "Type:",
-        issue.fields.issuetype,
-        "->",
-        issuetype,
-    )
-    issue.update(fields={"issuetype": {"name": issuetype}})
+    fields: dict[str, t.Any] = {}
+    if issuetype is not None:
+        print("Type:", issue.fields.issuetype, "->", issuetype)
+        fields["issuetype"] = {"name": issuetype}
+    if priority is not None:
+        print("Priority:", issue.fields.priority, "->", priority)
+        fields["priority"] = {"name": priority}
+    if assign is True:
+        print("Assignee:", issue.fields.assignee, "->", ctx.jira.current_user())
+        fields["assignee"] = {"name": ctx.jira.current_user()}
+    elif assign is False:
+        print("Assignee:", issue.fields.assignee, "->", "N/A")
+        fields["assignee"] = None
+
+    issue.update(fields=fields)
+
+
+@main.command()
+@click.argument("issue_id")
+@pass_jira_context
+def assign(ctx: JiraContext, /, issue_id: str) -> None:
+    """
+    Assign an issue to me.
+    """
+    issue = ctx.jira.issue(issue_id)
+    ctx.jira.assign_issue(issue, ctx.jira.current_user())
+
+
+@main.command()
+@click.argument("issue_id")
+@pass_jira_context
+def add_to_sprint(ctx: JiraContext, /, issue_id: str) -> None:
+    issue = ctx.jira.issue(issue_id)
+    board = ctx.jira.boards(name=ctx.board, projectKeyOrID=ctx.project)[0]
+    sprint = ctx.jira.sprints(board.id, state=["active"])[0]
+    ctx.jira.add_issues_to_sprint(sprint.id, [issue.key])
 
 
 @main.command()
