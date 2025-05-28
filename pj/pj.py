@@ -129,7 +129,7 @@ class JiraContext:
         print("Status:", issue.fields.status.name)
         print("Assignee:", issue.fields.assignee)
         print("Priority:", issue.fields.priority.name)
-        for fieldname in ["Story Points", "Resolution"]:
+        for fieldname in ["Story Points", "Resolution", "Component/s", "Labels"]:
             print(fieldname + ":", issue.get_field(self.field_ids[fieldname]))
 
     def print_kanban(self, issues) -> None:
@@ -253,7 +253,7 @@ def show(
     "--priority",
     type=click.Choice(["Undefined", "Minor", "Normal", "Major", "Critical", "Blocker"]),
 )
-@click.option("--assign/--no-assign", default=False)
+@click.option("--assign/--no-assign", default=False, help="Assign this issue to me.")
 @click.argument("summary")
 @click.argument("description")
 @pass_jira_context
@@ -290,7 +290,7 @@ def create(
     "--priority",
     type=click.Choice(["Undefined", "Minor", "Normal", "Major", "Critical", "Blocker"]),
 )
-@click.option("--assign/--no-assign", default=None)
+@click.option("--assign/--no-assign", default=None, help="Assign this issue to me.")
 @click.argument("issue_id")
 @pass_jira_context
 def amend(
@@ -302,7 +302,7 @@ def amend(
     issue_id: str,
 ):
     """
-    Change type of issue.
+    Change attributes of an issue.
     """
     issue = ctx.jira.issue(issue_id)
     fields: dict[str, t.Any] = {}
