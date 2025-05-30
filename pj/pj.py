@@ -225,12 +225,14 @@ def search(
 
 @main.command()
 @click.option("--raw", is_flag=True, default=False)
+@click.option("--comments", is_flag=True, default=False)
 @click.argument("issue_id")
 @pass_jira_context
 def show(
     ctx: JiraContext,
     /,
     raw: bool,
+    comments: bool,
     issue_id: str,
 ) -> None:
     issue = ctx.jira.issue(issue_id)
@@ -241,6 +243,10 @@ def show(
         print(json.dumps(raw_issue))
     else:
         ctx.print_issue_detail(issue)
+        if comments:
+            print("Comments:")
+            for comment in issue.fields.comment.comments:
+                print(f"{comment.author.name} [{comment.created}]: {comment.body}")
 
 
 @main.command()
