@@ -182,22 +182,29 @@ def sprint(ctx: JiraContext, /, my: bool | None) -> None:
 @main.command()
 @click.option("--my/--unassigned", default=None, help="defaults to all")
 @click.option("--blocker", is_flag=True)
+@click.option(
+    "--condition", "conditions", multiple=True, help="Extra conditions in jql."
+)
 @pass_jira_context
-def issues(ctx: JiraContext, /, my: bool | None, blocker: bool) -> None:
-    conditions = [
+def issues(
+    ctx: JiraContext, /, my: bool | None, blocker: bool, conditions: t.Iterable[str]
+) -> None:
+    _conditions = [
         f"project = {ctx.project}",
         "status != 'Closed'",
     ]
     if my is True:
-        conditions.append("assignee = currentUser()")
+        _conditions.append("assignee = currentUser()")
     elif my is False:
-        conditions.append("assignee is EMPTY")
+        _conditions.append("assignee is EMPTY")
     # None -> all sprint items
 
     if blocker:
-        conditions.append("priority = blocker")
+        _conditions.append("priority = blocker")
 
-    jql = " AND ".join(conditions) + " ORDER BY priority DESC, updated DESC"
+    _conditions.extend(conditions)
+
+    jql = " AND ".join(_conditions) + " ORDER BY priority DESC, updated DESC"
     for issue in ctx.search_issues_paginated(jql):
         ctx.print_issue(issue)
 
