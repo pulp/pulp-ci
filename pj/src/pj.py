@@ -313,7 +313,7 @@ def amend(
     priority: str,
     assign: bool,
     issue_id: str,
-):
+) -> None:
     """
     Change attributes of an issue.
     """
@@ -333,6 +333,32 @@ def amend(
         fields["assignee"] = None
 
     issue.update(fields=fields)
+
+
+@main.command()
+@click.argument("issue_id")
+@pass_jira_context
+def groom(
+    ctx: JiraContext,
+    /,
+    issue_id: str,
+) -> None:
+    """
+    Interactively groom an issue for sprint readiness.
+    """
+
+    issue = ctx.jira.issue(issue_id)
+    fields: dict[str, t.Any] = {}
+    ctx.print_issue(issue)
+
+    for field_name in ["Story Points", "Priority", "Components", "Labels"]:
+        field_id = ctx.field_ids[field_name]
+        orig_value = issue.get_field(field_id)
+        value = click.prompt(field_name, default=orig_value)
+        if value != orig_value:
+            fields[field_id] = value
+
+    print(fields)
 
 
 @main.command()
