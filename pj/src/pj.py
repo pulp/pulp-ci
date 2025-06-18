@@ -9,6 +9,7 @@ import tomllib
 from collections import defaultdict
 import dataclasses
 from functools import cached_property
+import os
 
 from jira import JIRA
 from jira.resources import Issue, IssueType, Resolution
@@ -35,19 +36,25 @@ class Cache(BaseModel):
     resolutions: list[t.Any] | None = None
 
 
-def read_config() -> Config:
-    conf_path = Path(".") / ".pj_config"
+def read_config(conf_path: Path) -> Config:
+    conf_path = Path(click.get_app_dir("pulp/pj")) / ".pj_config"
     data = tomllib.loads(conf_path.read_text())["default"]
     return Config(**data)
 
 
 class JiraContext:
-    def __init__(self, config: Config):
-        self._config: Config = config
+    def __init__(self) -> None:
+        self._conf_path = Path(click.get_app_dir("pulp/pj")) / ".pj_config"
+        self._config: Config = read_config(self._conf_path)
+        self._cache_path = (
+            Path(os.environ.get("XDG_CACHE_HOME") or "~/.cache") / "pulp" / ".pj_cache"
+        )
         self._cache_dirty: bool = False
         self._cache: Cache = Cache()
-        self.project: str = config.project
-        self.board: str = config.board
+        self.read_cache()
+
+        self.project: str = self._config.project
+        self.board: str = self._config.board
 
     @cached_property
     def jira(self) -> JIRA:
@@ -89,29 +96,32 @@ class JiraContext:
         return result
 
     def read_cache(self) -> None:
-        cache_path = Path(".") / ".pj_cache"
-        if cache_path.exists():
-            self._cache = Cache.model_validate_json(cache_path.read_text())
+        if self._cache_path.exists():
+            self._cache = Cache.model_validate_json(self._cache_path.read_text())
         else:
             self._cache = Cache()
 
     def dump_cache(self) -> None:
         if self._cache_dirty:
-            cache_path = Path(".") / ".pj_cache"
-            cache_path.write_text(self._cache.model_dump_json())
+            self._cache_path.parent.mkdir(parents=True, exist_ok=True)
+            self._cache_path.write_text(self._cache.model_dump_json())
 
     def search_issues_paginated(
         self, jql: str, max_results: int | None = None
     ) -> t.Iterator[Issue]:
         start_at = 0
-        max_results = 50  # TODO
+        per_page = 50 if max_results is None else min(50, max_results)
         while results := self.jira.search_issues(
             jql,
-            maxResults=max_results,
+            maxResults=per_page,
             startAt=start_at,
         ):
             yield from results
-            start_at += max_results
+            start_at += per_page
+            if max_results is not None and start_at + per_page > max_results:
+                per_page = max_results - start_at
+                if per_page <= 0:
+                    break
 
     def print_issue(self, issue) -> None:
         issue_type: str = issue.fields.issuetype.name
@@ -153,10 +163,8 @@ pass_jira_context = click.make_pass_decorator(JiraContext)
 @click.group()
 @click.pass_context
 def main(ctx: click.Context, /) -> None:
-    config = read_config()
-    ctx.obj = JiraContext(config)
+    ctx.obj = JiraContext()
 
-    ctx.obj.read_cache()
     ctx.call_on_close(ctx.obj.dump_cache)
 
 
