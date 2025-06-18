@@ -190,17 +190,26 @@ def sprint(ctx: JiraContext, /, my: bool | None) -> None:
 @main.command()
 @click.option("--my/--unassigned", default=None, help="defaults to all")
 @click.option("--blocker", is_flag=True)
+@click.option("--include-resolved", is_flag=True)
 @click.option(
     "--condition", "conditions", multiple=True, help="Extra conditions in jql."
 )
+@click.option("--max-results", type=int, help="Only show first results.")
 @pass_jira_context
 def issues(
-    ctx: JiraContext, /, my: bool | None, blocker: bool, conditions: t.Iterable[str]
+    ctx: JiraContext,
+    /,
+    my: bool | None,
+    blocker: bool,
+    include_resolved: bool,
+    conditions: t.Iterable[str],
+    max_results: int | None,
 ) -> None:
     _conditions = [
         f"project = {ctx.project}",
-        "status != 'Closed'",
     ]
+    if not include_resolved:
+        _conditions.append("resolution = Unresolved")
     if my is True:
         _conditions.append("assignee = currentUser()")
     elif my is False:
@@ -213,7 +222,7 @@ def issues(
     _conditions.extend(conditions)
 
     jql = " AND ".join(_conditions) + " ORDER BY priority DESC, updated DESC"
-    for issue in ctx.search_issues_paginated(jql):
+    for issue in ctx.search_issues_paginated(jql, max_results=max_results):
         ctx.print_issue(issue)
 
 
@@ -228,13 +237,15 @@ def my_next_issue() -> None:
 @main.command()
 @click.argument("search_phrase")
 @pass_jira_context
+@click.option("--max-results", type=int, help="Only show first results.")
 def search(
     ctx: JiraContext,
     /,
     search_phrase: str,
+    max_results: int | None,
 ) -> None:
     jql = f"project = {ctx.project} AND resolution = Unresolved AND text ~ '{search_phrase}' ORDER BY updated DESC"
-    for issue in ctx.search_issues_paginated(jql):
+    for issue in ctx.search_issues_paginated(jql, max_results=max_results):
         ctx.print_issue(issue)
 
 
