@@ -10,6 +10,7 @@ from collections import defaultdict
 import dataclasses
 from functools import cached_property
 import os
+import time
 
 from jira import JIRA
 from jira.resources import Issue, IssueType, Resolution
@@ -130,17 +131,20 @@ class JiraContext:
         storypoints: float = issue.get_field(self.field_ids["Story Points"])
         sp: str = f"{storypoints:.1f}" if storypoints is not None else "N/A"
         summary: str = issue.fields.summary
-        print(f"{issue_type:7.7}{issue_key:11.11}{status:7.7}{sp:>7.7} {summary}")
+        print(
+            f"{issue_type:7.7}{issue_key:11.11}{status:7.7}{sp:>7.7} {issue.permalink()} {summary}"
+        )
 
     def print_issue_detail(self, issue) -> None:
         print(issue.fields.issuetype.name, issue)
+        print(issue.permalink())
         print(issue.fields.summary)
         print(issue.fields.description)
-        print("Status:", issue.fields.status.name)
-        print("Assignee:", issue.fields.assignee)
-        print("Priority:", issue.fields.priority.name)
+        print("  Status:", issue.fields.status.name)
+        print("  Assignee:", issue.fields.assignee)
+        print("  Priority:", issue.fields.priority.name)
         for fieldname in ["Story Points", "Resolution", "Component/s", "Labels"]:
-            print(fieldname + ":", issue.get_field(self.field_ids[fieldname]))
+            print("  " + fieldname + ":", issue.get_field(self.field_ids[fieldname]))
 
     def print_kanban(self, issues) -> None:
         results: dict[str, list[Issue]] = defaultdict(list)
@@ -214,7 +218,7 @@ def issues(
         _conditions.append("assignee = currentUser()")
     elif my is False:
         _conditions.append("assignee is EMPTY")
-    # None -> all sprint items
+    # my == None -> all items
 
     if blocker:
         _conditions.append("priority = blocker")
@@ -231,7 +235,11 @@ def my_next_issue() -> None:
     """
     Use special intelligent logic to spit out the next issue you should work on.
     """
-    print("Who do you think I am?")
+    click.echo("Starting up JirAI...")
+    time.sleep(5)
+    click.echo("Just kidding!")
+    time.sleep(2)
+    click.echo("Who do you think I am?")
 
 
 @main.command()
