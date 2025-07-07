@@ -325,6 +325,7 @@ def create(
 
 
 @main.command()
+@click.option("--summary")
 @click.option("--task", "issuetype", flag_value="Task")
 @click.option("--bug", "issuetype", flag_value="Bug")
 @click.option("--story", "issuetype", flag_value="Story")
@@ -340,9 +341,10 @@ def create(
 def amend(
     ctx: JiraContext,
     /,
-    issuetype: str,
-    priority: str,
-    assign: bool,
+    summary: str | None,
+    issuetype: str | None,
+    priority: str | None,
+    assign: bool | None,
     issue_id: str,
 ) -> None:
     """
@@ -350,6 +352,9 @@ def amend(
     """
     issue = ctx.jira.issue(issue_id)
     fields: dict[str, t.Any] = {}
+    if summary is not None:
+        print("Updating Summary")
+        fields["summary"] = summary
     if issuetype is not None:
         print("Type:", issue.fields.issuetype, "->", issuetype)
         fields["issuetype"] = {"name": issuetype}
