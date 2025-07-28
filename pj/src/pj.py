@@ -196,6 +196,11 @@ def sprint(ctx: JiraContext, /, my: bool | None) -> None:
 @click.option("--blocker", is_flag=True)
 @click.option("--include-resolved", is_flag=True)
 @click.option(
+    "--all-projects",
+    is_flag=True,
+    help="Do not limit the search to the configured project.",
+)
+@click.option(
     "--condition", "conditions", multiple=True, help="Extra conditions in jql."
 )
 @click.option("--max-results", type=int, help="Only show first results.")
@@ -206,12 +211,13 @@ def issues(
     my: bool | None,
     blocker: bool,
     include_resolved: bool,
+    all_projects: bool,
     conditions: t.Iterable[str],
     max_results: int | None,
 ) -> None:
-    _conditions = [
-        f"project = {ctx.project}",
-    ]
+    _conditions = []
+    if not all_projects:
+        _conditions.append(f"project = {ctx.project}")
     if not include_resolved:
         _conditions.append("resolution = Unresolved")
     if my is True:
@@ -351,6 +357,7 @@ def amend(
     Change attributes of an issue.
     """
     issue = ctx.jira.issue(issue_id)
+    ctx.print_issue(issue)
     fields: dict[str, t.Any] = {}
     if summary is not None:
         print("Updating Summary")
@@ -368,6 +375,7 @@ def amend(
         print("Assignee:", issue.fields.assignee, "->", "N/A")
         fields["assignee"] = None
 
+    click.confirm("Continue?", abort=True)
     issue.update(fields=fields)
 
 
@@ -394,7 +402,9 @@ def groom(
         if value != orig_value:
             fields[field_id] = value
 
+    click.confirm("Continue?", abort=True)
     print(fields)
+    click.echo("This does not seem to be implemented")
 
 
 @main.command()
@@ -405,6 +415,8 @@ def assign(ctx: JiraContext, /, issue_id: str) -> None:
     Assign an issue to me.
     """
     issue = ctx.jira.issue(issue_id)
+    ctx.print_issue(issue)
+    click.confirm("Continue?", abort=True)
     ctx.jira.assign_issue(issue, ctx.jira.current_user())
 
 
@@ -415,6 +427,8 @@ def add_to_sprint(ctx: JiraContext, /, issue_id: str) -> None:
     issue = ctx.jira.issue(issue_id)
     board = ctx.jira.boards(name=ctx.board, projectKeyOrID=ctx.project)[0]
     sprint = ctx.jira.sprints(board.id, state=["active"])[0]
+    ctx.print_issue(issue)
+    click.confirm(f"Add to sprint '{sprint}'?", abort=True)
     ctx.jira.add_issues_to_sprint(sprint.id, [issue.key])
 
 
@@ -432,12 +446,14 @@ def storypoint(
     Mark issue with a certain number of storypoints.
     """
     issue = ctx.jira.issue(issue_id)
+    ctx.print_issue(issue)
     print(
         "Story Points:",
         issue.get_field(ctx.field_ids["Story Points"]),
         "->",
         story_points,
     )
+    click.confirm("Continue?", abort=True)
     issue.update(fields={ctx.field_ids["Story Points"]: float(story_points)})
 
 
@@ -455,15 +471,21 @@ def in_progress(
     issue = ctx.jira.issue(issue_id)
     transitions = ctx.jira.transitions(issue)
     in_progress_id = next((t["id"] for t in transitions if t["name"] == "In Progress"))
+    ctx.print_issue(issue)
+    click.confirm("Set to 'In Progress'?", abort=True)
     ctx.jira.transition_issue(issue, in_progress_id)
 
 
 @main.command()
+@click.option("--done", "resolution", flag_value="Done", default=True)
+@click.option("--duplicate", "resolution", flag_value="Duplicate")
+@click.option("--cannot-reproduce", "resolution", flag_value="Cannot Reproduce")
 @click.argument("issue_id")
 @pass_jira_context
-def close(
+def resolve_test(
     ctx: JiraContext,
     /,
+    resolution: str,
     issue_id: str,
 ):
     """
@@ -471,9 +493,11 @@ def close(
     (ATM this is the only supported resolution.)
     """
     issue = ctx.jira.issue(issue_id)
-    resolution_id = next((res.id for res in ctx.resolutions if res.name == "Done"))
+    resolution_id = next((res.id for res in ctx.resolutions if res.name == resolution))
     transitions = ctx.jira.transitions(issue)
     close_id = next((t["id"] for t in transitions if t["name"] == "Closed"))
+    ctx.print_issue(issue)
+    click.confirm(f"Close this as '{resolution}'?", abort=True)
     ctx.jira.transition_issue(issue, close_id, resolution={"id": resolution_id})
 
 
