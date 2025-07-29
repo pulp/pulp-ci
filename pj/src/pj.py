@@ -200,6 +200,11 @@ def sprint(ctx: JiraContext, /, my: bool | None) -> None:
     is_flag=True,
     help="Do not limit the search to the configured project.",
 )
+@click.option("--task", "issuetype", flag_value="Task")
+@click.option("--bug", "issuetype", flag_value="Bug")
+@click.option("--story", "issuetype", flag_value="Story")
+@click.option("--vulnerability", "issuetype", flag_value="Vulnerability")
+@click.option("--epic", "issuetype", flag_value="Epic")
 @click.option(
     "--condition", "conditions", multiple=True, help="Extra conditions in jql."
 )
@@ -212,6 +217,7 @@ def issues(
     blocker: bool,
     include_resolved: bool,
     all_projects: bool,
+    issuetype: str | None,
     conditions: t.Iterable[str],
     max_results: int | None,
 ) -> None:
@@ -228,6 +234,9 @@ def issues(
 
     if blocker:
         _conditions.append("priority = blocker")
+
+    if issuetype is not None:
+        _conditions.append(f"issuetype = {issuetype}")
 
     _conditions.extend(conditions)
 
