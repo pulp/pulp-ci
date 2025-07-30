@@ -139,7 +139,7 @@ class JiraContext:
 
     def issue_type_emoji(self, issuetype: str) -> str:
         """
-        ⛔ 🚫 ☣️  ⚠️
+         🚫 ☣️
 
         Observation: 📡
         Investigation: 🔬
@@ -169,6 +169,42 @@ class JiraContext:
         else:
             return "❓"
 
+    def priority_emoji(self, priority: str) -> str:
+        """
+        'Blocker'
+        'Urgent'
+        'Critical'
+        'Must Have'
+        'High'
+        'Major'
+        'Should Have'
+        'Normal'
+        'Medium'
+        'Minor'
+        'Low'
+        'Could Have'
+        'Trivial'
+        'Optional'
+        "Won't Have"
+        'Undefined'
+        'Unprioritized'
+        """
+        if priority == "Blocker":
+            return "⛔"
+        elif priority == "Critical":
+            return "🌋"
+        elif priority == "Major":
+            return "➕"
+        elif priority == "Normal":
+            return "🟰"
+        elif priority == "Minor":
+            return "➖"
+        elif priority == "Undefined":
+            return "⭕"
+        else:
+            return "❓"
+        return priority
+
     def status_emoji(self, status: str) -> str:
         if status == "New":
             return "✨"
@@ -188,7 +224,7 @@ class JiraContext:
             return "🚮"
         elif resolution == "Cannot Reproduce":
             return "☢️"
-            return "⁉️"
+            # return "⁉️"
         elif resolution == "Can't Do":
             return "❓"
         elif resolution == "Duplicate":
@@ -218,11 +254,13 @@ class JiraContext:
             status += "🚧"
         if issue.get_field(self.field_ids["Flagged"]):
             status += "🚩"
+
+        priority: str = self.priority_emoji(issue.fields.priority.name)
         storypoints: float = issue.get_field(self.field_ids["Story Points"])
         sp: str = f"{storypoints:.1f}" if storypoints is not None else "N/A"
         summary: str = issue.fields.summary
         print(
-            f"{issuetype:2.2}{issue_key:11.11}{status:4.4}{sp:>7.7} {issue.permalink()} {summary}"
+            f"{issuetype:2.2}{issue_key:11.11}{status:4.4}{priority:2.2}{sp:>7.7} {issue.permalink()} {summary}"
         )
 
     def print_issue_detail(self, issue: Issue) -> None:
@@ -241,11 +279,15 @@ class JiraContext:
             "Priority",
             "Story Points",
             "Resolution",
+            "Epic Link",
             "Sprint",
             "Component/s",
             "Labels",
         ]:
-            print("  " + fieldname + ":", issue.get_field(self.field_ids[fieldname]))
+            value: t.Any = issue.get_field(self.field_ids[fieldname])
+            if isinstance(value, list):
+                value = [str(item) for item in value]
+            print("  " + fieldname + ":", value)
 
     def print_kanban(self, issues) -> None:
         results: dict[str, list[Issue]] = defaultdict(list)
