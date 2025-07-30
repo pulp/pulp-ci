@@ -696,7 +696,7 @@ def in_progress(
 @click.option("--cannot-reproduce", "resolution", flag_value="Cannot Reproduce")
 @click.argument("issue_id")
 @pass_jira_context
-def resolve_test(
+def resolve(
     ctx: JiraContext,
     /,
     resolution: str,
