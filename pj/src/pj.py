@@ -124,6 +124,19 @@ class JiraContext:
                 if per_page <= 0:
                     break
 
+    def search_epic(self, epic_id: str) -> Issue:
+        if epic_id.lower().startswith(self.project.lower()):
+            epic = self.jira.issue(epic_id)
+            assert epic.fields.issuetype.name == "Epic"
+        else:
+            epic = next(
+                self.search_issues_paginated(
+                    f"'Epic Name' = '{epic_id}'", max_results=1
+                )
+            )
+
+        return epic
+
     def print_issue(self, issue) -> None:
         issue_type: str = issue.fields.issuetype.name
         issue_key: str = issue.key
@@ -137,6 +150,8 @@ class JiraContext:
 
     def print_issue_detail(self, issue) -> None:
         print(issue.fields.issuetype.name, issue)
+        if issue.fields.issuetype.name == "Epic":
+            print(issue.get_field(self.field_ids["Epic Name"]))
         print(issue.permalink())
         print(issue.fields.summary)
         print(issue.fields.description)
@@ -313,6 +328,7 @@ def show(
     type=click.Choice(["Undefined", "Minor", "Normal", "Major", "Critical", "Blocker"]),
 )
 @click.option("--assign/--no-assign", default=False, help="Assign this issue to me.")
+@click.option("--in-epic", default=None)
 @click.argument("summary")
 @click.argument("description")
 @pass_jira_context
@@ -322,6 +338,7 @@ def create(
     issuetype: str,
     priority: str,
     assign: bool,
+    in_epic: str | None,
     summary: str,
     description: str,
 ) -> None:
@@ -335,6 +352,8 @@ def create(
         fields["priority"] = {"name": priority}
     if assign:
         fields["assignee"] = {"name": ctx.jira.current_user()}
+    if in_epic is not None:
+        fields[ctx.field_ids["Epic Link"]] = ctx.search_epic(in_epic).key
     issue = ctx.jira.create_issue(fields)
     ctx.print_issue_detail(issue)
 
