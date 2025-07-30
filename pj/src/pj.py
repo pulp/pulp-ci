@@ -137,28 +137,114 @@ class JiraContext:
 
         return epic
 
-    def print_issue(self, issue) -> None:
-        issue_type: str = issue.fields.issuetype.name
+    def issue_type_emoji(self, issuetype: str) -> str:
+        """
+        ⛔ 🚫 ☣️  ⚠️
+
+        Observation: 📡
+        Investigation: 🔬
+        Experiment: 🧪
+        """
+        if issuetype == "Feature":
+            return "💶"
+        elif issuetype == "Epic":
+            return "🎭"
+        elif issuetype == "Story":
+            return "📰"
+            # return "📖"
+        elif issuetype == "Bug":
+            return "🐞"
+        elif issuetype == "Task":
+            return "🔧"
+        elif issuetype == "Sub-task":
+            return "🥷"
+        elif issuetype == "Outcome":
+            return "🏁"
+        elif issuetype == "Vulnerability":
+            return "💣"
+            return "🛟"
+        elif issuetype == "Weakness":
+            return "🦺"
+            # return "🩸"
+        else:
+            return "❓"
+
+    def status_emoji(self, status: str) -> str:
+        if status == "New":
+            return "✨"
+        elif status == "Refinement":
+            return "✂️"
+        elif status == "In Progress":
+            return "🧵"
+        elif status == "Closed":
+            return "🚪"
+        else:
+            return "❓"
+
+    def resolution_emoji(self, resolution: str) -> str:
+        if resolution == "Done":
+            return "✅"
+        elif resolution == "Won't Do":
+            return "🚮"
+        elif resolution == "Cannot Reproduce":
+            return "☢️"
+            return "⁉️"
+        elif resolution == "Can't Do":
+            return "❓"
+        elif resolution == "Duplicate":
+            return "♊"
+        elif resolution == "Not a Bug":
+            return "❓"
+        elif resolution == "Done-Errata":
+            return "❓"
+        elif resolution == "MirrorOrphan":
+            return "❓"
+        elif resolution == "Obsolete":
+            return "❓"
+        elif resolution == "Test Pending":
+            return "❓"
+        else:
+            return "❓"
+
+    def print_issue(self, issue: Issue) -> None:
+        # TODO priority
+        issuetype: str = self.issue_type_emoji(issue.fields.issuetype.name)
         issue_key: str = issue.key
-        status: str = issue.fields.status.name
+        status: str = self.status_emoji(issue.fields.status.name)
+        if issue.fields.resolution is not None:
+            status += self.resolution_emoji(issue.fields.resolution.name)
+        if str(issue.get_field(self.field_ids["Blocked"])) != "False":
+            # Don't ask...
+            status += "🚧"
+        if issue.get_field(self.field_ids["Flagged"]):
+            status += "🚩"
         storypoints: float = issue.get_field(self.field_ids["Story Points"])
         sp: str = f"{storypoints:.1f}" if storypoints is not None else "N/A"
         summary: str = issue.fields.summary
         print(
-            f"{issue_type:7.7}{issue_key:11.11}{status:7.7}{sp:>7.7} {issue.permalink()} {summary}"
+            f"{issuetype:2.2}{issue_key:11.11}{status:4.4}{sp:>7.7} {issue.permalink()} {summary}"
         )
 
-    def print_issue_detail(self, issue) -> None:
+    def print_issue_detail(self, issue: Issue) -> None:
         print(issue.fields.issuetype.name, issue)
         if issue.fields.issuetype.name == "Epic":
             print(issue.get_field(self.field_ids["Epic Name"]))
         print(issue.permalink())
         print(issue.fields.summary)
         print(issue.fields.description)
-        print("  Status:", issue.fields.status.name)
-        print("  Assignee:", issue.fields.assignee)
-        print("  Priority:", issue.fields.priority.name)
-        for fieldname in ["Story Points", "Resolution", "Component/s", "Labels"]:
+        for fieldname in [
+            "Status",
+            "Blocked",
+            "Flagged",
+            "Assignee",
+            "Reporter",
+            "Priority",
+            "Story Points",
+            "Resolution",
+            "Sprint",
+            "Component/s",
+            "Labels",
+        ]:
             print("  " + fieldname + ":", issue.get_field(self.field_ids[fieldname]))
 
     def print_kanban(self, issues) -> None:
@@ -311,10 +397,10 @@ def show(
             print("Comments:")
             for comment in issue.fields.comment.comments:
                 print(f"{comment.author.name} [{comment.created}]: {comment.body}")
-    if issue.fields.issuetype.name == "Epic":
-        jql = f"'Epic Link' = {issue.key}"
-        for sub_issue in ctx.search_issues_paginated(jql):
-            ctx.print_issue(sub_issue)
+        if issue.fields.issuetype.name == "Epic":
+            jql = f"'Epic Link' = {issue.key}"
+            for sub_issue in ctx.search_issues_paginated(jql):
+                ctx.print_issue(sub_issue)
 
 
 @main.command()
@@ -329,6 +415,7 @@ def show(
 )
 @click.option("--assign/--no-assign", default=False, help="Assign this issue to me.")
 @click.option("--in-epic", default=None)
+@click.option("--story-points", default=None, type=float)
 @click.argument("summary")
 @click.argument("description")
 @pass_jira_context
@@ -339,6 +426,7 @@ def create(
     priority: str,
     assign: bool,
     in_epic: str | None,
+    story_points: float | None,
     summary: str,
     description: str,
 ) -> None:
@@ -354,6 +442,8 @@ def create(
         fields["assignee"] = {"name": ctx.jira.current_user()}
     if in_epic is not None:
         fields[ctx.field_ids["Epic Link"]] = ctx.search_epic(in_epic).key
+    if story_points is not None:
+        fields[ctx.field_ids["Story Points"]] = story_points
     issue = ctx.jira.create_issue(fields)
     ctx.print_issue_detail(issue)
 
@@ -370,6 +460,8 @@ def create(
     type=click.Choice(["Undefined", "Minor", "Normal", "Major", "Critical", "Blocker"]),
 )
 @click.option("--assign/--no-assign", default=None, help="Assign this issue to me.")
+@click.option("--in-epic", default=None)
+@click.option("--story-points", default=None, type=float)
 @click.argument("issue_id")
 @pass_jira_context
 def amend(
@@ -379,6 +471,8 @@ def amend(
     issuetype: str | None,
     priority: str | None,
     assign: bool | None,
+    in_epic: str | None,
+    story_points: float | None,
     issue_id: str,
 ) -> None:
     """
@@ -402,6 +496,18 @@ def amend(
     elif assign is False:
         print("Assignee:", issue.fields.assignee, "->", "N/A")
         fields["assignee"] = None
+    if in_epic is not None:
+        epic_key = ctx.search_epic(in_epic).key
+        print("Epic:", issue.get_field(ctx.field_ids["Epic Link"]), "->", epic_key)
+        fields[ctx.field_ids["Epic Link"]] = epic_key
+    if story_points is not None:
+        print(
+            "Story Points:",
+            issue.get_field(ctx.field_ids["Story Points"]),
+            "->",
+            story_points,
+        )
+        fields[ctx.field_ids["Story Points"]] = story_points
 
     click.confirm("Continue?", abort=True)
     issue.update(fields=fields)
@@ -462,7 +568,45 @@ def add_to_sprint(ctx: JiraContext, /, issue_id: str) -> None:
 
 @main.command()
 @click.argument("issue_id")
-@click.argument("story_points")
+@pass_jira_context
+def flag(
+    ctx: JiraContext,
+    /,
+    issue_id: str,
+):
+    """
+    Flag issue with impediment.
+
+    NOT FUNCTIONAL
+    """
+    issue = ctx.jira.issue(issue_id)
+    # TODO
+    issue.update(
+        fields={ctx.field_ids["Flagged"]: [{"set": [{"value": "Impediment"}]}]}
+    )
+
+
+@main.command()
+@click.argument("issue_id")
+@pass_jira_context
+def unflag(
+    ctx: JiraContext,
+    /,
+    issue_id: str,
+):
+    """
+    Unflag issue from impediment.
+
+    NOT FUNCTIONAL
+    """
+    issue = ctx.jira.issue(issue_id)
+    # TODO
+    issue.update(fields={ctx.field_ids["Flagged"]: [{"set": None}]})
+
+
+@main.command()
+@click.argument("issue_id")
+@click.argument("story_points", type=float)
 @pass_jira_context
 def storypoint(
     ctx: JiraContext,
@@ -482,7 +626,7 @@ def storypoint(
         story_points,
     )
     click.confirm("Continue?", abort=True)
-    issue.update(fields={ctx.field_ids["Story Points"]: float(story_points)})
+    issue.update(fields={ctx.field_ids["Story Points"]: story_points})
 
 
 @main.command()
@@ -529,17 +673,26 @@ def resolve_test(
     ctx.jira.transition_issue(issue, close_id, resolution={"id": resolution_id})
 
 
-@main.command()
+@main.group()
+def debug() -> None:
+    pass
+
+
+@debug.command()
 @pass_jira_context
 def types(ctx: JiraContext, /) -> None:
     """
     Dump available issue types for the project.
     """
     for issue_type in ctx.issue_types:
-        print(issue_type.name, f"(id={issue_type.id})")
+        print(
+            ctx.issue_type_emoji(issue_type.name),
+            issue_type.name,
+            f"(id={issue_type.id})",
+        )
 
 
-@main.command()
+@debug.command()
 @pass_jira_context
 def resolutions(ctx: JiraContext, /) -> None:
     """
@@ -549,7 +702,7 @@ def resolutions(ctx: JiraContext, /) -> None:
         print(resolution.name, f"(id={resolution.id})")
 
 
-@main.command()
+@debug.command()
 @pass_jira_context
 def fields(ctx: JiraContext, /) -> None:
     """
@@ -559,7 +712,7 @@ def fields(ctx: JiraContext, /) -> None:
         print(name, "(id=" + id + ")")
 
 
-@main.command()
+@debug.command()
 @pass_jira_context
 def shell(ctx: JiraContext, /) -> None:
     """
