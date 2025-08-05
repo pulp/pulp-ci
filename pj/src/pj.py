@@ -127,14 +127,12 @@ class JiraContext:
     def search_epic(self, epic_id: str) -> Issue:
         if epic_id.lower().startswith(self.project.lower()):
             epic = self.jira.issue(epic_id)
-            assert epic.fields.issuetype.name == "Epic"
         else:
             epic = next(
                 self.search_issues_paginated(
                     f"'Epic Name' = '{epic_id}'", max_results=1
                 )
             )
-
         return epic
 
     def issue_type_emoji(self, issuetype: str) -> str:
@@ -348,6 +346,8 @@ def sprint(ctx: JiraContext, /, my: bool | None) -> None:
 @click.option("--story", "issuetype", flag_value="Story")
 @click.option("--vulnerability", "issuetype", flag_value="Vulnerability")
 @click.option("--epic", "issuetype", flag_value="Epic")
+@click.option("--feature", "issuetype", flag_value="Feature")
+@click.option("--outcome", "issuetype", flag_value="Outcome")
 @click.option(
     "--condition", "conditions", multiple=True, help="Extra conditions in jql."
 )
@@ -439,10 +439,9 @@ def show(
             print("Comments:")
             for comment in issue.fields.comment.comments:
                 print(f"{comment.author.name} [{comment.created}]: {comment.body}")
-        if issue.fields.issuetype.name == "Epic":
-            jql = f"'Epic Link' = {issue.key}"
-            for sub_issue in ctx.search_issues_paginated(jql):
-                ctx.print_issue(sub_issue)
+        jql = f"'Parent Link' = {issue.key}"
+        for sub_issue in ctx.search_issues_paginated(jql):
+            ctx.print_issue(sub_issue)
 
 
 @main.command()
@@ -456,8 +455,9 @@ def show(
     type=click.Choice(["Undefined", "Minor", "Normal", "Major", "Critical", "Blocker"]),
 )
 @click.option("--assign/--no-assign", default=False, help="Assign this issue to me.")
-@click.option("--in-epic", default=None)
+@click.option("--parent", default=None)
 @click.option("--story-points", default=None, type=float)
+@click.option("--epic-name", default=None)
 @click.argument("summary")
 @click.argument("description")
 @pass_jira_context
@@ -467,8 +467,9 @@ def create(
     issuetype: str,
     priority: str,
     assign: bool,
-    in_epic: str | None,
+    parent: str | None,
     story_points: float | None,
+    epic_name: str | None,
     summary: str,
     description: str,
 ) -> None:
@@ -482,10 +483,18 @@ def create(
         fields["priority"] = {"name": priority}
     if assign:
         fields["assignee"] = {"name": ctx.jira.current_user()}
-    if in_epic is not None:
-        fields[ctx.field_ids["Epic Link"]] = ctx.search_epic(in_epic).key
     if story_points is not None:
         fields[ctx.field_ids["Story Points"]] = story_points
+    if issuetype == "Epic":
+        if epic_name is None:
+            raise click.UsageError("--epic-name is needed.")
+        fields[ctx.field_ids["Epic Name"]] = epic_name
+    if parent is not None:
+        if issuetype == "Epic":
+            link_name = "Parent Link"
+        else:
+            link_name = "Epic Link"
+        fields[ctx.field_ids[link_name]] = ctx.search_epic(parent).key
     issue = ctx.jira.create_issue(fields)
     ctx.print_issue_detail(issue)
 
@@ -502,7 +511,7 @@ def create(
     type=click.Choice(["Undefined", "Minor", "Normal", "Major", "Critical", "Blocker"]),
 )
 @click.option("--assign/--no-assign", default=None, help="Assign this issue to me.")
-@click.option("--in-epic", default=None)
+@click.option("--parent", default=None)
 @click.option("--story-points", default=None, type=float)
 @click.argument("issue_id")
 @pass_jira_context
@@ -513,7 +522,7 @@ def amend(
     issuetype: str | None,
     priority: str | None,
     assign: bool | None,
-    in_epic: str | None,
+    parent: str | None,
     story_points: float | None,
     issue_id: str,
 ) -> None:
@@ -538,10 +547,16 @@ def amend(
     elif assign is False:
         print("Assignee:", issue.fields.assignee, "->", "N/A")
         fields["assignee"] = None
-    if in_epic is not None:
-        epic_key = ctx.search_epic(in_epic).key
-        print("Epic:", issue.get_field(ctx.field_ids["Epic Link"]), "->", epic_key)
-        fields[ctx.field_ids["Epic Link"]] = epic_key
+    if parent is not None:
+        if issuetype or issue.fields.issuetype == "Epic":
+            link_name = "Parent Link"
+        else:
+            link_name = "Epic Link"
+        parent_key = ctx.search_epic(parent).key
+        print(
+            "Parent:", issue.get_field(ctx.field_ids["Parent Link"]), "->", parent_key
+        )
+        fields[ctx.field_ids[link_name]] = parent_key
     if story_points is not None:
         print(
             "Story Points:",
@@ -557,6 +572,20 @@ def amend(
 
 @main.command()
 @click.argument("issue_id")
+@click.argument("comment")
+@pass_jira_context
+def comment(ctx: JiraContext, /, issue_id: str, comment: str) -> None:
+    """
+    Comment on an issue.
+    """
+    issue = ctx.jira.issue(issue_id)
+    ctx.print_issue(issue)
+    click.confirm("Continue?", abort=True)
+    ctx.jira.add_comment(issue, comment)
+
+
+@main.command()
+@click.argument("issue_id")
 @pass_jira_context
 def groom(
     ctx: JiraContext,
@@ -566,7 +595,6 @@ def groom(
     """
     Interactively groom an issue for sprint readiness.
     """
-
     issue = ctx.jira.issue(issue_id)
     fields: dict[str, t.Any] = {}
     ctx.print_issue(issue)
