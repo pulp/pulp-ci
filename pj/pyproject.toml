@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pj"
+version = "0.0.0.dev0"
+license = {text = "GPLv2+"}
+authors = [
+  {name = "Matthias Dellweg"}
+]
+dependencies = [
+  "click",
+  "pydantic",
+  "jira",
+  "ipython",
+]
+
+[project.scripts]
+pj = "pj:main"
+
+[tools.setuptools.packages.find]
+where = ["src"]
