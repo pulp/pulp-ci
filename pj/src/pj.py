@@ -712,9 +712,10 @@ def in_progress(
     """
     issue = ctx.jira.issue(issue_id)
     transitions = ctx.jira.transitions(issue)
-    in_progress_id = next((t["id"] for t in transitions if t["name"] == "In Progress"))
+    new_state = "In Progress"
+    in_progress_id = next((t["id"] for t in transitions if t["name"] == new_state))
     ctx.print_issue(issue)
-    click.confirm("Set to 'In Progress'?", abort=True)
+    click.confirm(f"Set to '{new_state}'{ctx.status_emoji(new_state)}?", abort=True)
     ctx.jira.transition_issue(issue, in_progress_id)
 
 
@@ -722,6 +723,7 @@ def in_progress(
 @click.option("--done", "resolution", flag_value="Done", default=True)
 @click.option("--duplicate", "resolution", flag_value="Duplicate")
 @click.option("--cannot-reproduce", "resolution", flag_value="Cannot Reproduce")
+@click.option("--will-not-do", "resolution", flag_value="Won't Do")
 @click.argument("issue_id")
 @pass_jira_context
 def resolve(
@@ -739,7 +741,9 @@ def resolve(
     transitions = ctx.jira.transitions(issue)
     close_id = next((t["id"] for t in transitions if t["name"] == "Closed"))
     ctx.print_issue(issue)
-    click.confirm(f"Close this as '{resolution}'?", abort=True)
+    click.confirm(
+        f"Close this as '{resolution}'{ctx.resolution_emoji(resolution)}?", abort=True
+    )
     ctx.jira.transition_issue(issue, close_id, resolution={"id": resolution_id})
 
 
