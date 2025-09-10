@@ -48,7 +48,7 @@ class JiraContext:
         self._conf_path = Path(click.get_app_dir("pulp/pj")) / ".pj_config"
         self._config: Config = read_config(self._conf_path)
         self._cache_path = (
-            Path(os.environ.get("XDG_CACHE_HOME") or "~/.cache") / "pulp" / ".pj_cache"
+            Path(os.environ.get("XDG_CACHE_HOME") or "~/.cache").expanduser() / "pulp" / ".pj_cache"
         )
         self._cache_dirty: bool = False
         self._cache: Cache = Cache()
