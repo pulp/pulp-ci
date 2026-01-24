@@ -1,23 +1,27 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.9.26,<0.10.0"]
+build-backend = "uv_build"
 
 [project]
 name = "pj"
 version = "0.0.0.dev0"
-license = {text = "GPLv2+"}
+license = "GPL-2.0-or-later"
 authors = [
   {name = "Matthias Dellweg"}
 ]
 dependencies = [
-  "click",
-  "pydantic",
-  "jira",
-  "ipython",
+  "click>=8.3.1,<8.4.0",
+  "ipython>=9.9.0,<9.10.0",
+  "jira>=3.10.5,<3.11.0",
+  "pydantic>=2.12.5,<2.13.0",
 ]
 
 [project.scripts]
 pj = "pj:main"
 
-[tools.setuptools.packages.find]
-where = ["src"]
+[dependency-groups]
+dev = [
+    "mypy>=1.19.1,<1.20.0",
+    "pylsp-rope>=0.1.17,<0.2.0",
+    "ruff>=0.14.14,<0.15.0",
+]

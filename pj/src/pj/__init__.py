@@ -1,23 +1,21 @@
-#!/bin/env python3
-
 # Reference: https://jira.readthedocs.io
 
-import typing as t
-from pathlib import Path
-import json
-import tomllib
-from collections import defaultdict
 import dataclasses
-from functools import cached_property
+import json
 import os
 import time
+import typing as t
+from collections import defaultdict
+from functools import cached_property
+from pathlib import Path
 
+import click
+import tomllib
 from jira import JIRA
 from jira.resources import Issue, IssueType, Resolution
 from jira.utils import remove_empty_attributes
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
-import click
 
 
 @dataclass
@@ -393,8 +391,11 @@ def my_next_issue() -> None:
     """
     Use special intelligent logic to spit out the next issue you should work on.
     """
-    click.echo("Starting up JirAI...")
-    time.sleep(5)
+    click.echo("Starting up JirAI", nl=False)
+    for i in range(5):
+        time.sleep(1)
+        click.echo(".", nl=False)
+    click.echo("!")
     click.echo("Just kidding!")
     time.sleep(2)
     click.echo("Who do you think I am?")
@@ -797,7 +798,3 @@ def shell(ctx: JiraContext, /) -> None:
     import IPython
 
     IPython.start_ipython(argv=[], user_ns={"jira": ctx.jira, "ctx": ctx})
-
-
-if __name__ == "__main__":
-    main()
