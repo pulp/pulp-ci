@@ -23,16 +23,23 @@ class Config:
     server: str = "https://issues.redhat.com"
     token: str = ""
     project: str = "PULP"
-    board: str = "Pulp Team Board"
+    board: str = "Pulp Project Team Board"
     kanban_status: list[str] = dataclasses.field(
         default_factory=lambda: ["New", "In Progress", "Closed"]
     )
+
+
+class Board(BaseModel):
+    id: int
+    name: str
+    type: str
 
 
 class Cache(BaseModel):
     field_ids: dict[str, str] | None = None
     issue_types: list[t.Any] | None = None
     resolutions: list[t.Any] | None = None
+    board: Board | None = None
 
 
 def read_config(conf_path: Path) -> Config:
@@ -42,18 +49,22 @@ def read_config(conf_path: Path) -> Config:
 
 
 class JiraContext:
-    def __init__(self) -> None:
+    def __init__(self, clear_cache: bool = False) -> None:
         self._conf_path = Path(click.get_app_dir("pulp/pj")) / ".pj_config"
         self._config: Config = read_config(self._conf_path)
         self._cache_path = (
-            Path(os.environ.get("XDG_CACHE_HOME") or "~/.cache").expanduser() / "pulp" / ".pj_cache"
+            Path(os.environ.get("XDG_CACHE_HOME") or "~/.cache").expanduser()
+            / "pulp"
+            / ".pj_cache"
         )
         self._cache_dirty: bool = False
         self._cache: Cache = Cache()
-        self.read_cache()
+        if clear_cache:
+            self._cache_path.unlink()
+        else:
+            self.read_cache()
 
         self.project: str = self._config.project
-        self.board: str = self._config.board
 
     @cached_property
     def jira(self) -> JIRA:
@@ -92,6 +103,20 @@ class JiraContext:
                 Resolution({}, self.jira._session, raw=res)
                 for res in self._cache.resolutions
             ]
+        return result
+
+    @cached_property
+    def board(self) -> Board:
+        if self._cache.board is None:
+            result = Board.model_validate(
+                self.jira.boards(
+                    name=self._config.board, projectKeyOrID=self._config.project
+                )[0].raw
+            )
+            self._cache.board = result
+            self._cache_dirty = True
+        else:
+            result = self._cache.board
         return result
 
     def read_cache(self) -> None:
@@ -304,20 +329,43 @@ pass_jira_context = click.make_pass_decorator(JiraContext)
 
 
 @click.group()
+@click.option("--clear-cache/--no-clear-cache", default=False)
 @click.pass_context
-def main(ctx: click.Context, /) -> None:
-    ctx.obj = JiraContext()
+def main(ctx: click.Context, /, clear_cache: bool) -> None:
+    ctx.obj = JiraContext(clear_cache=clear_cache)
 
     ctx.call_on_close(ctx.obj.dump_cache)
 
 
 @main.command()
+@click.option("--future", "sprint_states", flag_value="future", multiple=True)
+@click.option("--active", "sprint_states", flag_value="active", multiple=True)
+@click.option("--closed", "sprint_states", flag_value="closed", multiple=True)
 @click.option("--my/--unassigned", default=None, help="defaults to all")
 @pass_jira_context
-def sprint(ctx: JiraContext, /, my: bool | None) -> None:
+def sprints(
+    ctx: JiraContext, /, sprint_states: list[str] | None, my: bool | None
+) -> None:
+    filters = {}
+    if sprint_states is not None:
+        filters["state"] = ",".join(sprint_states)
+    sprints = ctx.jira.sprints(ctx.board.id, **filters)
+
+    for sprint in sprints:
+        print(f"# {sprint.name}, [{sprint.state}]")
+
+
+@main.command()
+@click.option("--future", "sprint_state", flag_value="future")
+@click.option("--active", "sprint_state", flag_value="active", default=True)
+@click.option("--closed", "sprint_state", flag_value="closed")
+@click.option("--my/--unassigned", default=None, help="defaults to all")
+@pass_jira_context
+def sprint(ctx: JiraContext, /, sprint_state: str, my: bool | None) -> None:
+    sprint = ctx.jira.sprints(ctx.board.id, state=[sprint_state])[-1]
     conditions = [
         f"project = {ctx.project}",
-        "sprint in openSprints()",
+        f"sprint = {sprint.id}",
     ]
     if my is True:
         conditions.append("assignee = currentUser()")
@@ -326,7 +374,7 @@ def sprint(ctx: JiraContext, /, my: bool | None) -> None:
     # None -> all sprint items
 
     jql = " AND ".join(conditions) + " ORDER BY priority DESC, updated DESC"
-
+    print(f"# {sprint.name}, [{sprint.state}]")
     ctx.print_kanban(ctx.search_issues_paginated(jql))
 
 
@@ -626,15 +674,19 @@ def assign(ctx: JiraContext, /, issue_id: str) -> None:
 
 
 @main.command()
-@click.argument("issue_id")
+@click.option("--future", "sprint_state", flag_value="future")
+@click.option("--active", "sprint_state", flag_value="active", default=True)
+@click.argument("issue_ids", nargs=-1, required=True)
 @pass_jira_context
-def add_to_sprint(ctx: JiraContext, /, issue_id: str) -> None:
-    issue = ctx.jira.issue(issue_id)
-    board = ctx.jira.boards(name=ctx.board, projectKeyOrID=ctx.project)[0]
-    sprint = ctx.jira.sprints(board.id, state=["active"])[0]
-    ctx.print_issue(issue)
-    click.confirm(f"Add to sprint '{sprint}'?", abort=True)
-    ctx.jira.add_issues_to_sprint(sprint.id, [issue.key])
+def add_to_sprint(
+    ctx: JiraContext, /, issue_ids: tuple[str], sprint_state: str
+) -> None:
+    issues = [ctx.jira.issue(issue_id) for issue_id in issue_ids]
+    sprint = ctx.jira.sprints(ctx.board.id, state=[sprint_state])[-1]
+    for issue in issues:
+        ctx.print_issue(issue)
+    click.confirm(f"Add to sprint '{sprint}' [{sprint.state}]?", abort=True)
+    ctx.jira.add_issues_to_sprint(sprint.id, [issue.key for issue in issues])
 
 
 @main.command()
