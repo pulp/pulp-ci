@@ -1,5 +1,6 @@
 # Reference: https://jira.readthedocs.io
 
+import contextlib
 import dataclasses
 import json
 import os
@@ -60,7 +61,8 @@ class JiraContext:
         self._cache_dirty: bool = False
         self._cache: Cache = Cache()
         if clear_cache:
-            self._cache_path.unlink()
+            with contextlib.suppress(FileNotFoundError):
+                self._cache_path.unlink()
         else:
             self.read_cache()
 
@@ -148,7 +150,7 @@ class JiraContext:
                     break
 
     def search_epic(self, epic_id: str) -> Issue:
-        if epic_id.lower().startswith(self.project.lower()):
+        if epic_id.lower().startswith(self.project.lower() + "-"):
             epic = self.jira.issue(epic_id)
         else:
             epic = next(
@@ -579,6 +581,7 @@ def amend(
     Change attributes of an issue.
     """
     issue = ctx.jira.issue(issue_id)
+    epic_link: str| None = None
     ctx.print_issue(issue)
     fields: dict[str, t.Any] = {}
     if summary is not None:
@@ -597,15 +600,16 @@ def amend(
         print("Assignee:", issue.fields.assignee, "->", "N/A")
         fields["assignee"] = None
     if parent is not None:
+        parent_key = ctx.search_epic(parent).key
         if issuetype or issue.fields.issuetype == "Epic":
             link_name = "Parent Link"
+            fields[ctx.field_ids[link_name]] = parent_key
         else:
             link_name = "Epic Link"
-        parent_key = ctx.search_epic(parent).key
+            epic_link = parent_key
         print(
-            "Parent:", issue.get_field(ctx.field_ids["Parent Link"]), "->", parent_key
+            f"{link_name}: ", issue.get_field(ctx.field_ids[link_name]), "->", parent_key
         )
-        fields[ctx.field_ids[link_name]] = parent_key
     if story_points is not None:
         print(
             "Story Points:",
@@ -616,7 +620,10 @@ def amend(
         fields[ctx.field_ids["Story Points"]] = story_points
 
     click.confirm("Continue?", abort=True)
-    issue.update(fields=fields)
+    if len(fields) > 0:
+        issue.update(fields=fields)
+    if epic_link:
+        ctx.jira.add_issues_to_epic(epic_link, issue.key)
 
 
 @main.command()
@@ -648,13 +655,14 @@ def groom(
     fields: dict[str, t.Any] = {}
     ctx.print_issue(issue)
 
-    for field_name in ["Story Points", "Priority", "Components", "Labels"]:
+    for field_name in ["Story Points", "Priority"]:
         field_id = ctx.field_ids[field_name]
         orig_value = issue.get_field(field_id)
         value = click.prompt(field_name, default=orig_value)
         if value != orig_value:
             fields[field_id] = value
 
+    # TODO "Components", "Labels"
     click.confirm("Continue?", abort=True)
     print(fields)
     click.echo("This does not seem to be implemented")
