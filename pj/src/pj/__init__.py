@@ -54,9 +54,7 @@ class JiraContext:
         self._conf_path = Path(click.get_app_dir("pulp/pj")) / ".pj_config"
         self._config: Config = read_config(self._conf_path)
         self._cache_path = (
-            Path(os.environ.get("XDG_CACHE_HOME") or "~/.cache").expanduser()
-            / "pulp"
-            / ".pj_cache"
+            Path(os.environ.get("XDG_CACHE_HOME") or "~/.cache").expanduser() / "pulp" / ".pj_cache"
         )
         self._cache_dirty: bool = False
         self._cache: Cache = Cache()
@@ -75,9 +73,7 @@ class JiraContext:
     @cached_property
     def field_ids(self) -> dict[str, str]:
         if self._cache.field_ids is None:
-            self._cache.field_ids = {
-                field["name"]: field["id"] for field in self.jira.fields()
-            }
+            self._cache.field_ids = {field["name"]: field["id"] for field in self.jira.fields()}
             self._cache_dirty = True
         return self._cache.field_ids
 
@@ -88,10 +84,7 @@ class JiraContext:
             self._cache.issue_types = [it.raw for it in result]
             self._cache_dirty = True
         else:
-            result = [
-                IssueType({}, self.jira._session, raw=it)
-                for it in self._cache.issue_types
-            ]
+            result = [IssueType({}, self.jira._session, raw=it) for it in self._cache.issue_types]
         return result
 
     @cached_property
@@ -102,8 +95,7 @@ class JiraContext:
             self._cache_dirty = True
         else:
             result = [
-                Resolution({}, self.jira._session, raw=res)
-                for res in self._cache.resolutions
+                Resolution({}, self.jira._session, raw=res) for res in self._cache.resolutions
             ]
         return result
 
@@ -111,9 +103,9 @@ class JiraContext:
     def board(self) -> Board:
         if self._cache.board is None:
             result = Board.model_validate(
-                self.jira.boards(
-                    name=self._config.board, projectKeyOrID=self._config.project
-                )[0].raw
+                self.jira.boards(name=self._config.board, projectKeyOrID=self._config.project)[
+                    0
+                ].raw
             )
             self._cache.board = result
             self._cache_dirty = True
@@ -153,11 +145,7 @@ class JiraContext:
         if epic_id.lower().startswith(self.project.lower() + "-"):
             epic = self.jira.issue(epic_id)
         else:
-            epic = next(
-                self.search_issues_paginated(
-                    f"'Epic Name' = '{epic_id}'", max_results=1
-                )
-            )
+            epic = next(self.search_issues_paginated(f"'Epic Name' = '{epic_id}'", max_results=1))
         return epic
 
     def issue_type_emoji(self, issuetype: str) -> str:
@@ -312,7 +300,7 @@ class JiraContext:
                 value = [str(item) for item in value]
             print("  " + fieldname + ":", value)
 
-    def print_kanban(self, issues) -> None:
+    def print_kanban(self, issues: t.Iterable[Issue]) -> None:
         results: dict[str, list[Issue]] = defaultdict(list)
         sp_accumulator: dict[str, float] = defaultdict(float)
         for issue in issues:
@@ -345,9 +333,7 @@ def main(ctx: click.Context, /, clear_cache: bool) -> None:
 @click.option("--closed", "sprint_states", flag_value="closed", multiple=True)
 @click.option("--my/--unassigned", default=None, help="defaults to all")
 @pass_jira_context
-def sprints(
-    ctx: JiraContext, /, sprint_states: list[str] | None, my: bool | None
-) -> None:
+def sprints(ctx: JiraContext, /, sprint_states: list[str] | None, my: bool | None) -> None:
     filters = {}
     if sprint_states is not None:
         filters["state"] = ",".join(sprint_states)
@@ -396,9 +382,7 @@ def sprint(ctx: JiraContext, /, sprint_state: str, my: bool | None) -> None:
 @click.option("--epic", "issuetype", flag_value="Epic")
 @click.option("--feature", "issuetype", flag_value="Feature")
 @click.option("--outcome", "issuetype", flag_value="Outcome")
-@click.option(
-    "--condition", "conditions", multiple=True, help="Extra conditions in jql."
-)
+@click.option("--condition", "conditions", multiple=True, help="Extra conditions in jql.")
 @click.option("--max-results", type=int, help="Only show first results.")
 @pass_jira_context
 def issues(
@@ -581,7 +565,7 @@ def amend(
     Change attributes of an issue.
     """
     issue = ctx.jira.issue(issue_id)
-    epic_link: str| None = None
+    epic_link: str | None = None
     ctx.print_issue(issue)
     fields: dict[str, t.Any] = {}
     if summary is not None:
@@ -608,7 +592,10 @@ def amend(
             link_name = "Epic Link"
             epic_link = parent_key
         print(
-            f"{link_name}: ", issue.get_field(ctx.field_ids[link_name]), "->", parent_key
+            f"{link_name}: ",
+            issue.get_field(ctx.field_ids[link_name]),
+            "->",
+            parent_key,
         )
     if story_points is not None:
         print(
@@ -686,9 +673,7 @@ def assign(ctx: JiraContext, /, issue_id: str) -> None:
 @click.option("--active", "sprint_state", flag_value="active", default=True)
 @click.argument("issue_ids", nargs=-1, required=True)
 @pass_jira_context
-def add_to_sprint(
-    ctx: JiraContext, /, issue_ids: tuple[str], sprint_state: str
-) -> None:
+def add_to_sprint(ctx: JiraContext, /, issue_ids: tuple[str], sprint_state: str) -> None:
     issues = [ctx.jira.issue(issue_id) for issue_id in issue_ids]
     sprint = ctx.jira.sprints(ctx.board.id, state=[sprint_state])[-1]
     for issue in issues:
@@ -704,7 +689,7 @@ def flag(
     ctx: JiraContext,
     /,
     issue_id: str,
-):
+) -> None:
     """
     Flag issue with impediment.
 
@@ -712,9 +697,7 @@ def flag(
     """
     issue = ctx.jira.issue(issue_id)
     # TODO
-    issue.update(
-        fields={ctx.field_ids["Flagged"]: [{"set": [{"value": "Impediment"}]}]}
-    )
+    issue.update(fields={ctx.field_ids["Flagged"]: [{"set": [{"value": "Impediment"}]}]})
 
 
 @main.command()
@@ -724,7 +707,7 @@ def unflag(
     ctx: JiraContext,
     /,
     issue_id: str,
-):
+) -> None:
     """
     Unflag issue from impediment.
 
@@ -744,7 +727,7 @@ def storypoint(
     /,
     issue_id: str,
     story_points: float,
-):
+) -> None:
     """
     Mark issue with a certain number of storypoints.
     """
@@ -767,7 +750,7 @@ def in_progress(
     ctx: JiraContext,
     /,
     issue_id: str,
-):
+) -> None:
     """
     Transition issue to in progress.
     """
@@ -792,7 +775,7 @@ def resolve(
     /,
     resolution: str,
     issue_id: str,
-):
+) -> None:
     """
     Close issue as done.
     (ATM this is the only supported resolution.)
@@ -802,9 +785,7 @@ def resolve(
     transitions = ctx.jira.transitions(issue)
     close_id = next((t["id"] for t in transitions if t["name"] == "Closed"))
     ctx.print_issue(issue)
-    click.confirm(
-        f"Close this as '{resolution}'{ctx.resolution_emoji(resolution)}?", abort=True
-    )
+    click.confirm(f"Close this as '{resolution}'{ctx.resolution_emoji(resolution)}?", abort=True)
     ctx.jira.transition_issue(issue, close_id, resolution={"id": resolution_id})
 
 

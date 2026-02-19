@@ -25,3 +25,19 @@ dev = [
     "pylsp-rope>=0.1.17,<0.2.0",
     "ruff>=0.14.14,<0.15.0",
 ]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+extend-select = ["I"]
+
+[tool.mypy]
+strict = true
+warn_unused_ignores = false
+show_error_codes = true
+files = "src/**/*.py"
+mypy_path = ["src"]
+namespace_packages = true
+explicit_package_bases = true
+disallow_untyped_calls = false
