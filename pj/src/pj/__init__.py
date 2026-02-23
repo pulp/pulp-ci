@@ -350,20 +350,20 @@ def sprints(ctx: JiraContext, /, sprint_states: list[str] | None, my: bool | Non
 @click.option("--my/--unassigned", default=None, help="defaults to all")
 @pass_jira_context
 def sprint(ctx: JiraContext, /, sprint_state: str, my: bool | None) -> None:
-    sprint = ctx.jira.sprints(ctx.board.id, state=[sprint_state])[-1]
-    conditions = [
-        f"project = {ctx.project}",
-        f"sprint = {sprint.id}",
-    ]
-    if my is True:
-        conditions.append("assignee = currentUser()")
-    elif my is False:
-        conditions.append("assignee is EMPTY")
-    # None -> all sprint items
+    for sprint in ctx.jira.sprints(ctx.board.id, state=[sprint_state]):
+        conditions = [
+            f"project = {ctx.project}",
+            f"sprint = {sprint.id}",
+        ]
+        if my is True:
+            conditions.append("assignee = currentUser()")
+        elif my is False:
+            conditions.append("assignee is EMPTY")
+        # None -> all sprint items
 
-    jql = " AND ".join(conditions) + " ORDER BY priority DESC, updated DESC"
-    print(f"# {sprint.name}, [{sprint.state}]")
-    ctx.print_kanban(ctx.search_issues_paginated(jql))
+        jql = " AND ".join(conditions) + " ORDER BY priority DESC, updated DESC"
+        print(f"# {sprint.name}, [{sprint.state}]")
+        ctx.print_kanban(ctx.search_issues_paginated(jql))
 
 
 @main.command()
@@ -675,9 +675,20 @@ def assign(ctx: JiraContext, /, issue_id: str) -> None:
 @pass_jira_context
 def add_to_sprint(ctx: JiraContext, /, issue_ids: tuple[str], sprint_state: str) -> None:
     issues = [ctx.jira.issue(issue_id) for issue_id in issue_ids]
-    sprint = ctx.jira.sprints(ctx.board.id, state=[sprint_state])[-1]
+    sprints = ctx.jira.sprints(ctx.board.id, state=[sprint_state])
     for issue in issues:
         ctx.print_issue(issue)
+    if len(sprints) == 0:
+        raise click.UsageError(f"There is no {sprint_state} sprint on this board.")
+    elif len(sprints) == 1:
+        sprint = sprints[0]
+    else:
+        for place, sprint in enumerate(sprints):
+            click.echo(f"{place + 1:3}: {sprint} [{sprint.state}]")
+        selection = click.prompt("Select a sprint", type=int) - 1
+        if selection >= len(sprints) or selection < 0:
+            raise click.Abort()
+        sprint = sprints[selection - 1]
     click.confirm(f"Add to sprint '{sprint}' [{sprint.state}]?", abort=True)
     ctx.jira.add_issues_to_sprint(sprint.id, [issue.key for issue in issues])
 
@@ -777,8 +788,7 @@ def resolve(
     issue_id: str,
 ) -> None:
     """
-    Close issue as done.
-    (ATM this is the only supported resolution.)
+    Close issue with a resolution.
     """
     issue = ctx.jira.issue(issue_id)
     resolution_id = next((res.id for res in ctx.resolutions if res.name == resolution))
