@@ -13,7 +13,7 @@ from pathlib import Path
 import click
 import tomllib
 from jira import JIRA
-from jira.resources import Issue, IssueType, Resolution
+from jira.resources import Issue, IssueType, Priority, Resolution, Status
 from jira.utils import remove_empty_attributes
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
@@ -21,13 +21,68 @@ from pydantic.dataclasses import dataclass
 
 @dataclass
 class Config:
-    server: str = "https://issues.redhat.com"
-    token: str = ""
+    email: str
+    token: str
+    server: str = "https://redhat.atlassian.net"
     project: str = "PULP"
     board: str = "Pulp Project Team Board"
     kanban_status: list[str] = dataclasses.field(
         default_factory=lambda: ["New", "In Progress", "Closed"]
     )
+
+
+FIELD_IDS = {
+    "Assignee": "assignee",
+    "Status": "status",
+    "Parent": "parent",
+    "Parent Link": "customfield_10018",
+    "Epic Link": "customfield_10014",
+    "Epic Name": "customfield_10011",
+    "Resolution": "resolution",
+    "Priority": "priority",
+    "Blocked": "customfield_10517",
+    "Story Points": "customfield_10028",
+    "Flagged": "customfield_10021",
+    "Reporter": "reporter",
+    "Sprint": "customfield_10020",
+    "Component/s": "components",
+    "Labels": "labels",
+}
+
+ISSUE_TYPE_EMOJIS = {
+    "10142": "💶",  # Feature
+    "10000": "🎭",  # Epic
+    "10009": "📰",  # Story
+    "10016": "🐞",  # Bug
+    "10014": "🔧",  # Task
+    "10015": "🥷",  # Sub-task
+    "10130": "🏁",  # Outcome
+    "10172": "💣",  # Vulnerability
+    "10171": "🦺",  # Weakness
+}
+
+STATUS_EMOJIS = {
+    "10142": "✨",  # "New"
+    "10143": "✂️",  # "Refinement"
+    "3": "🧵",  # "In Progress"
+    "6": "🚪",  # "Closed"
+}
+
+PRIORITY_EMOJIS = {
+    "10000": "⛔",  # Blocker
+    "10001": "🌋",  # Critical
+    "10002": "➕",  # Major
+    "10003": "🟰",  # Normal
+    "10004": "➖",  # Minor
+    "10005": "⭕",  # Undefined
+}
+
+RESOLUTION_EMOJIS = {
+    "10000": "✅",  # Done
+    "10001": "🚮",  # Won't Do
+    "10003": "☢️",  # Cannot Reproduce
+    "10002": "♊",  # Duplicate
+}
 
 
 class Board(BaseModel):
@@ -68,12 +123,18 @@ class JiraContext:
 
     @cached_property
     def jira(self) -> JIRA:
-        return JIRA(server=self._config.server, token_auth=self._config.token)
+        return JIRA(
+            server=self._config.server,
+            basic_auth=(self._config.email, self._config.token),
+        )
 
     @cached_property
     def field_ids(self) -> dict[str, str]:
         if self._cache.field_ids is None:
-            self._cache.field_ids = {field["name"]: field["id"] for field in self.jira.fields()}
+            self._cache.field_ids = {
+                field.get("untranslatedName") or field["name"]: field["id"]
+                for field in self.jira.fields()
+            }
             self._cache_dirty = True
         return self._cache.field_ids
 
@@ -127,19 +188,20 @@ class JiraContext:
     def search_issues_paginated(
         self, jql: str, max_results: int | None = None
     ) -> t.Iterator[Issue]:
-        start_at = 0
-        per_page = 50 if max_results is None else min(50, max_results)
-        while results := self.jira.search_issues(
-            jql,
-            maxResults=per_page,
-            startAt=start_at,
-        ):
+        per_page = 50
+        next_page_token: str | None = None
+        while True:
+            if max_results is not None and per_page > max_results:
+                per_page = max_results
+            results = self.jira.enhanced_search_issues(
+                jql, maxResults=per_page, nextPageToken=next_page_token
+            )
+            next_page_token = results.nextPageToken
+            if max_results is not None:
+                max_results -= len(results)
             yield from results
-            start_at += per_page
-            if max_results is not None and start_at + per_page > max_results:
-                per_page = max_results - start_at
-                if per_page <= 0:
-                    break
+            if next_page_token is None or (max_results is not None and max_results <= 0):
+                break
 
     def search_epic(self, epic_id: str) -> Issue:
         if epic_id.lower().startswith(self.project.lower() + "-"):
@@ -148,126 +210,33 @@ class JiraContext:
             epic = next(self.search_issues_paginated(f"'Epic Name' = '{epic_id}'", max_results=1))
         return epic
 
-    def issue_type_emoji(self, issuetype: str) -> str:
-        """
-         🚫 ☣️
+    def issue_type_emoji(self, issuetype: IssueType) -> str:
+        return ISSUE_TYPE_EMOJIS.get(issuetype.id, "❓")
 
-        Observation: 📡
-        Investigation: 🔬
-        Experiment: 🧪
-        """
-        if issuetype == "Feature":
-            return "💶"
-        elif issuetype == "Epic":
-            return "🎭"
-        elif issuetype == "Story":
-            return "📰"
-            # return "📖"
-        elif issuetype == "Bug":
-            return "🐞"
-        elif issuetype == "Task":
-            return "🔧"
-        elif issuetype == "Sub-task":
-            return "🥷"
-        elif issuetype == "Outcome":
-            return "🏁"
-        elif issuetype == "Vulnerability":
-            return "💣"
-            return "🛟"
-        elif issuetype == "Weakness":
-            return "🦺"
-            # return "🩸"
-        else:
-            return "❓"
+    def priority_emoji(self, priority: Priority) -> str:
+        return PRIORITY_EMOJIS.get(priority.id, "❓")
 
-    def priority_emoji(self, priority: str) -> str:
-        """
-        'Blocker'
-        'Urgent'
-        'Critical'
-        'Must Have'
-        'High'
-        'Major'
-        'Should Have'
-        'Normal'
-        'Medium'
-        'Minor'
-        'Low'
-        'Could Have'
-        'Trivial'
-        'Optional'
-        "Won't Have"
-        'Undefined'
-        'Unprioritized'
-        """
-        if priority == "Blocker":
-            return "⛔"
-        elif priority == "Critical":
-            return "🌋"
-        elif priority == "Major":
-            return "➕"
-        elif priority == "Normal":
-            return "🟰"
-        elif priority == "Minor":
-            return "➖"
-        elif priority == "Undefined":
-            return "⭕"
-        else:
-            return "❓"
-        return priority
-
-    def status_emoji(self, status: str) -> str:
-        if status == "New":
-            return "✨"
-        elif status == "Refinement":
-            return "✂️"
-        elif status == "In Progress":
-            return "🧵"
-        elif status == "Closed":
-            return "🚪"
-        else:
-            return "❓"
+    def status_emoji(self, status: Status) -> str:
+        return STATUS_EMOJIS.get(status.id, "❓")
 
     def resolution_emoji(self, resolution: str) -> str:
-        if resolution == "Done":
-            return "✅"
-        elif resolution == "Won't Do":
-            return "🚮"
-        elif resolution == "Cannot Reproduce":
-            return "☢️"
-            # return "⁉️"
-        elif resolution == "Can't Do":
-            return "❓"
-        elif resolution == "Duplicate":
-            return "♊"
-        elif resolution == "Not a Bug":
-            return "❓"
-        elif resolution == "Done-Errata":
-            return "❓"
-        elif resolution == "MirrorOrphan":
-            return "❓"
-        elif resolution == "Obsolete":
-            return "❓"
-        elif resolution == "Test Pending":
-            return "❓"
-        else:
-            return "❓"
+        return RESOLUTION_EMOJIS.get(resolution.id, "❓")
 
     def print_issue(self, issue: Issue) -> None:
         # TODO priority
-        issuetype: str = self.issue_type_emoji(issue.fields.issuetype.name)
+        issuetype: str = self.issue_type_emoji(issue.fields.issuetype)
         issue_key: str = issue.key
-        status: str = self.status_emoji(issue.fields.status.name)
+        status: str = self.status_emoji(issue.fields.status)
         if issue.fields.resolution is not None:
-            status += self.resolution_emoji(issue.fields.resolution.name)
-        if str(issue.get_field(self.field_ids["Blocked"])) != "False":
+            status += self.resolution_emoji(issue.fields.resolution)
+        if str(issue.get_field(FIELD_IDS["Blocked"])) != "False":
             # Don't ask...
             status += "🚧"
-        if issue.get_field(self.field_ids["Flagged"]):
+        if issue.get_field(FIELD_IDS["Flagged"]):
             status += "🚩"
 
-        priority: str = self.priority_emoji(issue.fields.priority.name)
-        storypoints: float = issue.get_field(self.field_ids["Story Points"])
+        priority: str = self.priority_emoji(issue.fields.priority)
+        storypoints: float = issue.get_field(FIELD_IDS["Story Points"])
         sp: str = f"{storypoints:.1f}" if storypoints is not None else "N/A"
         summary: str = issue.fields.summary
         print(
@@ -276,8 +245,8 @@ class JiraContext:
 
     def print_issue_detail(self, issue: Issue) -> None:
         print(issue.fields.issuetype.name, issue)
-        if issue.fields.issuetype.name == "Epic":
-            print(issue.get_field(self.field_ids["Epic Name"]))
+        if issue.fields.issuetype.id == "10000":  # Epic
+            print("Epic:", issue.get_field(FIELD_IDS["Epic Name"]))
         print(issue.permalink())
         print(issue.fields.summary)
         print(issue.fields.description)
@@ -295,7 +264,7 @@ class JiraContext:
             "Component/s",
             "Labels",
         ]:
-            value: t.Any = issue.get_field(self.field_ids[fieldname])
+            value: t.Any = issue.get_field(FIELD_IDS[fieldname])
             if isinstance(value, list):
                 value = [str(item) for item in value]
             print("  " + fieldname + ":", value)
@@ -306,10 +275,9 @@ class JiraContext:
         for issue in issues:
             results[issue.fields.status.name].append(issue)
             sp_accumulator[issue.fields.status.name] += (
-                issue.get_field(self.field_ids["Story Points"]) or 0.0
+                issue.get_field(FIELD_IDS["Story Points"]) or 0.0
             )
-        for status in self._config.kanban_status:
-            issues = results[status]
+        for status, issues in results.items():
             print(f"## {status} ({sp_accumulator[status]})")
             for issue in issues:
                 self.print_issue(issue)
@@ -519,17 +487,17 @@ def create(
     if assign:
         fields["assignee"] = {"name": ctx.jira.current_user()}
     if story_points is not None:
-        fields[ctx.field_ids["Story Points"]] = story_points
+        fields[FIELD_IDS["Story Points"]] = story_points
     if issuetype == "Epic":
         if epic_name is None:
             raise click.UsageError("--epic-name is needed.")
-        fields[ctx.field_ids["Epic Name"]] = epic_name
+        fields[FIELD_IDS["Epic Name"]] = epic_name
     if parent is not None:
         if issuetype == "Epic":
             link_name = "Parent Link"
         else:
             link_name = "Epic Link"
-        fields[ctx.field_ids[link_name]] = ctx.search_epic(parent).key
+        fields[FIELD_IDS[link_name]] = ctx.search_epic(parent).key
     issue = ctx.jira.create_issue(fields)
     ctx.print_issue_detail(issue)
 
@@ -587,24 +555,24 @@ def amend(
         parent_key = ctx.search_epic(parent).key
         if issuetype or issue.fields.issuetype == "Epic":
             link_name = "Parent Link"
-            fields[ctx.field_ids[link_name]] = parent_key
+            fields[FIELD_IDS[link_name]] = parent_key
         else:
             link_name = "Epic Link"
             epic_link = parent_key
         print(
             f"{link_name}: ",
-            issue.get_field(ctx.field_ids[link_name]),
+            issue.get_field(FIELD_IDS[link_name]),
             "->",
             parent_key,
         )
     if story_points is not None:
         print(
             "Story Points:",
-            issue.get_field(ctx.field_ids["Story Points"]),
+            issue.get_field(FIELD_IDS["Story Points"]),
             "->",
             story_points,
         )
-        fields[ctx.field_ids["Story Points"]] = story_points
+        fields[FIELD_IDS["Story Points"]] = story_points
 
     click.confirm("Continue?", abort=True)
     if len(fields) > 0:
@@ -643,7 +611,7 @@ def groom(
     ctx.print_issue(issue)
 
     for field_name in ["Story Points", "Priority"]:
-        field_id = ctx.field_ids[field_name]
+        field_id = FIELD_IDS[field_name]
         orig_value = issue.get_field(field_id)
         value = click.prompt(field_name, default=orig_value)
         if value != orig_value:
@@ -708,7 +676,7 @@ def flag(
     """
     issue = ctx.jira.issue(issue_id)
     # TODO
-    issue.update(fields={ctx.field_ids["Flagged"]: [{"set": [{"value": "Impediment"}]}]})
+    issue.update(fields={FIELD_IDS["Flagged"]: [{"set": [{"value": "Impediment"}]}]})
 
 
 @main.command()
@@ -726,7 +694,7 @@ def unflag(
     """
     issue = ctx.jira.issue(issue_id)
     # TODO
-    issue.update(fields={ctx.field_ids["Flagged"]: [{"set": None}]})
+    issue.update(fields={FIELD_IDS["Flagged"]: [{"set": None}]})
 
 
 @main.command()
@@ -746,12 +714,12 @@ def storypoint(
     ctx.print_issue(issue)
     print(
         "Story Points:",
-        issue.get_field(ctx.field_ids["Story Points"]),
+        issue.get_field(FIELD_IDS["Story Points"]),
         "->",
         story_points,
     )
     click.confirm("Continue?", abort=True)
-    issue.update(fields={ctx.field_ids["Story Points"]: story_points})
+    issue.update(fields={FIELD_IDS["Story Points"]: story_points})
 
 
 @main.command()
@@ -767,11 +735,12 @@ def in_progress(
     """
     issue = ctx.jira.issue(issue_id)
     transitions = ctx.jira.transitions(issue)
-    new_state = "In Progress"
-    in_progress_id = next((t["id"] for t in transitions if t["name"] == new_state))
+    transition = next((t for t in transitions if t["name"] == "In Progress"))
+    # new_status = Status(ctx.jira.session, transition["to"])
     ctx.print_issue(issue)
-    click.confirm(f"Set to '{new_state}'{ctx.status_emoji(new_state)}?", abort=True)
-    ctx.jira.transition_issue(issue, in_progress_id)
+    # click.confirm(f"Set to 'new_status.name' {ctx.status_emoji(new_status)}?", abort=True)
+    click.confirm(f"Transition '{transition["name"]}'?", abort=True)
+    ctx.jira.transition_issue(issue, transition["id"])
 
 
 @main.command()
@@ -806,16 +775,22 @@ def debug() -> None:
 
 @debug.command()
 @pass_jira_context
+def fields(ctx: JiraContext, /) -> None:
+    """
+    Dump available fields.
+    """
+    for name, id in ctx.field_ids.items():
+        print(name + " (id=" + id + ")")
+
+
+@debug.command()
+@pass_jira_context
 def types(ctx: JiraContext, /) -> None:
     """
     Dump available issue types for the project.
     """
     for issue_type in ctx.issue_types:
-        print(
-            ctx.issue_type_emoji(issue_type.name),
-            issue_type.name,
-            f"(id={issue_type.id})",
-        )
+        print(f"{ctx.issue_type_emoji(issue_type)} {issue_type.name} (id={issue_type.id})")
 
 
 @debug.command()
@@ -825,17 +800,27 @@ def resolutions(ctx: JiraContext, /) -> None:
     Dump available resolutions.
     """
     for resolution in ctx.resolutions:
-        print(resolution.name, f"(id={resolution.id})")
+        print(f"{ctx.resolution_emoji(resolution)} {resolution.name} (id={resolution.id})")
 
 
 @debug.command()
 @pass_jira_context
-def fields(ctx: JiraContext, /) -> None:
+def priorities(ctx: JiraContext, /) -> None:
     """
-    Dump available fields.
+    Dump priorities.
     """
-    for name, id in ctx.field_ids.items():
-        print(name, "(id=" + id + ")")
+    for prio in ctx.jira.priorities():
+        print(f"{ctx.priority_emoji(prio)} {prio.name} (id={prio.id})")
+
+
+@debug.command()
+@pass_jira_context
+def status(ctx: JiraContext, /) -> None:
+    """
+    Dump status.
+    """
+    for status in ctx.jira.statuses():
+        print(f"{ctx.status_emoji(status)} {status.name} (id={status.id})")
 
 
 @debug.command()
