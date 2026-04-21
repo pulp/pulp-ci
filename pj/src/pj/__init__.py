@@ -485,7 +485,7 @@ def create(
     if priority is not None:
         fields["priority"] = {"name": priority}
     if assign:
-        fields["assignee"] = {"name": ctx.jira.current_user()}
+        fields["assignee"] = ctx.jira.myself()
     if story_points is not None:
         fields[FIELD_IDS["Story Points"]] = story_points
     if issuetype == "Epic":
@@ -546,8 +546,8 @@ def amend(
         print("Priority:", issue.fields.priority, "->", priority)
         fields["priority"] = {"name": priority}
     if assign is True:
-        print("Assignee:", issue.fields.assignee, "->", ctx.jira.current_user())
-        fields["assignee"] = {"name": ctx.jira.current_user()}
+        print("Assignee:", issue.fields.assignee, "->", ctx.jira.myself()["displayName"])
+        fields["assignee"] = ctx.jira.myself()
     elif assign is False:
         print("Assignee:", issue.fields.assignee, "->", "N/A")
         fields["assignee"] = None
