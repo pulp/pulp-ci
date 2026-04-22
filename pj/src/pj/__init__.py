@@ -126,6 +126,7 @@ class JiraContext:
         return JIRA(
             server=self._config.server,
             basic_auth=(self._config.email, self._config.token),
+            options={"headers": {"Accept-Language": "en", "X-Force-Accept-Language": "true"}},
         )
 
     @cached_property
@@ -739,7 +740,7 @@ def in_progress(
     # new_status = Status(ctx.jira.session, transition["to"])
     ctx.print_issue(issue)
     # click.confirm(f"Set to 'new_status.name' {ctx.status_emoji(new_status)}?", abort=True)
-    click.confirm(f"Transition '{transition["name"]}'?", abort=True)
+    click.confirm(f"Transition '{transition['name']}'?", abort=True)
     ctx.jira.transition_issue(issue, transition["id"])
 
 
@@ -760,12 +761,14 @@ def resolve(
     Close issue with a resolution.
     """
     issue = ctx.jira.issue(issue_id)
-    resolution_id = next((res.id for res in ctx.resolutions if res.name == resolution))
+    resolution = next((res for res in ctx.resolutions if res.name == resolution))
     transitions = ctx.jira.transitions(issue)
     close_id = next((t["id"] for t in transitions if t["name"] == "Closed"))
     ctx.print_issue(issue)
-    click.confirm(f"Close this as '{resolution}'{ctx.resolution_emoji(resolution)}?", abort=True)
-    ctx.jira.transition_issue(issue, close_id, resolution={"id": resolution_id})
+    click.confirm(
+        f"Close this as '{resolution.name}'{ctx.resolution_emoji(resolution)}?", abort=True
+    )
+    ctx.jira.transition_issue(issue, close_id, resolution={"id": resolution.id})
 
 
 @main.group()
