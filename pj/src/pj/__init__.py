@@ -657,7 +657,7 @@ def add_to_sprint(ctx: JiraContext, /, issue_ids: tuple[str], sprint_state: str)
         selection = click.prompt("Select a sprint", type=int) - 1
         if selection >= len(sprints) or selection < 0:
             raise click.Abort()
-        sprint = sprints[selection - 1]
+        sprint = sprints[selection]
     click.confirm(f"Add to sprint '{sprint}' [{sprint.state}]?", abort=True)
     ctx.jira.add_issues_to_sprint(sprint.id, [issue.key for issue in issues])
 
