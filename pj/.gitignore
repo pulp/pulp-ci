@@ -1,0 +1,6 @@
+.jiraauth
+.pj_cache
+.pj_config
+/build
+/dist
+*.egg-info
